@@ -34,6 +34,34 @@ function escapePattern(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }
 
+function isReflectedOrNegatedHint(value: string, index: number): boolean {
+  const before = value.slice(0, index);
+  // Only bridge words may connect a wish to the hint. A later concession in
+  // the same sentence must still count ("you wanted X, but you may ...").
+  const reflection =
+    /\byou(?:\s+(?:(?:really|still|just)\s+)*(?:want(?:ed)?|wish(?:ed)?|(?:were|are) hoping|asked|would like)|'d like)\s+((?:(?:to|for|that|i|we|you|me|us|can|could|would|will|may|might|have|be|able|allowed|let|just|really|still)\s+)*)$/u.exec(
+      before,
+    );
+  if (reflection) {
+    const conditional = /\bif\s+$/u.test(before.slice(0, reflection.index));
+    const explicitGrant =
+      /\b(?:you|we) (?:can|may)\b/u.test(reflection[1]) ||
+      /^(?:you|we) (?:can|may)\b/u.test(value.slice(index));
+    if (!conditional || !explicitGrant) return true;
+  }
+  // A refusal in an earlier clause does not negate a new grant.
+  const clause = before.split(/[.!?;]|\bbut\b/u).at(-1) ?? "";
+  const grantClause =
+    clause
+      .replace(/\b(?:if|when|unless)\b[^,]*,\s*/gu, "")
+      .split(/,\s*(?=(?:you|we|i)\s+(?:can|may|will)\b)/u)
+      .at(-1) ?? "";
+  const previous = grantClause.trim().split(/\s+/u).slice(-3).join(" ");
+  return /\b(?:no|not|never|isn't|aren't|wasn't|weren't|won't|wouldn't|can't|cannot|couldn't|don't|doesn't|didn't)\b/u.test(
+    previous,
+  );
+}
+
 export function ruleTags(
   text: string,
   scene: Scene,
@@ -167,16 +195,19 @@ export function ruleTags(
     for (const phrase of phrases) {
       const needle = normalise(phrase);
       if (!needle) continue;
-      const pattern = new RegExp(`\\b${escapePattern(needle)}\\b`, "gu");
+      const start = /^[\p{L}\p{M}\p{N}_]/u.test(needle)
+        ? "(?<![\\p{L}\\p{M}\\p{N}_])"
+        : "";
+      const end = /[\p{L}\p{M}\p{N}_]$/u.test(needle)
+        ? "(?![\\p{L}\\p{M}\\p{N}_])"
+        : "";
+      const pattern = new RegExp(
+        `${start}${escapePattern(needle)}${end}`,
+        "gu",
+      );
       for (const match of value.matchAll(pattern)) {
         const index = match.index ?? 0;
-        const previous = value
-          .slice(0, index)
-          .trim()
-          .split(/\s+/u)
-          .slice(-3)
-          .join(" ");
-        if (tag === "GIVE_IN" && /\b(?:no|not|isn't|won't)\b/u.test(previous))
+        if (tag === "GIVE_IN" && isReflectedOrNegatedHint(value, index))
           continue;
         addAt(tag, index, match[0].length);
       }
