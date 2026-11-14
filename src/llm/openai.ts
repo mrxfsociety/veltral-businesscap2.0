@@ -9,6 +9,7 @@ export function createOpenAIProvider(
   model: string,
   client = new OpenAI({ apiKey, maxRetries: 0 }),
   reasoningEffort?: ServerEnv["OPENAI_REASONING_EFFORT"],
+  textVerbosity?: ServerEnv["OPENAI_TEXT_VERBOSITY"],
 ): JsonProvider {
   return {
     name: "openai",
@@ -27,6 +28,9 @@ export function createOpenAIProvider(
           ],
           text: {
             format: zodTextFormat(request.schema, "do_over"),
+            ...(textVerbosity === undefined
+              ? {}
+              : { verbosity: textVerbosity }),
           },
           max_output_tokens: request.maxOutputTokens,
         },

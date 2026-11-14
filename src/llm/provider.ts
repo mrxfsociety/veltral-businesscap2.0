@@ -108,6 +108,7 @@ export const completeJson: JsonCompleter = async <T>(
       env.OPENAI_MODEL,
       undefined,
       env.OPENAI_REASONING_EFFORT,
+      env.OPENAI_TEXT_VERBOSITY,
     );
   }
   if (env.ANTHROPIC_API_KEY && env.ANTHROPIC_MODEL) {

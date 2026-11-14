@@ -73,6 +73,7 @@ describe("official SDK JSON adapters", () => {
       text: { format: { type: "json_schema", strict: true } },
     });
     expect(body).not.toHaveProperty("reasoning");
+    expect(body.text).not.toHaveProperty("verbosity");
     expect(body.input).toEqual([
       { role: "system", content: request.system },
       { role: "user", content: request.user },
@@ -115,6 +116,43 @@ describe("official SDK JSON adapters", () => {
     ).toBe("low");
     expect(() => getEnv({ OPENAI_REASONING_EFFORT: "automatic" })).toThrow(
       "OPENAI_REASONING_EFFORT",
+    );
+  });
+
+  it("sends optional low verbosity with reasoning and strict JSON through the real SDK transport", async () => {
+    const fetcher = vi.fn<typeof fetch>(
+      async () =>
+        new Response(JSON.stringify(openaiResponse('{"accepted":true}')), {
+          headers: { "content-type": "application/json" },
+        }),
+    );
+    const client = new OpenAI({
+      apiKey: "test-only-key",
+      fetch: fetcher,
+      maxRetries: 0,
+    });
+    const env = getEnv({
+      OPENAI_REASONING_EFFORT: "none",
+      OPENAI_TEXT_VERBOSITY: "low",
+    });
+    const provider = createOpenAIProvider(
+      "test-only-key",
+      "configured-id",
+      client,
+      env.OPENAI_REASONING_EFFORT,
+      env.OPENAI_TEXT_VERBOSITY,
+    );
+    expect(await provider.completeJson(request)).toEqual({ accepted: true });
+    const body = JSON.parse(String(fetcher.mock.calls[0]?.[1]?.body));
+    expect(body).toMatchObject({
+      reasoning: { effort: "none" },
+      text: { verbosity: "low", format: { type: "json_schema", strict: true } },
+    });
+    expect(
+      getEnv({ OPENAI_TEXT_VERBOSITY: "" }).OPENAI_TEXT_VERBOSITY,
+    ).toBeUndefined();
+    expect(() => getEnv({ OPENAI_TEXT_VERBOSITY: "brief" })).toThrow(
+      "OPENAI_TEXT_VERBOSITY",
     );
   });
 

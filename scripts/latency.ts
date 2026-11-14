@@ -161,6 +161,7 @@ async function main() {
       env.OPENAI_MODEL,
       undefined,
       env.OPENAI_REASONING_EFFORT,
+      env.OPENAI_TEXT_VERBOSITY,
     );
   if (!rulesOnly && env.ANTHROPIC_API_KEY && env.ANTHROPIC_MODEL)
     providers.anthropic = createAnthropicProvider(

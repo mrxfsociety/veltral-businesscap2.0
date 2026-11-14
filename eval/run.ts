@@ -151,6 +151,7 @@ async function main(): Promise<void> {
       OPENAI_API_KEY,
       OPENAI_MODEL,
       OPENAI_REASONING_EFFORT,
+      OPENAI_TEXT_VERBOSITY,
       ANTHROPIC_API_KEY,
       ANTHROPIC_MODEL,
       LLM_PRIMARY,
@@ -164,6 +165,7 @@ async function main(): Promise<void> {
             OPENAI_MODEL,
             undefined,
             OPENAI_REASONING_EFFORT,
+            OPENAI_TEXT_VERBOSITY,
           )
         : undefined;
     const anthropic =
