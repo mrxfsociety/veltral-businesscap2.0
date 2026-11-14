@@ -2,7 +2,9 @@
 
 Do-Over is a meltdown simulator for parents of 2–7 year olds, built for a hackathon that ends at 12:00 on 15 November 2026 (Astana time). Judges use the production site without an account and read this repository.
 
-**Source of truth:** `docs/SPEC.md`. Read it fully before your first task. Task files are in `docs/build/`. The executable reference for the engine is `docs/reference/engine.mjs` with golden vectors in `docs/reference/vectors.json`.
+**v2 redesign (from 15 November, 01:00 Astana):** the source of truth for the redesign, the season pass, ownership of paths and branches is [`docs/REDESIGN.md`](docs/REDESIGN.md). Where it disagrees with this file or `docs/SPEC.md`, REDESIGN wins (its section 13 lists what it supersedes, including the track ownership and "executors never push to `main`" rules below). Live status and handoffs: [`docs/build/V2-STATUS.md`](docs/build/V2-STATUS.md).
+
+**Source of truth for the engine, server API, safety and honesty rules:** `docs/SPEC.md`. Read it fully before your first task. Task files are in `docs/build/`. The executable reference for the engine is `docs/reference/engine.mjs` with golden vectors in `docs/reference/vectors.json`.
 
 ## Who does what
 

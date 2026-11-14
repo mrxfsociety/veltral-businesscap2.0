@@ -84,13 +84,13 @@ export default function Privacy() {
         </p>
         <p>
           Clearing browser data does not delete server sessions, shared copies
-          or waitlist submissions.
+          or waitlist submissions. It does remove the season-pass cookie.
         </p>
       </section>
       <section>
         <h2>Optional voice</h2>
         <p>
-          Voice is a Pro preview feature. Recording requires your microphone
+          Voice is part of the season pass. Recording requires your microphone
           permission and a supported browser. The three-second volume
           calibration stays in your browser. A reply recording is sent through
           our server to OpenAI for transcription when transcription is
@@ -117,12 +117,25 @@ export default function Privacy() {
         </p>
       </section>
       <section>
-        <h2>Waitlist</h2>
+        <h2>Season pass and payments</h2>
         <p>
-          The server stores the email address, chosen plan and submission time
-          that you send. No payment details are requested. Waitlist entries have
-          no automatic expiry. They persist in Redis when available; in memory
-          mode they can disappear on a restart.
+          If you open the season pass, the server sets one cookie,{" "}
+          <code>doover_pro</code>. It holds only how the pass was opened (demo
+          code or test checkout), when, and when it ends after 30 days, signed
+          so it cannot be edited. It is <code>httpOnly</code>, so page scripts
+          cannot read it, and it is not used for tracking. “Return to Free” on
+          the pricing page deletes it.
+        </p>
+        <p>
+          Checkout is handled by Stripe on Stripe&apos;s own page, in test mode:
+          no real charge is possible, and no card data reaches our server. When
+          you come back, our server asks Stripe only whether that checkout was
+          completed.
+        </p>
+        <p>
+          Before the season pass existed, the pricing page offered a waitlist.
+          Those entries (email, chosen plan, time) have no automatic expiry and
+          persist in Redis when available.
         </p>
       </section>
       <ClearData />

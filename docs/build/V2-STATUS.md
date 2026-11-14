@@ -78,7 +78,7 @@ Owns: `src/app/icon.svg`, `src/app/apple-icon.*`, `src/app/opengraph-image.tsx`,
 Owns: `README.md`, `AGENTS.md`, `src/app/{scenes,playbook,replay,how-it-works,privacy,jury}/**`, `src/app/{error,loading,not-found}.tsx`, `src/components/{daily-teaser,live-demo}.tsx`, `src/lib/reminder.ts`, `e2e/**`, `docs/DEPLOY.md`.
 
 - [ ] Production check written under "Operator notes"
-- [ ] README rewritten; AGENTS.md points to `docs/REDESIGN.md`
+- [x] README rewritten; AGENTS.md points to `docs/REDESIGN.md` — done by STAGE at 03:15 (PAGES had not started); old README archived as `docs/build/V1-README.md`; `/privacy` gained the season-pass cookie and Stripe test-mode section (REDESIGN 7.5)
 - [ ] `/scenes` as shelves of `PaperStage size="thumb"`; locked scenes open the paywall
 - [ ] `/playbook`, `/playbook/shared`, `/replay`, `/how-it-works`, `/privacy`, error, loading, not-found restyled
 - [x] `/jury` (not indexed) — built by STAGE at 06:10 because PAGES had not started; footer link added
