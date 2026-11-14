@@ -81,7 +81,7 @@ Owns: `README.md`, `AGENTS.md`, `src/app/{scenes,playbook,replay,how-it-works,pr
 - [ ] README rewritten; AGENTS.md points to `docs/REDESIGN.md`
 - [ ] `/scenes` as shelves of `PaperStage size="thumb"`; locked scenes open the paywall
 - [ ] `/playbook`, `/playbook/shared`, `/replay`, `/how-it-works`, `/privacy`, error, loading, not-found restyled
-- [ ] `/jury` (not indexed)
+- [x] `/jury` (not indexed) — built by STAGE at 06:10 because PAGES had not started; footer link added
 - [ ] `src/lib/reminder.ts` (.ics) with tests, handed to MONEY
 - [ ] E2E suite updated, both settings of `NEXT_PUBLIC_PRO_PREVIEW`
 - [ ] Production walkthrough (REDESIGN 12) after 07:30

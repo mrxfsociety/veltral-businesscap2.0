@@ -76,6 +76,7 @@ export default function RootLayout({
             <Link href="/how-it-works">How it works</Link>
             <Link href="/pricing">Season pass</Link>
             <Link href="/privacy">Privacy</Link>
+            <Link href="/jury">Jury guide</Link>
           </nav>
           <p className="disclaimer">
             Do-Over is a practice tool. It is not therapy, medical advice or a
