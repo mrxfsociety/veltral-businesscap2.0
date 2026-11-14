@@ -1,1 +1,1 @@
-Track B owns this directory (except src/app/api, owned by track A).
+Track B owns browser recording, calibration, transcription requests and playback here. Server voice endpoints remain in track A's API/server directories. Recording stops at 11.8 seconds, uses complete 300 ms RMS windows and releases the microphone on cancellation. Real-device HTTPS checks and provider-backed audio validation are required before release acceptance.

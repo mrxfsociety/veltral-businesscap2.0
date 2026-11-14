@@ -1,9 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { readEvaluation } from "@/lib/evaluation";
-import { TAG_LABELS } from "@/lib/presentation";
-import { isHelpfulTag } from "@/lib/playbook";
-import type { Tag } from "@/engine/types";
+import { TAG_DEFINITIONS } from "@/engine/tags";
+import {
+  CALM_AT,
+  DELTA_MIN,
+  DELTA_MAX,
+  GIVE_IN_AROUSAL,
+  MAX_CALMING_TAGS,
+  MAX_TURNS,
+  REPEAT_FACTOR,
+  START_CONNECTION,
+} from "@/engine/transition";
 export const metadata: Metadata = {
   title: "How it works",
   description:
@@ -28,15 +36,15 @@ export default function HowItWorks() {
       </header>
       <h2>Words in. A visible effect out.</h2>
       <p>
-        The finished simulation uses rules and a model to identify moves in your
-        reply. Every model tag must include an exact quote from your words. A
-        deterministic engine applies the moves and selects the child’s response.
-        The model never decides whether you have calmed the scene.
+        Rules identify moves in your reply. When a model is configured, it can
+        propose additional tags and child dialogue. Each model tag must quote
+        your words exactly before the engine can accept it. The deterministic
+        engine controls arousal, connection, limits and the outcome. Without a
+        working model, rules and written child lines keep the scene playable.
       </p>
       <div className="notice">
-        The simulation is still being connected. Its responses currently use
-        development placeholders. Evaluation has not been completed; this is not
-        a validated parenting assessment.
+        This is a simplified teaching model, not a validated parenting
+        assessment. A score describes this simulation, not your child or you.
       </div>
       <h2>Connect, then direct</h2>
       <p>
@@ -45,27 +53,72 @@ export default function HowItWorks() {
         otherwise kind language. Use the debrief to try a different response,
         rather than treating a score as a judgment about your parenting.
       </p>
+      <div className="table-wrap">
+        <table>
+          <caption>Current engine settings</caption>
+          <tbody>
+            <tr>
+              <th scope="row">Calm threshold</th>
+              <td>
+                Arousal at or below {CALM_AT} out of 100, with the limit held
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">Scene length</th>
+              <td>Up to {MAX_TURNS} turns</td>
+            </tr>
+            <tr>
+              <th scope="row">Starting connection</th>
+              <td>{START_CONNECTION} out of 100</td>
+            </tr>
+            <tr>
+              <th scope="row">Arousal change on an ordinary turn</th>
+              <td>
+                From {DELTA_MIN} to +{DELTA_MAX}, bounded by 0 and 100
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">Calming moves counted</th>
+              <td>The {MAX_CALMING_TAGS} strongest helpful calming effects</td>
+            </tr>
+            <tr>
+              <th scope="row">Repeated helpful calming move</th>
+              <td>
+                {REPEAT_FACTOR * 100}% of its usual effect on the next turn
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Age, temperament, connection and previous replies also modify effects.
+        Giving in overrides the usual change limits, reducing arousal to at most{" "}
+        {GIVE_IN_AROUSAL} and ending the scene with a lost limit. Unsafe replies
+        stop it without a score.
+      </p>
       <h2>The moves you can see</h2>
       <div className="table-wrap">
         <table className="tag-table">
-          <caption>Reply tags in the shared contract</caption>
+          <caption>The engine’s reply tags and definitions</caption>
           <thead>
             <tr>
               <th scope="col">Move</th>
               <th scope="col">Type</th>
+              <th scope="col">Meaning</th>
             </tr>
           </thead>
           <tbody>
-            {(Object.keys(TAG_LABELS) as Tag[]).map((tag) => (
+            {TAG_DEFINITIONS.map(({ tag, label, kind, definition }) => (
               <tr key={tag}>
-                <th scope="row">{TAG_LABELS[tag]}</th>
+                <th scope="row">{label}</th>
                 <td>
-                  {isHelpfulTag(tag)
+                  {kind === "helpful"
                     ? "✓ Helpful"
                     : tag === "UNSAFE"
                       ? "Pause for safety"
                       : "× Unhelpful"}
                 </td>
+                <td>{definition}</td>
               </tr>
             ))}
           </tbody>
@@ -74,7 +127,8 @@ export default function HowItWorks() {
       <h2>Measured tagging accuracy</h2>
       <p>
         Evaluation is reported on held-out test replies, separately from the
-        examples used to tune the rules. A goal is not a result.
+        examples used to tune the rules. These are tagging results on a small,
+        purpose-built dataset, not evidence that the game improves parenting.
       </p>
       {(["rules", "merged"] as const).map((mode) => {
         const block = results[mode];
@@ -84,13 +138,13 @@ export default function HowItWorks() {
             {block ? (
               <>
                 <p>
-                  {block.date} · {block.test.n} test replies
+                  {block.date.slice(0, 10)} · {block.test.count} test replies
                   {block.provider ? ` · ${block.provider}` : ""}
                   {block.model ? ` / ${block.model}` : ""}
                 </p>
                 <p>
                   Micro F1: {block.test.microF1.toFixed(3)} · Exact set match:{" "}
-                  {(block.test.exactMatch * 100).toFixed(1)}%
+                  {(block.test.exactSetMatch * 100).toFixed(1)}%
                 </p>
                 <div className="table-wrap">
                   <table>
@@ -131,9 +185,13 @@ export default function HowItWorks() {
       })}
       <h2>What we can honestly claim</h2>
       <p>
-        The labelled examples were drafted with an AI assistant. Human review of
-        all labels has not yet been confirmed. The scoring is a simplified
-        teaching model.
+        The labelled examples were drafted with an AI assistant.{" "}
+        {results.dataset?.labelsReviewedByHuman
+          ? "The dataset records that its labels have been reviewed by a human."
+          : "The dataset does not record completed human review of all labels."}{" "}
+        {results.dataset
+          ? `The dataset contains ${results.dataset.count} replies: ${results.dataset.dev} development examples and ${results.dataset.test} held-out test examples.`
+          : "Dataset provenance is not available in this build."}
       </p>
       <p>
         We have not measured whether practice here changes what happens at home.

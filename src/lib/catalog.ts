@@ -1,26 +1,15 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import "server-only";
 import { z } from "zod";
-import scenes from "../../content/scenes.json";
-import reference from "../../docs/reference/vectors.json";
+import { SCENES } from "@/engine/scenes";
+import measuredPars from "../../content/par.json";
 import { PublicSceneSchema } from "@/shared/api";
 import type { PublicScene } from "@/engine/types";
 
 export function getPublicScenes(): PublicScene[] {
-  return z.array(PublicSceneSchema).parse(scenes);
+  return z.array(PublicSceneSchema).parse(SCENES);
 }
 export function getScenePars(): Record<string, number> {
-  try {
-    return z
-      .record(z.string(), z.number().int().positive())
-      .parse(
-        JSON.parse(
-          readFileSync(join(process.cwd(), "content/par.json"), "utf8"),
-        ),
-      );
-  } catch {
-    return reference.par;
-  }
+  return z.record(z.string(), z.number().int().positive()).parse(measuredPars);
 }
 export function getCatalog() {
   const pars = getScenePars();

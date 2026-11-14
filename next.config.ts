@@ -3,11 +3,7 @@ const config: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   outputFileTracingIncludes: {
-    "/*": [
-      "./content/**/*.json",
-      "./eval/results.json",
-      "./docs/reference/vectors.json",
-    ],
+    "/*": ["./content/**/*.json", "./eval/results.json"],
   },
 };
 export default config;

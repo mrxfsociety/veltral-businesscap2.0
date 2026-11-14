@@ -18,6 +18,11 @@ import { ProBadge, ProGate } from "@/components/pro-gate";
 import { Debrief } from "./debrief";
 import { TurnCard } from "./turn-card";
 import { UnsafePause } from "./unsafe-pause";
+import { VoiceCalibration, VoiceLevel } from "./voice-controls";
+import { createRecording, type RecordingHandle } from "@/voice/recorder";
+import { isLoud } from "@/voice/loudness";
+import { transcribe } from "@/voice/api";
+import { playChildReply } from "@/voice/playback";
 import styles from "./play.module.css";
 
 type Phase = "intro" | "playing" | "ended";
@@ -55,6 +60,19 @@ export function PlayExperience({
 }) {
   const store = useStore();
   const timer = store.settings.timer;
+  const voice = store.settings.voice && isPro();
+  const [voiceStatus, setVoiceStatus] = useState<
+    "idle" | "requesting" | "recording" | "transcribing"
+  >("idle");
+  const [voiceNotice, setVoiceNotice] = useState("");
+  const [liveLevel, setLiveLevel] = useState(-70);
+  const [calibrating, setCalibrating] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const [playbackUnavailable, setPlaybackUnavailable] = useState(false);
+  const captureController = useRef<AbortController | null>(null);
+  const playbackController = useRef<AbortController | null>(null);
+  const recordingHandle = useRef<RecordingHandle | null>(null);
+  const voiceEpoch = useRef(0);
   const [phase, setPhase] = useState<Phase>("intro");
   const [daily, setDaily] = useState<DailyResponse | null>(null);
   const [session, setSession] = useState<SessionResponse | null>(null);
@@ -102,13 +120,28 @@ export function PlayExperience({
     sceneId && (custom || !daily || daily.sceneId !== sceneId),
   );
 
+  const cancelVoice = useCallback((update = true) => {
+    voiceEpoch.current += 1;
+    captureController.current?.abort();
+    captureController.current = null;
+    recordingHandle.current?.cancel();
+    recordingHandle.current = null;
+    playbackController.current?.abort();
+    playbackController.current = null;
+    if (update && mounted.current) {
+      setVoiceStatus("idle");
+      setLiveLevel(-70);
+    }
+  }, []);
+
   useEffect(() => {
     mounted.current = true;
     return () => {
       mounted.current = false;
       deadlineRef.current = null;
+      cancelVoice(false);
     };
-  }, []);
+  }, [cancelVoice]);
 
   useEffect(() => {
     let current = true;
@@ -154,10 +187,16 @@ export function PlayExperience({
   function resetReply() {
     replyRef.current = "";
     setReply("");
+    setTranscript("");
   }
 
   async function start() {
     if (requestPending.current || (needsGate && !isPro())) return;
+    if (voice && store.settings.calmBaselineDb === null) {
+      setCalibrating(true);
+      return;
+    }
+    cancelVoice();
     requestPending.current = true;
     setWaiting(true);
     setFailure(null);
@@ -235,8 +274,14 @@ export function PlayExperience({
     if (saved) savedRuns.current.add(id);
   }
 
-  async function submit(text: string, timedOut = false, retry?: TurnRequest) {
+  async function submit(
+    text: string,
+    timedOut = false,
+    retry?: TurnRequest,
+    spoken?: { loud: boolean },
+  ) {
     if (!session || phase !== "playing" || requestPending.current) return;
+    cancelVoice();
     requestPending.current = true;
     setWaiting(true);
     setFailure(null);
@@ -247,7 +292,8 @@ export function PlayExperience({
       turnIndex: turnsRef.current.length,
       text: text.slice(0, 300),
       timedOut,
-      inputMode: "text",
+      inputMode: spoken ? "voice" : "text",
+      ...(spoken ? { loud: spoken.loud } : {}),
     };
     try {
       const response = await api.turn(request);
@@ -277,6 +323,193 @@ export function PlayExperience({
     }
   }
 
+  function switchToTyping(message = "Voice is off. You can keep typing.") {
+    cancelVoice();
+    saveSettings({ voice: false });
+    setVoiceNotice(message);
+    if (phase === "playing" && !waiting && !failure) armClock();
+  }
+
+  function toggleVoice(enabled: boolean) {
+    setVoiceNotice("");
+    if (!enabled) {
+      switchToTyping();
+      return;
+    }
+    if (!isPro()) return;
+    if (
+      !window.isSecureContext ||
+      !navigator.mediaDevices?.getUserMedia ||
+      typeof MediaRecorder === "undefined"
+    ) {
+      switchToTyping(
+        "Your browser needs HTTPS and microphone recording support for voice. Typing is ready.",
+      );
+      return;
+    }
+    if (store.settings.calmBaselineDb === null) setCalibrating(true);
+    else saveSettings({ voice: true });
+  }
+
+  async function recordReply() {
+    if (!voice || !session || waiting || failure || voiceStatus !== "idle")
+      return;
+    const baseline = store.settings.calmBaselineDb;
+    if (baseline === null) {
+      switchToTyping(
+        "Set up your voice from the scene's sound check before recording. Typing is ready.",
+      );
+      return;
+    }
+    cancelVoice();
+    const epoch = voiceEpoch.current;
+    const abort = new AbortController();
+    captureController.current = abort;
+    setVoiceStatus("requesting");
+    setVoiceNotice("");
+    setTranscript("");
+    let speechStarted = false;
+    try {
+      const handle = await createRecording({
+        signal: abort.signal,
+        speechThresholdDb: Math.max(-60, baseline - 15),
+        onLevel: (db) => {
+          if (mounted.current && epoch === voiceEpoch.current) setLiveLevel(db);
+        },
+        onSpeechStart: () => {
+          if (!mounted.current || epoch !== voiceEpoch.current) return;
+          speechStarted = true;
+          typedRef.current = true;
+          setTypingStarted(true);
+          deadlineRef.current = null;
+          setRemaining(null);
+        },
+      });
+      if (
+        !mounted.current ||
+        abort.signal.aborted ||
+        epoch !== voiceEpoch.current
+      ) {
+        handle.cancel();
+        return;
+      }
+      recordingHandle.current = handle;
+      setVoiceStatus("recording");
+      const recording = await handle.result;
+      if (
+        !mounted.current ||
+        abort.signal.aborted ||
+        epoch !== voiceEpoch.current
+      )
+        return;
+      recordingHandle.current = null;
+      if (!speechStarted) {
+        switchToTyping("We didn't hear a clear reply. You can type it below.");
+        return;
+      }
+      deadlineRef.current = null;
+      setRemaining(null);
+      setVoiceStatus("transcribing");
+      const text = await transcribe(recording.audio, abort.signal);
+      if (
+        !mounted.current ||
+        abort.signal.aborted ||
+        epoch !== voiceEpoch.current
+      )
+        return;
+      if (!text) {
+        switchToTyping("We didn't hear a clear reply. You can type it below.");
+        return;
+      }
+      replyRef.current = text;
+      setReply(text);
+      setTranscript(text);
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve()),
+      );
+      if (
+        !mounted.current ||
+        abort.signal.aborted ||
+        epoch !== voiceEpoch.current
+      )
+        return;
+      await submit(text, false, undefined, {
+        loud: isLoud(recording.peakDb, baseline),
+      });
+    } catch (cause) {
+      if (
+        !mounted.current ||
+        abort.signal.aborted ||
+        epoch !== voiceEpoch.current
+      )
+        return;
+      switchToTyping(
+        `${cause instanceof Error ? cause.message : "Microphone recording is unavailable."} You can type your reply below.`,
+      );
+    }
+  }
+
+  function stopRecording() {
+    const handle = recordingHandle.current;
+    if (handle) void handle.stop().catch(() => undefined);
+  }
+
+  useEffect(() => {
+    if (
+      !voice ||
+      !session ||
+      phase === "intro" ||
+      failure ||
+      final?.result.outcome === "stopped_unsafe" ||
+      !child?.line
+    )
+      return;
+    const abort = new AbortController();
+    playbackController.current?.abort();
+    playbackController.current = abort;
+    void playChildReply(
+      {
+        sessionId: session.sessionId,
+        turnIndex: final?.turnIndex ?? -1,
+        line: child.line,
+        arousal: childState?.arousal ?? session.state.arousal,
+      },
+      abort.signal,
+    ).then((result) => {
+      if (!abort.signal.aborted && mounted.current)
+        setPlaybackUnavailable(result === "unavailable");
+    });
+    return () => abort.abort();
+  }, [
+    voice,
+    session,
+    phase,
+    failure,
+    final?.turnIndex,
+    final?.result.outcome,
+    child?.line,
+    childState?.arousal,
+  ]);
+
+  function hearChild() {
+    if (!session || !child?.line) return;
+    playbackController.current?.abort();
+    const abort = new AbortController();
+    playbackController.current = abort;
+    void playChildReply(
+      {
+        sessionId: session.sessionId,
+        turnIndex: final?.turnIndex ?? -1,
+        line: child.line,
+        arousal: childState?.arousal ?? session.state.arousal,
+      },
+      abort.signal,
+    ).then((result) => {
+      if (!abort.signal.aborted && mounted.current)
+        setPlaybackUnavailable(result === "unavailable");
+    });
+  }
+
   useEffect(() => {
     submitRef.current = submit;
   });
@@ -297,9 +530,10 @@ export function PlayExperience({
   }, [phase, waiting, failure]);
 
   useEffect(() => {
-    if (phase === "playing" && !waiting && !failure) inputRef.current?.focus();
+    if (phase === "playing" && !waiting && !failure && voiceStatus === "idle")
+      inputRef.current?.focus();
     if (phase === "ended") endingRef.current?.focus();
-  }, [phase, waiting, failure, turns.length]);
+  }, [phase, waiting, failure, turns.length, voiceStatus]);
 
   function changeReply(value: string) {
     replyRef.current = value.slice(0, 300);
@@ -317,6 +551,8 @@ export function PlayExperience({
 
   const redo = useCallback(
     (index: number) => {
+      cancelVoice();
+      setTranscript("");
       const earlier = turnsRef.current.slice(0, index);
       turnsRef.current = earlier;
       setTurns(earlier);
@@ -332,10 +568,11 @@ export function PlayExperience({
       setRemaining(timer || null);
       setPhase("playing");
     },
-    [timer],
+    [timer, cancelVoice],
   );
 
   function restart() {
+    cancelVoice();
     deadlineRef.current = null;
     turnsRef.current = [];
     setTurns([]);
@@ -496,6 +733,37 @@ export function PlayExperience({
               timer off to go at your own pace.
             </p>
           </fieldset>
+          <div className={styles.voiceIntro}>
+            <ProGate feature="Voice mode" compact>
+              <label className={styles.voiceToggle}>
+                <input
+                  type="checkbox"
+                  checked={voice}
+                  onChange={(event) => toggleVoice(event.target.checked)}
+                />
+                Speak your replies
+              </label>
+              <p className={styles.small}>
+                Tap to talk for up to 12 seconds. Audio is sent for
+                transcription and is not saved. You can switch back to typing at
+                any time.
+              </p>
+              {store.settings.calmBaselineDb !== null && (
+                <button
+                  className="button-secondary"
+                  type="button"
+                  onClick={() => setCalibrating(true)}
+                >
+                  Recalibrate normal voice
+                </button>
+              )}
+            </ProGate>
+            {voiceNotice && (
+              <p className={styles.small} role="status">
+                {voiceNotice}
+              </p>
+            )}
+          </div>
           {isDaily && daily && store.dailyDone[daily.dayKey] && (
             <p className={styles.small}>
               You&apos;ve played today. This run is practice and won&apos;t join
@@ -517,6 +785,23 @@ export function PlayExperience({
           </p>
         </section>
         <p className={styles.disclaimer}>{DISCLAIMER}</p>
+        {calibrating && (
+          <VoiceCalibration
+            onComplete={(baseline) => {
+              saveSettings({ calmBaselineDb: baseline, voice: true });
+              setCalibrating(false);
+              setVoiceNotice("");
+            }}
+            onCancel={() => {
+              saveSettings({ voice: false });
+              setCalibrating(false);
+            }}
+            onUnavailable={(message) => {
+              setCalibrating(false);
+              switchToTyping(message);
+            }}
+          />
+        )}
       </div>
     );
 
@@ -603,6 +888,81 @@ export function PlayExperience({
         <p className={styles.childLine}>{child?.line}</p>
         {child?.action && <p className={styles.childAction}>{child.action}</p>}
       </section>
+      {voice && (
+        <section className={styles.voiceControls} aria-label="Voice reply">
+          <p className="kicker">Speak, then see your words</p>
+          {(voiceStatus === "recording" || voiceStatus === "requesting") && (
+            <VoiceLevel
+              level={liveLevel}
+              baseline={store.settings.calmBaselineDb}
+            />
+          )}
+          <div className={styles.actions}>
+            <button
+              className="button"
+              type="button"
+              disabled={
+                waiting ||
+                Boolean(failure) ||
+                voiceStatus === "requesting" ||
+                voiceStatus === "transcribing"
+              }
+              onClick={() =>
+                voiceStatus === "recording"
+                  ? stopRecording()
+                  : void recordReply()
+              }
+            >
+              {voiceStatus === "recording"
+                ? "Stop and send recording"
+                : voiceStatus === "requesting"
+                  ? "Allow microphone…"
+                  : voiceStatus === "transcribing"
+                    ? "Transcribing…"
+                    : "Tap to talk"}
+            </button>
+            <button
+              className="button-secondary"
+              type="button"
+              onClick={() => switchToTyping()}
+            >
+              Use typing
+            </button>
+            <button
+              className="button-secondary"
+              type="button"
+              disabled={voiceStatus !== "idle"}
+              onClick={hearChild}
+            >
+              Hear child again
+            </button>
+          </div>
+          <p className={styles.small} role="status">
+            {voiceStatus === "recording"
+              ? "Recording ends automatically before 12 seconds. Tap again when you've finished."
+              : voiceStatus === "transcribing"
+                ? "Your recording has stopped. Turning your words into text…"
+                : "The reply timer stops when you begin speaking."}
+          </p>
+          {playbackUnavailable && (
+            <p className={styles.small}>
+              Audio playback was blocked. The child&apos;s words are above; tap
+              “Hear child again” to retry.
+            </p>
+          )}
+        </section>
+      )}
+      {voiceNotice && (
+        <p className={styles.small} role="status">
+          {voiceNotice}
+        </p>
+      )}
+      {transcript && (
+        <div className={styles.voiceTranscript} aria-live="polite">
+          <p className="kicker">Your transcript</p>
+          <p>{transcript}</p>
+        </div>
+      )}
       <form
         className={styles.replyForm}
         onSubmit={(event) => {
@@ -619,7 +979,7 @@ export function PlayExperience({
           ref={inputRef}
           value={reply}
           maxLength={300}
-          disabled={waiting || Boolean(failure)}
+          disabled={waiting || Boolean(failure) || voiceStatus !== "idle"}
           rows={3}
           onChange={(event) => changeReply(event.target.value)}
           onKeyDown={(event) => {
@@ -667,7 +1027,7 @@ export function PlayExperience({
             <button
               className="button"
               type="submit"
-              disabled={waiting || Boolean(failure)}
+              disabled={waiting || Boolean(failure) || voiceStatus !== "idle"}
             >
               {waiting ? "Listening…" : "Send reply"}
             </button>

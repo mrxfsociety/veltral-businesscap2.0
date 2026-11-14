@@ -1,14 +1,7 @@
 import type { Tag, TagHit } from "@/engine/types";
+import { HELPFUL } from "@/engine/tags";
 
-export const HELPFUL_TAGS: readonly Tag[] = [
-  "NAME_FEELING",
-  "HOLD_LIMIT",
-  "OFFER_CHOICE",
-  "CLEAR_COMMAND",
-  "CONNECT",
-  "LABELED_PRAISE",
-  "WHEN_THEN",
-];
+export const HELPFUL_TAGS = HELPFUL;
 
 export function isHelpfulTag(tag: Tag): boolean {
   return HELPFUL_TAGS.includes(tag);

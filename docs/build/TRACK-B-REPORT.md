@@ -1,104 +1,92 @@
-# Track B delivery report
+# Track B implementation and integration report
 
-Checked on 14 November 2026. This is an implementation handoff, **not an ACCEPTED release**. No production URL, live model keys, external reviewer decision or track A branch was available.
+14 November 2026. B1–B5 source implementation is complete in `j1-integration`; **release acceptance is not complete**. This report records executed checks and separates them from prepared tests. No implementation was merged into `main`, no production deployment is claimed, and the reviewer-owned acceptance table has not been marked accepted.
 
-| Stage | Implementation | Acceptance status |
+## Delivered scope
+
+| Stage | Implemented behavior | Remaining acceptance |
 | --- | --- | --- |
-| T0 | Shared types/schemas, marked stub endpoints, Next/Tailwind/tooling, Docker/Caddy/Redis, deployment/CI | 35 contract/route tests pass; full install/verify, Docker and HTTPS checks blocked |
-| B1 | Full responsive play screen, timers, typed API, storage, evidence, errors, keyboard flow | Code and pure tests complete; Playwright/keyboard run/screenshots not executed |
-| B2 | Four endings, debrief, redo, unsafe pause, history, share and saved lines | Share/store/quote/unsafe tests pass; real browser acceptance pending |
-| J1 | Typed integration boundary and rules-only browser suite prepared | Blocked: A1/A2 absent; local presentation map is still marked `STUB(T0)` |
-| B3 | Library, replay, playbook/shared, progress, pricing, waitlist, Free/Pro UI, coach/rank display | Unit logic passes; A3/live browser/gating acceptance pending |
-| B4 | Landing with actual interactive scene, privacy clear control, measured-data parser, metadata, accessibility/layout/shot suites | Missing real A evaluation/tags/constants; browser/axe/screenshots pending |
-| B5 | Not started | SPEC explicitly requires A4/B4 accepted and deployed plus the voice go decision |
-| J2 | Delivery infrastructure, README, licence and release test instructions prepared | Not accepted: integration, production checks and human test remain |
+| B1 | Responsive intro/play, 8/20/off timer, 25-second typing window, typed API errors, evidence chips, keyboard flow, accessible meters | Real-browser layout/keyboard checks |
+| B2 | Four endings, unscored unsafe pause, debrief, do-over retaining prior turns, local history, helpful-line saving and clipboard sharing | Browser main loop and real screenshots |
+| J1 | Real A engine/APIs; authoritative tags, notes, constants and par; rules-only disclosure; actual outcome integration tests | Exact-lock verify, real-provider and deployed browser runs |
+| B3 | Scene library, custom-scene form, playbook and validated fragment sharing, progress, Free/Pro gating, coach, real rankings, pricing and waitlist | Browser gating with both build flags and provider-generated scenes |
+| B4 | Landing with actual playable demo, measured-results page, cited research with limitations, verified retention copy, local-data clearing, metadata, axe/layout/screenshot suites | Browser axe/screenshots and human review |
+| B5 | Pro voice toggle, 3-second calibration, 11.8-second capture, 300 ms RMS loudness, early speech onset, transcript display, server/browser playback and text fallback | Real microphones on phone/laptop over HTTPS and live speech models |
+| J2 | Docker/Caddy/Redis delivery, safe deploy script, CI matrix, README, MIT licence and release instructions | Accepted merge, public domain, Docker/HTTPS checks, human completion test |
 
-## Actual validation
+Voice is off by default. Work on the optional voice stage proceeded because the user explicitly requested the complete B track and A5 was available for review. This is not a claim that checkpoint 2 or production voice acceptance passed.
 
-- 71 unit tests in 11 files passed (Vitest 1.6.1, cached Zod 4 distribution bundled with Zod 3.25.76).
-- Strict TypeScript 5.9.2 with `noUncheckedIndexedAccess` passed on shared contract, server routes/stubs, browser libraries, React store hook and pure UI tests.
-- Full TSX source analysis was attempted with actual React 19.3 types; reported missing Next and CSS-module declarations only. This is not a complete framework typecheck.
-- Prettier formatting and `git diff --check` passed on the checked source.
-- `bash -n scripts/deploy.sh`, Compose/CI YAML parsing and 13 deployment-script harness cases passed.
-- `npm run verify` was actually attempted and stopped at `eslint: command not found` because the full project dependencies cannot be installed in the current terminal.
-- `git clone`/`npm view` fail with DNS ENOTFOUND. Existing package cache supports only the targeted checks above; Next.js is absent.
-- GitHub Actions runs `43591840681` and `43591840676` failed before any step ran; job log downloads return BlobNotFound. Exact cause could not be established. No billing or permission settings were changed.
-- Docker, Next build, Playwright, axe, screenshots, real model calls, production curl and the human <90-second run were **not executed**.
+## Integrated A version and independent review
 
-The cached validation runtime is scratch-only and is not checked into the repository. Standard project commands should be used after normal installation; the reported cached-run results do not certify the unresolved dependency versions.
+Integrated `a5-voice-api` through **93e27698737adaedbc43ea4cd1e8a4f10b59426b**, including its metric compatibility follow-up. `src/shared/api.ts`, `src/engine/types.ts` and the supplied evaluation labels are unchanged. The current UI reads canonical measured `count` and `exactSetMatch` fields; `merged: null` is shown as unmeasured.
 
-## Independent review fixes
+An independent review found a rules-only safety miss: “I will slap your face.” was not stopped. The integration contains a minimal body-target expansion in the two unsafe patterns, with unsafe and safe-control regressions. The original A branch was not overwritten. This small A-owned correction is explicitly included as a cross-track integration fix; no tag/score contract changed.
 
-Contract review found and fixed raw reply normalization, empty-score turning point `-1` and missing ownership READMEs. Client review found and fixed blocked local deletion reporting, bounded requests, ambiguous retry warnings, long-text overflow, misleading timer copy, hidden live-demo countdowns and inaccurate daily-ranking copy.
+Independently checked both before and after the fix:
 
-## Needs from track A
+- All 37 golden vectors match.
+- 2,000 seeded random sequences, totaling 6,276 complete transition comparisons and score comparisons, match the executable reference.
+- All 137 evaluation replies preserve their metrics and gates; labels were not changed.
+- Review covered transition/score/merge, sessions/do-over, custom scenes, coach, daily standings, storage fallback and provider/voice boundaries. No other confirmed blocking code defect was found; this does not certify unrun live-provider behavior.
 
-1. Replace the seven marked T0 server files with A2/A3 implementations; replace pending `par/eval/eval:model` scripts.
-2. Preserve the shared API shapes after T0 acceptance. The pre-acceptance review allows arbitrary raw reply text in the request; the server trims/collapses/truncates to 300 and the response remains capped at 300.
-3. Provide engine tag/label/definition/constant exports and `noteText`; replace `src/lib/presentation.ts` with imports in J1. Keep client imports free of network/server dependencies.
-4. Provide actual `content/par.json` and `eval/results.json`. The B adapter expects `{rules?:{date,provider?,model?,test:{n,microF1,exactMatch,perTag:{TAG:{precision,recall,f1,support}}}},merged?:same}`. This is a provisional display adapter, not a new frozen API contract; adapt it to A's actual measured output at integration. Missing/invalid results currently display “not available”, never a target or estimate.
-5. Verify actual privacy retention/provider behaviour and update the temporary development-preview copy and banner. Remove the banner only once the real simulation is wired and checked.
-6. Complete the real rules-only and keyed integration runs, daily ranking boundaries, rate limits and fallback checks.
+B review also corrected local deletion reporting, bounded requests, hidden-demo timers, long-text overflow, ambiguous retries, late microphone grants and a voice timer race. Speech onset now uses the first voiced analyser frame; only complete 300 ms windows determine the raised-voice flag. Cleanup covers unsafe outcomes, retry, redo, reset, typing fallback and unmount.
 
-At the last GitHub inspection, no branch or PR implementing track A was available to review. The supplied engine reference and labelled data have not been altered.
+## Actual validation on the integrated source
 
-## Dependencies and deviations
-
-- The source kit was recovered from the user's existing local `Downloads/do-over-kit` because remote materialization could not download in the restricted terminal. Original specification/content/eval files were preserved.
-- The initially empty GitHub repository was bootstrapped with the kit's ownership rules on `main`; implementation work is confined to stage branches. No implementation was merged into main.
-- Continued B implementation on a stacked branch while T0 acceptance was blocked, as the handoff plan permits continuing during review. This does not bypass the acceptance gates.
-- The initial dependency resolver workflow is limited to `t0-foundation`; it creates the lockfile once a runner can start. `package-lock.json` remains absent; accepting T0 before resolving it would be incorrect.
-- Native `crypto.randomUUID` replaces an external ID generator. `@axe-core/playwright` is the required automated accessibility checker.
-- No new authentication, analytics, payment processing or remote messaging was added.
-
-## Claims on the landing page
-
-| Claim | Source or basis |
+| Check | Observed result |
 | --- | --- |
-| 48% of parents vs 26% of other adults report overwhelming stress most days | SPEC §17.1, U.S. Surgeon General advisory; 2023 data, published 2024; linked on page |
-| Meta-analysis of 77 evaluations found larger effects in programs including practice with the parent's own child | SPEC §17.2, Kaminski et al. 2008; linked and immediately qualified as not measuring Do-Over |
-| No measured transfer to home | Explicit current limitation, repeated on page |
-| Planned $9.99/month, $59.99/year; no payments | SPEC §10 product hypothesis and actual absence of payment code |
-| Today's scene/title/par | `/api/daily`; marked development preview while endpoint is a T0 stub |
-| Accuracy | Read from validated `eval/results.json` only; currently unavailable |
+| `npm run lint` | PASS, zero errors and zero warnings |
+| Scoped strict framework typecheck | PASS for B pages/components/lib/voice/E2E with real installed Next/React types |
+| `npm test -- src/engine src/lib src/shared src/components src/voice --exclude src/shared/http-contract.test.ts` | PASS, **263 tests / 19 files**, including **23 voice tests** |
+| `node --import tsx eval/run.ts` | PASS, 137 replies; all five evaluation gates pass; actual output regenerated |
+| Rules test metrics | 63 replies; micro-F1 0.985915; exact-set 0.968254; unhelpful precision 1.000000 |
+| Evaluation isolation | Exact byte comparison to supplied labels and source scan PASS; no complete evaluation reply of 4+ characters appears in `src` |
+| Playwright discovery | PASS; suites are loadable, not claimed executed |
+| Deployment shell checks | `bash -n`, YAML parsing and 13 deployment-script harness cases PASS |
+| Formatting and whitespace | Prettier and `git diff --check` PASS for changed B source |
+| Stub/debug scan | No `STUB(T0)`, TODO/FIXME, `console.log`, `@ts-ignore` or explicit `: any` in source/test/script/eval directories |
 
-## Finishing acceptance
+The local verification runtime is scratch-only, with actual cached Next 16.3.4, React 19.2.6, TypeScript 5.9.3 and Vitest 1.6.1. The repository lockfile targets the versions supplied by A, including Next 16.4.6 and TypeScript 6.0.3. The cached checks **do not certify an exact-lockfile installation**. No SDK or Redis module was mocked to make a build pass.
 
-1. Restore a usable dependency installation/CI runner, resolve and commit the lockfile, then run full `npm run verify`.
-2. Have the designated reviewer accept T0; integrate A2, run J1 and replace all local placeholder assumptions.
-3. Integrate A3/A4, run B3/B4 acceptance including both Pro flag values and actual screenshot/axe checks.
-4. Apply the explicit B5 checkpoint decision; no voice button is exposed prematurely.
-5. Human deploys accepted main through `scripts/deploy.sh`; run `E2E_BASE_URL`, real health-commit checks and the <90-second human test. Only then mark J2 accepted.
+## Failed or unavailable checks
 
+- `npm run verify` was run and did not pass: typechecking cannot resolve `openai`, `@anthropic-ai/sdk` and `ioredis`; the older available Vitest also produces incompatible mock-type diagnostics in A tests. B's scoped framework typecheck passes.
+- Actual Next production compilation was attempted and stopped at unresolved official SDK/Redis imports. npm installation is blocked by registry DNS failure in this terminal.
+- The HTTP-contract/server/LLM suites are not included in the successful local subset because they require those missing dependencies. A's own 315-test verify and 319-test Redis results are attributed to its separate report, not counted as our integrated result.
+- Chrome launch was attempted and failed with SIGABRT/EPERM. Playwright flows, axe scans, screenshots and microphone UX were therefore not executed. No fabricated screenshots were added.
+- GitHub Actions jobs on A and B branches failed before any step started; browser/container jobs were skipped. A's report identifies an account billing restriction. No passing remote CI or independently verified billing diagnosis is asserted here.
+- The isolation CLI assumes `origin/t0-foundation`, unavailable in the local API-materialized git history. Equivalent byte comparison against the supplied kit plus the same source-collision condition passed.
+- Provider keys/model IDs, live transcription/TTS, production domain/VPS access, Docker runtime and the human under-90-second completion exercise were not available or not performed.
 
-## Executor handoff (AGENTS format)
+## Files and delivery
+
+B owns the page/component/browser/voice sources, E2E suites, deployment files and README. A implementation was imported without replacing B pages. `src/lib/presentation.ts` uses engine exports, the catalogue uses real engine scenes/par, and the T0 development banner and endpoint placeholders are removed. `package-lock.json` comes from A; the temporary lockfile-bootstrap workflow is removed. CI runs exact-lock verify, container smoke and Free/Pro browser jobs when runners are available.
+
+The source kit, reference vectors and original labels remain intact. No `.env`, provider secret, build output or `node_modules` is committed. No authentication, payment processing or analytics was added.
+
+## Remaining handoff
+
+1. Restore a usable exact-lock dependency installation or Actions runner, then run full `npm run verify` and browser suites with both preview flags.
+2. Configure provider secrets and model IDs securely, run the measured-model/bake-off/latency checks and two real custom scenes. Do not replace absent model metrics with rules metrics.
+3. Perform phone/laptop HTTPS microphone and playback checks, axe/layout checks and real screenshots.
+4. Have the designated reviewer accept the staged work and merge it. A person deploys accepted `main`, verifies `/api/health` against its commit, and records the real human completion exercise. The production URL and submission checklist remain pending.
+
+## Executor handoff
 
 ```text
-STAGE: T0 Foundation          BRANCH: t0-foundation          LAST COMMIT: 092765672dba778e0a394ac2f9bd9e3c91b753cc
-SUMMARY: Shared schemas and engine types, small marked API placeholders, real health endpoint.
-         Next scaffold and standalone Docker/Caddy/Redis delivery.
-         Independent contract review fixes applied before acceptance/freeze.
+STAGE: B1–B5 plus J1 integration and J2 preparation
+BRANCH: j1-integration
+LAST COMMIT: fd0dcd08dc00449506f37f94be6d88c480c88b30 (implementation checkpoint; this report follows)
+SUMMARY: Complete text and optional voice interface with persistence, retention and Free/Pro flows.
+         Real A engine/API/metrics integrated, with a reviewed unsafe-rule correction.
+         Deployment and browser checks prepared; no production acceptance invented.
 ACCEPTANCE:
-  - Schema/route unit checks — PASS — 35 tests in the cached verification runtime.
-  - Full verify/install — BLOCKED — dependencies unavailable; initial CI jobs fail before steps.
-  - Docker, live curl, HTTPS health commit — NOT RUN.
-VERIFY: FAIL/BLOCKED at eslint: command not found; not accepted.
-FILES: src/shared, src/engine/types.ts, src/server, src/app/api, tooling, delivery.
-DEVIATIONS: Bootstrap upload used GitHub API; dependency lock still unresolved.
-NEEDS FROM THE OTHER TRACK: designated reviewer acceptance; A2/A3 replacements after T0.
-KNOWN GAPS: dependency lock, full framework/CI/container checks, human deploy.
-
-STAGE: B1–B4 cumulative implementation          BRANCH: b4-landing-trust          LAST COMMIT: 512a454b0a53cfcf2c18a802e249edb01180d461
-SUMMARY: Full text play/debrief/do-over interface and browser persistence.
-         Retention, Free/Pro, sharing, pricing and privacy pages.
-         Live landing demo and honest accuracy states; browser acceptance suites prepared.
-ACCEPTANCE:
-  - Available unit suite — PASS — 71 tests / 11 files.
-  - Scoped strict TypeScript — PASS — contract, routes, client libraries and pure helpers.
-  - Browser/axe/screenshots/real keys/production — NOT RUN, blocked by dependencies and missing A.
-VERIFY: FAIL/BLOCKED at missing ESLint; not accepted.
-FILES: src/app (except api), src/components, src/lib, e2e, README, delivery docs.
-DEVIATIONS: Stacked implementation continued while foundation review/install was blocked.
-NEEDS FROM THE OTHER TRACK: real engine/API, tag/note exports, evaluation output and privacy verification.
-KNOWN GAPS: J1 integration and B4 measured engine display; B5 explicit go gate; J2 production acceptance.
+  - Engine/browser/voice unit subset — PASS — 263 tests in 19 files.
+  - Lint, scoped framework typing and rules evaluation — PASS.
+  - Exact-lock verify, browser/device and production acceptance — BLOCKED / NOT RUN as detailed above.
+VERIFY: FAIL/BLOCKED at unavailable dependency types; not accepted.
+FILES: src/app (B pages), src/components, src/lib, src/voice, e2e, delivery, README; imported A source.
+DEVIATIONS: Stacked integration while acceptance is pending; optional B5 implemented under full-B user scope; minimal documented A safety correction.
+NEEDS FROM THE OTHER TRACK: real provider/model checks and shared review of the integration safety fix.
+KNOWN GAPS: exact-lock integrated verify, browser/axe/screenshots, real devices/providers, Docker/HTTPS and human release acceptance.
 ```

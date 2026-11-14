@@ -8,9 +8,17 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 export default function Privacy() {
   const providers = [
-    process.env.OPENAI_API_KEY ? "OpenAI" : null,
-    process.env.ANTHROPIC_API_KEY ? "Anthropic" : null,
+    process.env.OPENAI_API_KEY && process.env.OPENAI_MODEL ? "OpenAI" : null,
+    process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_MODEL
+      ? "Anthropic"
+      : null,
   ].filter(Boolean);
+  const transcriptionConfigured = Boolean(
+    process.env.OPENAI_API_KEY && process.env.OPENAI_TRANSCRIBE_MODEL,
+  );
+  const speechConfigured = Boolean(
+    process.env.OPENAI_API_KEY && process.env.OPENAI_TTS_MODEL,
+  );
   return (
     <article className="prose">
       <header className="page-heading">
@@ -33,21 +41,28 @@ export default function Privacy() {
         </p>
         <p>
           {providers.length
-            ? `Configured AI providers: ${providers.join(" and ")}. When model features are available, text is sent to these providers for tagging, child dialogue and optional scene generation or coaching. Their own data policies also apply.`
-            : "No AI provider is configured in this deployment. Model-generated scenes and coaching are unavailable; the server can use its rules-only path when the engine is connected."}
+            ? `Configured text AI providers: ${providers.join(" and ")}. Replies and recent scene context may be sent to the primary provider and, if needed, the fallback provider for tagging, child dialogue and optional scene generation or coaching. Their own data policies also apply. Configuration does not guarantee availability.`
+            : "No text AI provider and model are configured in this deployment. Rules and written child lines run the simulation. Generated custom scenes and model coaching are unavailable; written coaching tips can still be shown."}
         </p>
         <p>
-          Session data is designed to expire after six hours; custom scenes
-          after 24 hours. Daily standings use a random session ID and a score,
-          rather than your name or reply text, and expire after 14 days. The
-          deployment’s actual storage status is available at{" "}
+          Server sessions include replies and expire six hours after creation;
+          further replies do not extend that window. Generated custom scenes
+          expire after 24 hours. Daily standings store a random session ID and a
+          score, with a 14-day expiry window. They do not store your name or
+          reply text. The deployment’s current storage mode is available at{" "}
           <a href="/api/health">the health endpoint</a>.
         </p>
         <p>
-          The current development preview keeps sessions and waitlist
-          submissions in process memory. It does not yet implement daily
-          standings or generated custom scenes. These details must be updated at
-          integration when the production server replaces the foundation.
+          The server uses Redis when available and falls back to process memory.
+          Memory data can disappear on a restart and is not shared between web
+          processes. Expired entries are unavailable immediately; memory cleanup
+          runs every minute.
+        </p>
+        <p>
+          Abuse prevention uses a hash of your IP address, with limits lasting
+          one hour or 24 hours for custom scenes. Raw IP addresses are not kept
+          in that store. Aggregate usage counters have a 30-day expiry window
+          and contain counts, not reply text.
         </p>
       </section>
       <section>
@@ -64,13 +79,46 @@ export default function Privacy() {
           receives the link can read the lines, and copies cannot be recalled.
         </p>
         <p>
-          The waitlist stores the email address and chosen plan that you submit.
-          No payment details are requested. There is no automatic expiry for
-          waitlist entries.
+          Clearing browser data does not delete server sessions, shared copies
+          or waitlist submissions.
+        </p>
+      </section>
+      <section>
+        <h2>Optional voice</h2>
+        <p>
+          Voice is a Pro preview feature. Recording requires your microphone
+          permission and a supported browser. The three-second volume
+          calibration stays in your browser. A reply recording is sent through
+          our server to OpenAI for transcription when transcription is
+          configured. This app does not save the recording on the server; its
+          transcript is handled like a typed reply. OpenAI’s data policies also
+          apply.
         </p>
         <p>
-          Voice recording is not enabled in this build. The app does not request
-          microphone access or record audio.
+          {transcriptionConfigured
+            ? "OpenAI transcription is configured here; availability depends on the provider."
+            : "OpenAI transcription is not configured here. Use text replies."}{" "}
+          {speechConfigured
+            ? "OpenAI speech playback is configured here."
+            : "OpenAI speech playback is not configured here; browser playback may be available."}
+        </p>
+        <p>
+          For spoken child replies, the server sends the child’s line to OpenAI
+          when speech playback is configured. Generated audio is cached in
+          process memory. Entries expire after up to one hour or when the
+          session expires, whichever comes first. Later playback requests clear
+          expired entries; a server restart clears the cache. Browser playback
+          uses your browser’s speech service, whose data handling depends on the
+          browser and voice.
+        </p>
+      </section>
+      <section>
+        <h2>Waitlist</h2>
+        <p>
+          The server stores the email address, chosen plan and submission time
+          that you send. No payment details are requested. Waitlist entries have
+          no automatic expiry. They persist in Redis when available; in memory
+          mode they can disappear on a restart.
         </p>
       </section>
       <ClearData />

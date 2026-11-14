@@ -581,3 +581,95 @@
     transition: none;
   }
 }
+
+.voiceIntro {
+  margin: 22px 0;
+  border-top: 1px solid #d8ddcc;
+  padding-top: 20px;
+  display: grid;
+  gap: 10px;
+}
+.voiceToggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-weight: 600;
+}
+.voiceToggle input {
+  width: 19px;
+  height: 19px;
+  accent-color: #4c623d;
+}
+.voiceControls {
+  border: 1px solid #c4cdb7;
+  border-radius: 14px;
+  padding: 18px;
+  background: #f0f3e9;
+  margin: 0 0 16px;
+}
+.voiceControls > p {
+  margin-top: 0;
+}
+.voiceLevel {
+  margin: 16px 0;
+}
+.voiceLevelLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.8rem;
+  margin-bottom: 9px;
+}
+.voiceLevelTrack {
+  height: 10px;
+  position: relative;
+  border-radius: 6px;
+  background: #dce3d1;
+}
+.voiceLevelTrack > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #526e3e;
+}
+.voiceLevelTrack > span[data-loud="true"] {
+  background: #9b4e34;
+}
+.voiceLevelTrack > i {
+  position: absolute;
+  top: -4px;
+  width: 2px;
+  height: 18px;
+  background: #293d21;
+}
+.calibrationDialog {
+  width: min(90vw, 480px);
+  color: #252c22;
+  background: #fffdf8;
+  border: 1px solid #d4dac8;
+  border-radius: 20px;
+  padding: 30px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.calibrationDialog::backdrop {
+  background: #1c251fb3;
+}
+.calibrationDialog h2 {
+  line-height: 1.2;
+}
+.calibrationDialog p {
+  line-height: 1.65;
+}
+.voiceTranscript {
+  border-left: 3px solid #657b50;
+  padding: 12px 16px;
+  background: #eef2e5;
+  overflow-wrap: anywhere;
+  margin: 15px 0;
+}
+.voiceTranscript p {
+  margin: 5px 0;
+}

@@ -81,8 +81,12 @@ export function Pricing() {
             <li>Replay your own meltdown</li>
             <li>Coach suggestions checked by the engine</li>
             <li>Unlimited saved playbook lines</li>
-            <li>Voice mode, planned</li>
+            <li>Voice mode in Pro preview</li>
           </ul>
+          <p className="muted small">
+            Voice needs microphone permission, a supported browser and a
+            configured transcription provider. Text replies remain available.
+          </p>
           <a className="button" href="#waitlist">
             Join the Pro waitlist
           </a>
@@ -129,7 +133,7 @@ export function Pricing() {
               <tr>
                 <th scope="row">Voice mode</th>
                 <td>No</td>
-                <td>Planned</td>
+                <td>Preview; requires browser and speech-provider support</td>
               </tr>
               <tr>
                 <th scope="row">Playbook</th>

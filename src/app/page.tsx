@@ -120,15 +120,27 @@ export default function Home() {
               <em>under the hood.</em>
             </h2>
             <p>
-              Our design puts the outcome in a deterministic engine. AI proposes
-              tags and child dialogue; it does not decide whether your child
-              calms down.
+              A deterministic engine controls the simulated child’s state and
+              outcome. Rules identify moves in your reply. A configured model
+              can propose extra tags and dialogue; the engine checks the tags
+              and applies the effects.
             </p>
             <p>
               {results.rules
-                ? `Rules-only test micro F1: ${results.rules.test.microF1.toFixed(3)}, measured on ${results.rules.test.n} test replies.`
-                : "Measured tagging accuracy is not available yet. The foundation endpoints are still development placeholders pending engine integration."}
+                ? `Rules-only test micro F1: ${results.rules.test.microF1.toFixed(3)}, measured on ${results.rules.test.count} held-out test replies.`
+                : "Measured tagging accuracy is not available in this build."}
             </p>
+            {!results.merged && (
+              <p className="small muted">
+                Combined rules-and-model accuracy has not been measured.
+              </p>
+            )}
+            {!results.dataset?.labelsReviewedByHuman && (
+              <p className="small muted">
+                The dataset does not record completed human review of all
+                labels.
+              </p>
+            )}
             <Link href="/how-it-works">See the method and its limits ↗</Link>
           </div>
           <div className="card">
