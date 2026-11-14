@@ -89,7 +89,9 @@ test("real rules distinguish empathy, threats and giving in", async ({
     "Held the limit",
     "Offered a choice",
   ]) {
-    await expect(page.getByText(label, { exact: true })).toBeVisible();
+    await expect(
+      page.locator("[data-helpful]").filter({ hasText: label }),
+    ).toBeVisible();
   }
   await expect(page.getByTestId("reply-0").locator("u").first()).toBeVisible();
 
@@ -128,7 +130,9 @@ test("real rules distinguish empathy, threats and giving in", async ({
     expect(threatened.result.delta).toBeGreaterThanOrEqual(0);
     if (index === 0) {
       expect(threatened.result.delta).toBeGreaterThan(0);
-      await expect(page.getByText("Threat", { exact: true })).toBeVisible();
+      await expect(
+        page.locator("[data-helpful]").filter({ hasText: "Threat" }),
+      ).toBeVisible();
     }
     if (threatened.result.outcome !== "ongoing") break;
   }
@@ -143,7 +147,9 @@ test("real rules distinguish empathy, threats and giving in", async ({
   expect(gaveIn.hits.map((hit) => hit.tag)).toContain("GIVE_IN");
   expect(gaveIn.result.outcome).toBe("calm_gave_in");
   expect(gaveIn.result.after.limitIntact).toBe(false);
-  await expect(page.getByText("Gave in", { exact: true })).toBeVisible();
+  await expect(
+    page.locator("[data-helpful]").filter({ hasText: "Gave in" }),
+  ).toBeVisible();
   await expect(
     page.getByRole("heading", {
       name: "Quiet, but the limit is gone.",
