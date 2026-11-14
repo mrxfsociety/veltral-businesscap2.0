@@ -20,7 +20,7 @@ const helpfulReplies = [
 
 async function startDaily(page: Page): Promise<SessionResponse> {
   await page.goto("/play");
-  await page.getByLabel("Timer off", { exact: true }).check();
+  await page.getByLabel("No timer", { exact: true }).check();
   const started = page.waitForResponse(
     (response) =>
       response.url().endsWith("/api/session") &&
@@ -90,7 +90,7 @@ test("real rules distinguish empathy, threats and giving in", async ({
     "Offered a choice",
   ]) {
     await expect(
-      page.locator("[data-helpful]").filter({ hasText: label }),
+      page.locator('[data-kind="helpful"]').filter({ hasText: label }).first(),
     ).toBeVisible();
   }
   await expect(page.getByTestId("reply-0").locator("u").first()).toBeVisible();
@@ -131,7 +131,10 @@ test("real rules distinguish empathy, threats and giving in", async ({
     if (index === 0) {
       expect(threatened.result.delta).toBeGreaterThan(0);
       await expect(
-        page.locator("[data-helpful]").filter({ hasText: "Threat" }),
+        page
+          .locator('[data-kind="unhelpful"]')
+          .filter({ hasText: "Threat" })
+          .first(),
       ).toBeVisible();
     }
     if (threatened.result.outcome !== "ongoing") break;
@@ -148,7 +151,10 @@ test("real rules distinguish empathy, threats and giving in", async ({
   expect(gaveIn.result.outcome).toBe("calm_gave_in");
   expect(gaveIn.result.after.limitIntact).toBe(false);
   await expect(
-    page.locator("[data-helpful]").filter({ hasText: "Gave in" }),
+    page
+      .locator('[data-kind="unhelpful"]')
+      .filter({ hasText: "Gave in" })
+      .first(),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", {

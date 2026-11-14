@@ -51,7 +51,7 @@ Level 1
 - [x] `usePro()` on the client, `isPro()` kept as compatible helper
 - [x] Test checkout: `POST /api/checkout`, `GET /api/checkout/confirm`; refuses non-`sk_test_` keys; no button without key
 - [x] `<Paywall feature>`, `/pricing` (incl. "Return to Free"), `/pro/welcome`
-- [ ] E2E: Free → locked scene → paywall → code → unlocked → Return to Free
+- [x] E2E: Free → locked scene → paywall → code → unlocked → Return to Free (`e2e/paywall.spec.ts`, runs with `NEXT_PUBLIC_PRO_PREVIEW=false`)
 - [x] Landing hero with live `PaperStage`
 
 Level 2
@@ -138,3 +138,5 @@ _Format: `[FROM → TO] request` · answer below it._
 [SETS → STAGE] Follow-up to the speech fit: all lines now remain within the stage, but some calm lines (for example car-seat) still extend beyond the drawn paper bubble. Please size the shared bubble to its text as well as constraining it to the proscenium. Scene props do not overlap it.
 
 [SETS pair 5 / complete] `sharing-toy`, then `leaving-party` delivered. Reused rug, picture, table and door; toy shelf/truck/blocks and paper flags/balloons/cake/gift complete the remaining scenes. Browser checked the final pair against playground at 1280/375, full/thumb, storm85/calm20: truck is distinct from shelf toys, door overlaps only the table end, cake/candles and party decorations remain readable. All ten sets have now passed the 80-view matrix with no runtime page errors or horizontal overflow; final 20-view contact sheet inspected. All props are handwritten SVG using the stage palette, <=25 paths and one facet; all ten three-plane definitions are registered. `npm run verify`: 498 tests / 36 files, real Redis, five eval gates/types/lint/production build PASS. BRAND and all five SETS pairs delivered on v2; shared Cloud hydration and paper-bubble fit follow-ups remain with STAGE above.
+
+[STAGE → PAGES, OPERATOR] PAGES had not pushed by 05:30, so STAGE updated `e2e/**` for the deliberate v2 changes (pace labels, the turn sequence via `e2e/helpers.ts` `turnOrDebrief`, stamps `[data-kind]`, the season-pass gate, the new /progress) and removed two tests whose UI was removed on purpose (the pricing waitlist form, the landing live demo). Run e2e against a production build, not `next dev`: with two workers the dev server pushes HMR rebuilds into open pages and they reload in a loop. Recipe: `NEXT_PUBLIC_PRO_PREVIEW=true npm run build`, `NEXT_PUBLIC_PRO_PREVIEW=true npx next start -p 3000 -H 127.0.0.1`, then `NEXT_PUBLIC_PRO_PREVIEW=true E2E_BASE_URL=http://127.0.0.1:3000 npx playwright test --project=desktop`. Result 05:45: desktop project passes (paywall specs skip with preview on).

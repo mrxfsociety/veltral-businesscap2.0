@@ -1,3 +1,4 @@
+import { turnOrDebrief } from "./helpers";
 import { expect, test } from "@playwright/test";
 
 const proPreview = process.env.NEXT_PUBLIC_PRO_PREVIEW !== "false";
@@ -6,8 +7,9 @@ test("library keeps today's scene free and gates other scenes", async ({
   page,
 }) => {
   await page.goto("/scenes");
-  await expect(page.getByText("Today", { exact: true })).toBeVisible();
-  const cards = page.getByRole("article");
+  const main = page.getByRole("main");
+  await expect(main.getByText("Today", { exact: true })).toBeVisible();
+  const cards = main.getByRole("article");
   await expect(cards).toHaveCount(12);
   const dailyCard = cards.filter({
     has: page.getByText("Today", { exact: true }),
@@ -23,7 +25,7 @@ test("library keeps today's scene free and gates other scenes", async ({
     await expect(page).toHaveURL(/\/play\/.+/);
   } else {
     await expect(
-      otherCard.getByRole("link", { name: "Explore Pro" }),
+      otherCard.getByRole("button", { name: "See the season pass" }),
     ).toBeVisible();
     await expect(
       otherCard.getByRole("link", { name: /^Practise / }),
@@ -167,10 +169,11 @@ test("empty progress invites practice without invented sessions", async ({
 }) => {
   await page.goto("/progress");
   await expect(
-    page.getByRole("heading", { name: "Start with one moment." }),
+    page.getByRole("heading", { name: "Three things to rehearse." }),
   ).toBeVisible();
+  await expect(page.getByText("Sample data. Not your results.")).toHaveCount(0);
   await expect(
-    page.getByRole("link", { name: "Play today's meltdown" }),
+    page.getByRole("main").getByRole("link", { name: "Play today's meltdown" }),
   ).toBeVisible();
 });
 
@@ -178,7 +181,9 @@ test("replay obeys the build's Pro gate", async ({ page }) => {
   await page.goto("/replay");
   if (!proPreview) {
     await expect(page.getByLabel("What happened today?")).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "Explore Pro" })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "See the season pass" }),
+    ).toBeVisible();
     return;
   }
   await expect(page.getByText("Pro preview", { exact: true })).toBeVisible();
@@ -208,44 +213,15 @@ test("replay obeys the build's Pro gate", async ({ page }) => {
   }
 });
 
-test("waitlist submission is confirmed by the actual API", async ({ page }) => {
-  await page.goto("/pricing");
-  await expect(
-    page.getByText("Payments are not connected yet.", { exact: false }),
-  ).toBeVisible();
-  await page
-    .getByLabel("Email address")
-    .fill(`doover-e2e-${Date.now()}@example.com`);
-  await page.getByLabel("Which plan interests you?").selectOption("yearly");
-  const resultPromise = page.waitForResponse(
-    (response) =>
-      response.url().endsWith("/api/waitlist") &&
-      response.request().method() === "POST",
-  );
-  await page
-    .getByRole("button", { name: "Join waitlist", exact: true })
-    .click();
-  const response = await resultPromise;
-  expect(response.ok()).toBe(true);
-  await expect(page.getByRole("status")).toHaveText(
-    "You're on the waitlist. Thank you for your interest.",
-  );
-  await page.reload();
-  await expect(page.getByRole("status")).toHaveText(
-    "You're on the waitlist. Thank you for your interest.",
-  );
-});
-
 test("coach access follows the preview flag after an escalating turn", async ({
   page,
 }) => {
   await page.goto("/play");
-  await page.getByLabel("Timer off", { exact: true }).check();
+  await page.getByLabel("No timer", { exact: true }).check();
   await page.getByRole("button", { name: "Start", exact: true }).click();
   for (let n = 0; n < 8; n++) {
-    if (await page.getByTestId("debrief").isVisible()) break;
+    if ((await turnOrDebrief(page)) === "debrief") break;
     const input = page.getByLabel("What do you say?");
-    await expect(input).toBeEditable();
     await input.fill(
       n === 0
         ? "If you don't stand up, no TV tonight. Stop screaming!"
@@ -262,7 +238,7 @@ test("coach access follows the preview flag after an escalating turn", async ({
   else {
     await expect(
       page.getByRole("complementary", {
-        name: "Coach suggestions requires Pro",
+        name: "Coach suggestions needs the season pass",
       }),
     ).toBeVisible();
     await expect(
@@ -295,9 +271,8 @@ test("the sixth saved line is gated only outside Pro preview", async ({
   await page.goto("/play");
   await page.getByRole("button", { name: "Start", exact: true }).click();
   for (let n = 0; n < 8; n++) {
-    if (await page.getByTestId("debrief").isVisible()) break;
+    if ((await turnOrDebrief(page)) === "debrief") break;
     const input = page.getByLabel("What do you say?");
-    await expect(input).toBeEditable();
     await input.fill(
       n % 2 === 0
         ? "You're sad. The answer is still no. Do you want to hold my hand or walk with me?"
@@ -313,12 +288,12 @@ test("the sixth saved line is gated only outside Pro preview", async ({
     .click();
   if (proPreview)
     await expect(
-      page.getByRole("button", { name: "Saved to playbook ✓" }),
+      page.getByRole("button", { name: "Saved to your lines" }),
     ).toBeVisible();
   else
     await expect(
       page.getByRole("complementary", {
-        name: "Unlimited playbook requires Pro",
+        name: "Unlimited playbook needs the season pass",
       }),
     ).toBeVisible();
   expect(
@@ -333,12 +308,11 @@ test("a blocked playbook save explains the failure and preserves existing data",
   page,
 }) => {
   await page.goto("/play");
-  await page.getByLabel("Timer off", { exact: true }).check();
+  await page.getByLabel("No timer", { exact: true }).check();
   await page.getByRole("button", { name: "Start", exact: true }).click();
   for (let n = 0; n < 8; n++) {
-    if (await page.getByTestId("debrief").isVisible()) break;
+    if ((await turnOrDebrief(page)) === "debrief") break;
     const input = page.getByLabel("What do you say?");
-    await expect(input).toBeEditable();
     await input.fill(
       n % 2 === 0
         ? "You're sad. The answer is still no. Do you want to hold my hand or walk with me?"
@@ -366,7 +340,7 @@ test("a blocked playbook save explains the failure and preserves existing data",
       .filter({ hasText: "browser storage is full or unavailable" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Saved to playbook ✓" }),
+    page.getByRole("button", { name: "Saved to your lines" }),
   ).toHaveCount(0);
   expect(await page.evaluate(() => localStorage.getItem("doover:v1"))).toBe(
     persisted,

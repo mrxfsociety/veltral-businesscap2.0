@@ -1,7 +1,8 @@
+import { turnOrDebrief } from "./helpers";
 import { expect, test, type Page } from "@playwright/test";
 import type { SessionResponse, TurnRequest } from "../src/shared/api";
 
-async function begin(page: Page, timer = "Timer off") {
+async function begin(page: Page, timer = "No timer") {
   await page.goto("/play");
   await page.getByLabel(timer, { exact: true }).check();
   await page.getByRole("button", { name: "Start", exact: true }).click();
@@ -16,9 +17,8 @@ const practiceReplies = [
 
 async function finish(page: Page) {
   for (let i = 0; i < 8; i += 1) {
-    if (await page.getByTestId("debrief").isVisible()) return;
+    if ((await turnOrDebrief(page)) === "debrief") return;
     const reply = page.getByLabel("What do you say?");
-    await expect(reply).toBeEditable();
     await reply.fill(practiceReplies[i % practiceReplies.length]);
     await Promise.all([
       page.waitForResponse(
@@ -108,7 +108,7 @@ test("eight-second countdown sends one empty timed-out turn", async ({
     if (request.url().endsWith("/api/turn") && request.method() === "POST")
       requests.push(request.postDataJSON() as TurnRequest);
   });
-  await begin(page, "8 seconds");
+  await begin(page, "Real time · 8 s");
   await expect.poll(() => requests.length, { timeout: 12000 }).toBe(1);
   expect(requests[0]).toMatchObject({
     turnIndex: 0,
@@ -138,7 +138,7 @@ test("typing replaces the initial countdown with the 25-second window", async ({
     if (request.url().endsWith("/api/turn") && request.method() === "POST")
       requests.push(request.postDataJSON() as TurnRequest);
   });
-  await begin(page, "8 seconds");
+  await begin(page, "Real time · 8 s");
   await page.getByLabel("What do you say?").fill("I'm here.");
   await page.waitForTimeout(9000);
   expect(requests).toHaveLength(0);

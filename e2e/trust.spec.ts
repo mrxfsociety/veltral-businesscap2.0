@@ -61,20 +61,3 @@ for (const width of [375, 768, 1280])
       ).toBe(true);
     }
   });
-
-test("closing the live demo stops its countdown", async ({ page }) => {
-  let requests = 0;
-  page.on("request", (request) => {
-    if (request.url().endsWith("/api/turn")) requests += 1;
-  });
-  await page.goto("/");
-  await page.getByText("Try the actual scene here", { exact: false }).click();
-  await page.getByLabel("8 seconds", { exact: true }).check();
-  await page.getByRole("button", { name: "Start", exact: true }).click();
-  await expect(
-    page.getByRole("textbox", { name: "What do you say?" }),
-  ).toBeEditable();
-  await page.locator(".live-demo>summary").click();
-  await page.waitForTimeout(9000);
-  expect(requests).toBe(0);
-});

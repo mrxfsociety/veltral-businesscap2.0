@@ -18,7 +18,7 @@ test("capture real application screens", async ({ page }, testInfo) => {
       path: `${base}/intro-${width}-${testInfo.project.name}.png`,
       fullPage: true,
     });
-    await page.getByLabel("Timer off", { exact: true }).check();
+    await page.getByLabel("No timer", { exact: true }).check();
     await page.getByRole("button", { name: "Start", exact: true }).click();
     for (let n = 0; n < 8; n++) {
       if (await page.getByTestId("debrief").count()) break;

@@ -31,7 +31,13 @@ export function ProGate({
   compact?: boolean;
 }) {
   const { pro, loading } = usePro();
-  if (pro) return <div className="stack">{children}</div>;
+  if (pro)
+    return (
+      <div className="stack">
+        <ProBadge />
+        {children}
+      </div>
+    );
   if (loading)
     return (
       <p className="muted small" aria-busy="true">

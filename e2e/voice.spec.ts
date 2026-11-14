@@ -24,7 +24,7 @@ test("denied microphone permission falls back to a real text turn", async ({
   });
 
   await page.goto("/play");
-  await page.getByLabel("Timer off", { exact: true }).check();
+  await page.getByLabel("No timer", { exact: true }).check();
   const toggle = page.getByRole("checkbox", {
     name: "Speak your replies",
     exact: true,
@@ -79,13 +79,13 @@ test("Free mode gates voice without hiding the daily Start button", async ({
   );
   await page.goto("/play");
   const gate = page.getByRole("complementary", {
-    name: "Voice mode requires Pro",
+    name: "Voice mode needs the season pass",
     exact: true,
   });
   await expect(gate).toBeVisible();
   await expect(
-    gate.getByRole("link", { name: "Explore Pro", exact: true }),
-  ).toHaveAttribute("href", "/pricing");
+    gate.getByRole("button", { name: "See the season pass" }),
+  ).toBeVisible();
   await expect(
     page.getByRole("checkbox", { name: "Speak your replies", exact: true }),
   ).toHaveCount(0);
