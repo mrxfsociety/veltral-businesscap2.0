@@ -249,6 +249,9 @@
   pointer-events: none;
   z-index: 2;
 }
+.bubble[data-long] {
+  max-width: min(76%, 600px);
+}
 .bubbleSheet {
   position: relative;
   padding: 0.7em 1.15em 0.8em;
@@ -295,8 +298,8 @@
   text-align: center;
   color: var(--ink);
   font-size: clamp(
-    17px,
-    calc(var(--line-size) * 0.16cqi),
+    15px,
+    calc(var(--line-size) * 0.125cqi),
     calc(var(--line-size) * 1px)
   );
   text-wrap: balance;

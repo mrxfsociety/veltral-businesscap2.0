@@ -81,7 +81,11 @@ export function SpeechBubble({
     // the reveal restarts only when the line changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [line, total, cue]);
-  const size = 28 + 28 * Math.min(1, Math.max(0, (arousal - 25) / 60));
+  // 28px calm to 56px in a storm, then fitted to the line's length so long
+  // lines stay inside the stage.
+  const storm = 28 + 28 * Math.min(1, Math.max(0, (arousal - 25) / 60));
+  const fit = Math.min(1, Math.max(0.5, 1 - (letters.length - 22) / 90));
+  const size = storm * fit;
   const left =
     lean === "right"
       ? Math.min(74, Math.max(60, anchorX / 4 + 12))
@@ -92,6 +96,7 @@ export function SpeechBubble({
       className={styles.bubble}
       data-compact={compact || undefined}
       data-storm={arousal >= 55 || undefined}
+      data-long={letters.length > 44 || undefined}
       aria-hidden="true"
       style={
         {
@@ -114,12 +119,8 @@ export function SpeechBubble({
           {letters.map((letter, i) => (
             <span
               key={i}
-              className={reduce ? undefined : styles.letter}
-              style={
-                reduce
-                  ? undefined
-                  : { animationDelay: `${Math.round(i * step)}ms` }
-              }
+              className={styles.letter}
+              style={{ animationDelay: `${Math.round(i * step)}ms` }}
             >
               {letter}
             </span>

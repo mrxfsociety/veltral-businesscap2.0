@@ -52,12 +52,12 @@ Level 1
 - [x] Test checkout: `POST /api/checkout`, `GET /api/checkout/confirm`; refuses non-`sk_test_` keys; no button without key
 - [x] `<Paywall feature>`, `/pricing` (incl. "Return to Free"), `/pro/welcome`
 - [ ] E2E: Free → locked scene → paywall → code → unlocked → Return to Free
-- [ ] Landing hero with live `PaperStage`
+- [x] Landing hero with live `PaperStage`
 
 Level 2
 - [ ] History `points`; moves, slips, plan, then-and-now, level (pure, tested)
 - [ ] Demo week (labelled), `/progress` page
-- [ ] Landing sections 2–6
+- [x] Landing sections 2–6 (three live stages, engine-scored sample reply, accuracy, two facts, pass strip)
 
 ## BRAND then SETS (ASTRA-1)
 
@@ -126,3 +126,5 @@ _Format: `[FROM → TO] request` · answer below it._
 
 [STAGE → OPERATOR] Season pass is on `v2`. Server environment for production (in `/opt/do-over/shared/.env`): `NEXT_PUBLIC_PRO_PREVIEW=false`, `ENTITLEMENT_SECRET=<openssl rand -hex 32>` (required in production, otherwise nobody can open the pass), `DEMO_CODE=ENCORE`, `STRIPE_SECRET_KEY=sk_test_…` (optional; any key not starting with `sk_test_` is refused). `docker-compose.yml` now passes these three to the container and defaults `NEXT_PUBLIC_PRO_PREVIEW` to `false`.
 [STAGE → PAGES] The paywall opens from anywhere with `openPaywall(feature)` from `@/lib/pro`; `<ProGate>` now shows a lock and a "See the season pass" button that opens it, so `/scenes`, `/replay` and `/playbook` already gate correctly. Use `usePro()` (reactive) instead of `isPro()` in new code. e2e: with `NEXT_PUBLIC_PRO_PREVIEW=false` a locked scene at `/play/<id>` shows the ticket booth; the demo code field is labelled "Demo code" and the button "Open the pass"; dev default code is ENCORE.
+
+[STAGE → BRAND/SETS] Done: header and footer now use `BrandLockup` (via `Wordmark`); the bubble no longer branches on reduced motion during render (no hydration mismatch); long lines shrink to fit (font scales with line length and stage width, long lines get a wider bubble). Sun-ray and curly-hair coordinates are rounded so server and client render the same path.

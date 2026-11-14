@@ -95,7 +95,7 @@ export function SkyPlane({
               return (
                 <path
                   key={i}
-                  d={`M${sunX + r1 * Math.cos(a - s)} ${sunUpY + r1 * Math.sin(a - s)} L${sunX + r2 * Math.cos(a)} ${sunUpY + r2 * Math.sin(a)} L${sunX + r1 * Math.cos(a + s)} ${sunUpY + r1 * Math.sin(a + s)} Z`}
+                  d={`M${(sunX + r1 * Math.cos(a - s)).toFixed(2)} ${(sunUpY + r1 * Math.sin(a - s)).toFixed(2)} L${(sunX + r2 * Math.cos(a)).toFixed(2)} ${(sunUpY + r2 * Math.sin(a)).toFixed(2)} L${(sunX + r1 * Math.cos(a + s)).toFixed(2)} ${(sunUpY + r1 * Math.sin(a + s)).toFixed(2)} Z`}
                   fill={P.mustard}
                 />
               );

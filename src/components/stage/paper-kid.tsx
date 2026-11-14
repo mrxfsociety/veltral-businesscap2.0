@@ -249,8 +249,8 @@ function hairBack(style: HairStyle, r: number, color: string, away: boolean) {
         return (
           <circle
             key={i}
-            cx={(r + 1.5) * Math.cos(a)}
-            cy={(r + 1.5) * Math.sin(a) - 1}
+            cx={Number(((r + 1.5) * Math.cos(a)).toFixed(2))}
+            cy={Number(((r + 1.5) * Math.sin(a) - 1).toFixed(2))}
             r={r * 0.36}
             fill={color}
           />

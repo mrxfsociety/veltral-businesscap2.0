@@ -5,6 +5,7 @@ import type {
   ElementType,
   ReactNode,
 } from "react";
+import { BrandLockup } from "../../../public/brand/lockup";
 import { Icon, type IconName } from "./icons";
 
 /*
@@ -192,13 +193,19 @@ export function Kicker({
   );
 }
 
-/** Text wordmark: "Do-Over" with the hyphen cut as a strip of tomato tape. */
-export function Wordmark({ className }: { className?: string }) {
+/** The Do-Over lockup (authored by BRAND in public/brand). Decorative: wrap it in a labelled link. */
+export function Wordmark({
+  className,
+  height = 30,
+}: {
+  className?: string;
+  height?: number;
+}) {
   return (
-    <span className={cx("wordmark", className)}>
-      Do
-      <span className="brand-tape" aria-hidden="true" />
-      <span className="sr-only">-</span>Over
-    </span>
+    <BrandLockup
+      decorative
+      height={height}
+      className={cx("wordmark", className)}
+    />
   );
 }
