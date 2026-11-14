@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "e2e": "playwright test",
-    "shots": "playwright test e2e/screenshots.spec.ts",
+    "shots": "CAPTURE_SHOTS=true playwright test e2e/screenshots.spec.ts",
     "par": "node scripts/pending-stage.mjs A1",
     "eval": "node scripts/pending-stage.mjs A1",
     "eval:model": "node scripts/pending-stage.mjs A2",

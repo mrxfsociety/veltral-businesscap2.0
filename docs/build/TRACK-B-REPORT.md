@@ -40,7 +40,7 @@ Contract review found and fixed raw reply normalization, empty-score turning poi
 5. Verify actual privacy retention/provider behaviour and update the temporary development-preview copy and banner. Remove the banner only once the real simulation is wired and checked.
 6. Complete the real rules-only and keyed integration runs, daily ranking boundaries, rate limits and fallback checks.
 
-At the last GitHub inspection, only `main` and the foundation branch were available. There was no track A implementation to review. The supplied engine reference and labelled data have not been altered.
+At the last GitHub inspection, no branch or PR implementing track A was available to review. The supplied engine reference and labelled data have not been altered.
 
 ## Dependencies and deviations
 
@@ -69,3 +69,36 @@ At the last GitHub inspection, only `main` and the foundation branch were availa
 3. Integrate A3/A4, run B3/B4 acceptance including both Pro flag values and actual screenshot/axe checks.
 4. Apply the explicit B5 checkpoint decision; no voice button is exposed prematurely.
 5. Human deploys accepted main through `scripts/deploy.sh`; run `E2E_BASE_URL`, real health-commit checks and the <90-second human test. Only then mark J2 accepted.
+
+
+## Executor handoff (AGENTS format)
+
+```text
+STAGE: T0 Foundation          BRANCH: t0-foundation          LAST COMMIT: 092765672dba778e0a394ac2f9bd9e3c91b753cc
+SUMMARY: Shared schemas and engine types, small marked API placeholders, real health endpoint.
+         Next scaffold and standalone Docker/Caddy/Redis delivery.
+         Independent contract review fixes applied before acceptance/freeze.
+ACCEPTANCE:
+  - Schema/route unit checks — PASS — 35 tests in the cached verification runtime.
+  - Full verify/install — BLOCKED — dependencies unavailable; initial CI jobs fail before steps.
+  - Docker, live curl, HTTPS health commit — NOT RUN.
+VERIFY: FAIL/BLOCKED at eslint: command not found; not accepted.
+FILES: src/shared, src/engine/types.ts, src/server, src/app/api, tooling, delivery.
+DEVIATIONS: Bootstrap upload used GitHub API; dependency lock still unresolved.
+NEEDS FROM THE OTHER TRACK: designated reviewer acceptance; A2/A3 replacements after T0.
+KNOWN GAPS: dependency lock, full framework/CI/container checks, human deploy.
+
+STAGE: B1–B4 cumulative implementation          BRANCH: b4-landing-trust          LAST COMMIT: 512a454b0a53cfcf2c18a802e249edb01180d461
+SUMMARY: Full text play/debrief/do-over interface and browser persistence.
+         Retention, Free/Pro, sharing, pricing and privacy pages.
+         Live landing demo and honest accuracy states; browser acceptance suites prepared.
+ACCEPTANCE:
+  - Available unit suite — PASS — 71 tests / 11 files.
+  - Scoped strict TypeScript — PASS — contract, routes, client libraries and pure helpers.
+  - Browser/axe/screenshots/real keys/production — NOT RUN, blocked by dependencies and missing A.
+VERIFY: FAIL/BLOCKED at missing ESLint; not accepted.
+FILES: src/app (except api), src/components, src/lib, e2e, README, delivery docs.
+DEVIATIONS: Stacked implementation continued while foundation review/install was blocked.
+NEEDS FROM THE OTHER TRACK: real engine/API, tag/note exports, evaluation output and privacy verification.
+KNOWN GAPS: J1 integration and B4 measured engine display; B5 explicit go gate; J2 production acceptance.
+```

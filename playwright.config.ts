@@ -2,6 +2,8 @@ import { defineConfig, devices } from "@playwright/test";
 const external = process.env.E2E_BASE_URL;
 export default defineConfig({
   testDir: "./e2e",
+  testIgnore:
+    process.env.CAPTURE_SHOTS === "true" ? [] : ["**/screenshots.spec.ts"],
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
