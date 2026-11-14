@@ -26,6 +26,7 @@ import {
 } from "./outdoor";
 import { CandyRack, Cart, CheckoutBelt, Shelves } from "./shop";
 import type { PropProps } from "./types";
+import { Book, Cup, WallShelf } from "./rehearsal";
 
 /*
  * The prop registry. A set refers to props by these ids. To add a prop:
@@ -57,6 +58,9 @@ export const PROPS = {
   door: Door,
   plant: Plant,
   bookshelf: Bookshelf,
+  book: Book,
+  cup: Cup,
+  wallShelf: WallShelf,
 } satisfies Record<string, ComponentType<PropProps>>;
 
 export type PropId = keyof typeof PROPS;

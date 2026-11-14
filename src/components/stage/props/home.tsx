@@ -10,13 +10,19 @@ export function Window({ tint }: PropProps) {
     <g>
       <path d="M-36 -4 L-36 -86 L36 -86 L36 -4 Z" fill={P.sheet} />
       <path d="M-30 -10 L-30 -80 L30 -80 L30 -10 Z" fill={pane} />
+      {tint === "storm" && (
+        <path
+          d="M22 -74 C9 -77 6 -62 17 -58 C13 -63 15 -70 22 -74 Z"
+          fill={P.sheet}
+        />
+      )}
       <path
         d="M-1.5 -80 H1.5 V-10 H-1.5 Z M-30 -46.5 H30 V-43.5 H-30 Z"
         fill={P.sheet}
       />
       <path d="M-42 -4 L42 -4 L44 0 L-44 0 Z" fill={P.kraft} />
-      <path d="M-40 -88 L-24 -88 C-26 -60 -30 -30 -40 -8 Z" fill={P.blush} />
-      <path d="M40 -88 L24 -88 C26 -60 30 -30 40 -8 Z" fill={P.blushDark} />
+      <path d="M-40 -88 L-24 -88 C-26 -60 -30 -30 -40 -8 Z" fill={P.kraft} />
+      <path d="M40 -88 L24 -88 C26 -60 30 -30 40 -8 Z" fill={P.kraftDark} />
     </g>
   );
 }
@@ -128,13 +134,13 @@ export function Fridge({ tint }: PropProps) {
     <g>
       <path d="M-26 0 L-26 -124 L26 -124 L26 0 Z" fill={body} />
       <path d="M18 0 L18 -124 L26 -124 L26 0 Z" fill={P.creamDark} />
-      <path d="M-26 -78 L26 -78 L26 -75 L-26 -75 Z" fill={P.ruleDark} />
+      <path d="M-26 -78 L26 -78 L26 -75 L-26 -75 Z" fill={P.ink2} />
       <path
         d="M10 -116 L13 -116 L13 -92 L10 -92 Z M10 -68 L13 -68 L13 -44 L10 -44 Z"
         fill={P.ink2}
       />
       <path d="M-16 -110 L-6 -112 L-5 -100 L-15 -98 Z" fill={P.tomato} />
-      <path d="M-8 -60 L2 -61 L1.5 -50 L-8.5 -49 Z" fill={P.mustard} />
+      <path d="M-8 -60 L2 -61 L1.5 -50 L-8.5 -49 Z" fill={P.tomato} />
     </g>
   );
 }
@@ -145,7 +151,7 @@ export function Bed({ tint }: PropProps) {
     <g>
       <path
         d="M-74 0 L-74 -78 C-74 -86 -58 -86 -58 -78 L-58 0 Z"
-        fill={P.kraftDark}
+        fill={P.kraft}
       />
       <path d="M-58 -24 L72 -24 L72 -40 L-58 -40 Z" fill={P.sheet} />
       <path d="M-26 -24 L74 -24 L76 -44 L-24 -46 Z" fill={blanket} />
