@@ -27,12 +27,13 @@
   "dependencies": {
     "@anthropic-ai/sdk": "latest",
     "ioredis": "latest",
+    "motion": "^14.14.0",
     "next": "16.4.6",
     "openai": "latest",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "zod": "4.6.7",
-    "server-only": "0.0.1"
+    "server-only": "0.0.1",
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@axe-core/playwright": "latest",
@@ -45,8 +46,8 @@
     "eslint-config-next": "16.4.6",
     "prettier": "latest",
     "tailwindcss": "latest",
+    "tsx": "4.23.15",
     "typescript": "6.0.3",
-    "vitest": "latest",
-    "tsx": "4.23.15"
+    "vitest": "latest"
   }
 }
