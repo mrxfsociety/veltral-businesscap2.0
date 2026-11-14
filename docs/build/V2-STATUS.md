@@ -70,7 +70,7 @@ Owns: `src/app/icon.svg`, `src/app/apple-icon.*`, `src/app/opengraph-image.tsx`,
 - [x] Sets: bedtime, wrong-cup
 - [x] Sets: tablet-off, dinner-refusal
 - [x] Sets: car-seat, getting-dressed
-- [ ] Sets: hit-brother, bath-time
+- [x] Sets: hit-brother, bath-time
 - [ ] Sets: sharing-toy, leaving-party
 
 ## PAGES (ASTRA-2)
@@ -133,3 +133,6 @@ _Format: `[FROM → TO] request` · answer below it._
 [SETS → STAGE] Reduced-motion browser recheck: the per-letter speech mismatch is fixed. A remaining `Cloud` mismatch in `weather.tsx` has SSR `translateY(-190px)` versus client `transform: none` (initial=false). Please keep its initial markup identical too. All speech lines now fit and no page overflows.
 
 [SETS pair 3] `car-seat`, then `getting-dressed` delivered. Empty harness sits inside the car rear opening; garage/house recede behind the driveway, hedge crosses the apron. Bedroom reuses the bed/window, with visible dresser, folded outfit and foreground shoes. Reused home/house/car props now have explicit single facets and bounded palettes (including bookshelf prepared for the next pair). Browser checked 1280/375, full/thumb, storm85/calm20 against playground: harness, drawers and clothes remain legible, child/sign clear, no horizontal overflow. `npm run verify`: 494 tests / 36 files, real Redis, five eval gates/types/lint/production build PASS.
+
+[SETS pair 4] `hit-brother`, then `bath-time` delivered. Board and scattered pieces sit on a reused near rug, bookshelf/sofa establish the room; tiled wall/towel, bubbly bath, duck and reused bath mat establish three bathroom planes. All new props use <=25 paths, 2–4 papers and one facet. Browser checked both against playground at 1280/375, full/thumb, storm85/calm20; no horizontal overflow or page errors. Spot checks of the first four scenes after reused-prop facet repairs show no composition regression. `npm run verify`: 496 tests / 36 files, real Redis, five eval gates/types/lint/production build PASS.
+[SETS → STAGE] Follow-up to the speech fit: all lines now remain within the stage, but some calm lines (for example car-seat) still extend beyond the drawn paper bubble. Please size the shared bubble to its text as well as constraining it to the proscenium. Scene props do not overlap it.

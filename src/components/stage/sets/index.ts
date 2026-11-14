@@ -1,3 +1,5 @@
+import { hitBrother } from "./hit-brother";
+import { bathTime } from "./bath-time";
 import { carSeat } from "./car-seat";
 import { gettingDressed } from "./getting-dressed";
 import type { SceneSet } from "../types";
@@ -22,6 +24,8 @@ export const SETS: Record<string, SceneSet> = {
   "dinner-refusal": dinnerRefusal,
   "car-seat": carSeat,
   "getting-dressed": gettingDressed,
+  "hit-brother": hitBrother,
+  "bath-time": bathTime,
 };
 
 export function setFor(scene: { id: string; place: string }): SceneSet {
