@@ -4,39 +4,30 @@ import { useReducedMotion } from "motion/react";
 import { useEffect, useMemo, type CSSProperties } from "react";
 import styles from "./stage.module.css";
 
-/** A cut-paper outline: spiky in a storm, round when calm. viewBox 0 0 100 60. */
+/**
+ * A cut-paper outline, viewBox 0 0 100 60: spiky in a storm, round when calm.
+ * The base is a superellipse that fills its box (an ellipse would cut the
+ * corners off the text); spikes point outward from it.
+ */
 export function bubblePath(arousal: number) {
   const cx = 50;
   const cy = 30;
-  const rx = 48;
-  const ry = 27;
-  if (arousal >= 55) {
-    const spikes = arousal >= 80 ? 18 : 14;
-    const amp = arousal >= 80 ? 0.2 : 0.12;
-    const points = Array.from({ length: spikes * 2 }, (_, i) => {
-      const a = (Math.PI * 2 * i) / (spikes * 2);
-      const k = i % 2 ? 1 - amp : 1;
-      return `${(cx + rx * k * Math.cos(a)).toFixed(2)} ${(cy + ry * k * Math.sin(a)).toFixed(2)}`;
-    });
-    return `M${points.join(" L")} Z`;
-  }
-  const wobble = arousal >= 40 ? 0.05 : 0.02;
-  const n = 10;
-  const points = Array.from({ length: n }, (_, i) => {
-    const a = (Math.PI * 2 * i) / n;
-    const k = 1 - (i % 2 ? wobble : 0);
-    return [cx + rx * k * Math.cos(a), cy + ry * k * Math.sin(a)] as const;
+  const a = 50;
+  const b = 30;
+  const exponent = 0.42; // 2/n for a superellipse with n ≈ 4.8: nearly square corners
+  const spiky = arousal >= 55;
+  const count = spiky ? (arousal >= 80 ? 36 : 28) : 48;
+  const amp = spiky ? (arousal >= 80 ? 0.2 : 0.13) : arousal >= 40 ? 0.025 : 0;
+  const points = Array.from({ length: count }, (_, i) => {
+    const t = (Math.PI * 2 * i) / count;
+    const c = Math.cos(t);
+    const s = Math.sin(t);
+    const k = spiky ? (i % 2 ? 1 : 1 + amp) : 1 + (i % 2 ? -amp : amp);
+    const x = cx + a * k * Math.sign(c) * Math.abs(c) ** exponent;
+    const y = cy + b * k * Math.sign(s) * Math.abs(s) ** exponent;
+    return `${x.toFixed(2)} ${y.toFixed(2)}`;
   });
-  let d = `M${points[0][0].toFixed(2)} ${points[0][1].toFixed(2)}`;
-  for (let i = 0; i < n; i++) {
-    const [x1, y1] = points[i];
-    const [x2, y2] = points[(i + 1) % n];
-    const mx = (x1 + x2) / 2;
-    const my = (y1 + y2) / 2;
-    const pull = 1.12;
-    d += ` Q${(cx + (mx - cx) * pull).toFixed(2)} ${(cy + (my - cy) * pull).toFixed(2)} ${x2.toFixed(2)} ${y2.toFixed(2)}`;
-  }
-  return `${d} Z`;
+  return `M${points.join(" L")} Z`;
 }
 
 /**

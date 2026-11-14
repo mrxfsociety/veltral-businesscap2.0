@@ -214,7 +214,7 @@ function Cloud({
   const y = slot.y + drop;
   return (
     <motion.g
-      initial={still || reduce ? false : { y: -190 }}
+      initial={still ? false : { y: -190 }}
       animate={{ y: 0 }}
       exit={reduce ? { opacity: 0 } : { y: -210 }}
       transition={
