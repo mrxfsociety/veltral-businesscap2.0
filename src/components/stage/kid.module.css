@@ -1,0 +1,212 @@
+/* Continuous motion of the paper child. Joints spring in paper-kid.tsx;
+   everything here runs on inner groups so the two never fight. */
+
+.kid .shake,
+.kid .legLeft,
+.kid .legRight,
+.kid .armLeft,
+.kid .armRight,
+.kid .breath,
+.tearFly,
+.tearSlide {
+  transform-box: fill-box;
+}
+
+.kid .shake {
+  transform-origin: 50% 100%;
+  animation: shake 0.22s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+}
+.kid[data-pose="loose"] .shake,
+.kid[data-pose="open"] .shake,
+.kid[data-pose="holding"] .shake {
+  animation: none;
+}
+
+.kid .legLeft,
+.kid .legRight,
+.kid .armLeft,
+.kid .armRight {
+  transform-origin: 50% 0%;
+}
+.kid .breath {
+  transform-origin: 50% 100%;
+}
+
+/* ≥ 85: on the floor, kicking */
+.kid[data-pose="floor"] .legLeft {
+  animation: kickLeft 0.42s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+}
+.kid[data-pose="floor"] .legRight {
+  animation: kickRight 0.42s cubic-bezier(0.45, 0, 0.55, 1) infinite
+    alternate-reverse;
+}
+.kid[data-pose="floor"] .armLeft {
+  animation: flailLeft 0.5s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+}
+.kid[data-pose="floor"] .armRight {
+  animation: flailRight 0.56s cubic-bezier(0.45, 0, 0.55, 1) infinite
+    alternate-reverse;
+}
+
+/* 70–84: stomping, arms up */
+.kid[data-pose="stomp"] .legRight {
+  animation: stomp 0.5s cubic-bezier(0.6, 0, 0.4, 1) infinite alternate;
+}
+.kid[data-pose="stomp"] .armLeft {
+  animation: flailLeft 0.5s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+}
+.kid[data-pose="stomp"] .armRight {
+  animation: flailRight 0.5s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+}
+
+/* 55–69: arms crossed, a huffing breath */
+.kid[data-pose="crossed"] .breath {
+  animation: breath 1.6s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+}
+
+/* 40–54: head down, shoulders shaking */
+.kid[data-pose="headDown"] .breath {
+  animation: sob 0.3s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+}
+
+/* ≤ 39: slow breath */
+.kid[data-pose="loose"] .breath,
+.kid[data-pose="open"] .breath {
+  animation: breath 3.4s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+}
+.kid[data-pose="holding"] .armRight {
+  animation: wave 1.8s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+}
+
+.tearFly {
+  transform-origin: 50% 50%;
+  animation: tearLeft var(--tear-s, 1s) cubic-bezier(0.3, 0, 0.7, 1) infinite;
+  opacity: 0;
+}
+.tearFly[data-side="right"] {
+  animation-name: tearRight;
+}
+.tearSlide {
+  animation: tearSlide 2.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  opacity: 0;
+}
+
+@keyframes shake {
+  from {
+    transform: translateX(calc(var(--shake, 0px) * -1));
+  }
+  to {
+    transform: translateX(var(--shake, 0px));
+  }
+}
+@keyframes kickLeft {
+  from {
+    transform: rotate(-4deg);
+  }
+  to {
+    transform: rotate(-30deg);
+  }
+}
+@keyframes kickRight {
+  from {
+    transform: rotate(4deg);
+  }
+  to {
+    transform: rotate(30deg);
+  }
+}
+@keyframes flailLeft {
+  from {
+    transform: rotate(-12deg);
+  }
+  to {
+    transform: rotate(14deg);
+  }
+}
+@keyframes flailRight {
+  from {
+    transform: rotate(12deg);
+  }
+  to {
+    transform: rotate(-14deg);
+  }
+}
+@keyframes stomp {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-7px);
+  }
+}
+@keyframes breath {
+  from {
+    transform: scaleY(1);
+  }
+  to {
+    transform: scaleY(1.025);
+  }
+}
+@keyframes sob {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(1.1px);
+  }
+}
+@keyframes wave {
+  from {
+    transform: rotate(-5deg);
+  }
+  to {
+    transform: rotate(7deg);
+  }
+}
+@keyframes tearLeft {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-17px, 13px);
+    opacity: 0;
+  }
+}
+@keyframes tearRight {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(17px, 13px);
+    opacity: 0;
+  }
+}
+@keyframes tearSlide {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(9px);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kid *,
+  .tearFly,
+  .tearSlide {
+    animation: none !important;
+  }
+}
