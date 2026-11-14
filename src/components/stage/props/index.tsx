@@ -1,4 +1,5 @@
-import { BoardGame } from "./playroom";
+import { Bunting, Balloons, Cake, Gift } from "./party";
+import { BoardGame, ToyShelf, DumpTruck, Blocks } from "./playroom";
 import { TiledPanel, TowelHook, Bathtub, RubberDuck } from "./bath";
 import type { ComponentType } from "react";
 import {
@@ -78,6 +79,13 @@ export const PROPS = {
   towelHook: TowelHook,
   bathtub: Bathtub,
   rubberDuck: RubberDuck,
+  toyShelf: ToyShelf,
+  dumpTruck: DumpTruck,
+  blocks: Blocks,
+  bunting: Bunting,
+  balloons: Balloons,
+  cake: Cake,
+  gift: Gift,
 } satisfies Record<string, ComponentType<PropProps>>;
 
 export type PropId = keyof typeof PROPS;

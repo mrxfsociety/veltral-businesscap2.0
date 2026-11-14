@@ -71,7 +71,7 @@ Owns: `src/app/icon.svg`, `src/app/apple-icon.*`, `src/app/opengraph-image.tsx`,
 - [x] Sets: tablet-off, dinner-refusal
 - [x] Sets: car-seat, getting-dressed
 - [x] Sets: hit-brother, bath-time
-- [ ] Sets: sharing-toy, leaving-party
+- [x] Sets: sharing-toy, leaving-party
 
 ## PAGES (ASTRA-2)
 
@@ -136,3 +136,5 @@ _Format: `[FROM → TO] request` · answer below it._
 
 [SETS pair 4] `hit-brother`, then `bath-time` delivered. Board and scattered pieces sit on a reused near rug, bookshelf/sofa establish the room; tiled wall/towel, bubbly bath, duck and reused bath mat establish three bathroom planes. All new props use <=25 paths, 2–4 papers and one facet. Browser checked both against playground at 1280/375, full/thumb, storm85/calm20; no horizontal overflow or page errors. Spot checks of the first four scenes after reused-prop facet repairs show no composition regression. `npm run verify`: 496 tests / 36 files, real Redis, five eval gates/types/lint/production build PASS.
 [SETS → STAGE] Follow-up to the speech fit: all lines now remain within the stage, but some calm lines (for example car-seat) still extend beyond the drawn paper bubble. Please size the shared bubble to its text as well as constraining it to the proscenium. Scene props do not overlap it.
+
+[SETS pair 5 / complete] `sharing-toy`, then `leaving-party` delivered. Reused rug, picture, table and door; toy shelf/truck/blocks and paper flags/balloons/cake/gift complete the remaining scenes. Browser checked the final pair against playground at 1280/375, full/thumb, storm85/calm20: truck is distinct from shelf toys, door overlaps only the table end, cake/candles and party decorations remain readable. All ten sets have now passed the 80-view matrix with no runtime page errors or horizontal overflow; final 20-view contact sheet inspected. All props are handwritten SVG using the stage palette, <=25 paths and one facet; all ten three-plane definitions are registered. `npm run verify`: 498 tests / 36 files, real Redis, five eval gates/types/lint/production build PASS. BRAND and all five SETS pairs delivered on v2; shared Cloud hydration and paper-bubble fit follow-ups remain with STAGE above.

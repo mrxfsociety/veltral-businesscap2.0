@@ -1,3 +1,5 @@
+import { sharingToy } from "./sharing-toy";
+import { leavingParty } from "./leaving-party";
 import { hitBrother } from "./hit-brother";
 import { bathTime } from "./bath-time";
 import { carSeat } from "./car-seat";
@@ -26,6 +28,8 @@ export const SETS: Record<string, SceneSet> = {
   "getting-dressed": gettingDressed,
   "hit-brother": hitBrother,
   "bath-time": bathTime,
+  "sharing-toy": sharingToy,
+  "leaving-party": leavingParty,
 };
 
 export function setFor(scene: { id: string; place: string }): SceneSet {

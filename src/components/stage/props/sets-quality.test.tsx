@@ -14,6 +14,8 @@ const delivered = [
   "getting-dressed",
   "hit-brother",
   "bath-time",
+  "sharing-toy",
+  "leaving-party",
 ];
 const paperColours = new Set<string>(Object.values(PAPER));
 
