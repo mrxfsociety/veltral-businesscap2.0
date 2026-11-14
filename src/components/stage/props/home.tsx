@@ -1,8 +1,14 @@
-import { PAPER as P } from "../palette";
+import { PAPER as P, type PaperColor } from "../palette";
 import type { PropProps } from "./types";
 
 /* Indoor props. Bottom centre at (0, 0), drawn upward. Wall pieces (window,
    frame) are placed by the bottom of their sill. */
+
+function shadedPaper(tint: PaperColor): string {
+  const base = tint.replace(/Light$|Dark$/, "");
+  const darker = `${base}Dark`;
+  return darker in P ? P[darker as PaperColor] : P.ink;
+}
 
 export function Window({ tint }: PropProps) {
   const pane = tint ? P[tint] : P.skyLight;
@@ -31,10 +37,13 @@ export function PictureFrame({ tint }: PropProps) {
   const art = tint ? P[tint] : P.mustard;
   return (
     <g>
-      <path d="M-20 0 L-20 -32 L20 -32 L20 0 Z" fill={P.kraftDark} />
+      <path d="M-20 0 L-20 -32 L20 -32 L20 0 Z" fill={P.kraft} />
       <path d="M-16 -4 L-16 -28 L16 -28 L16 -4 Z" fill={P.sheet} />
-      <path d="M-16 -4 L-6 -16 L2 -9 L8 -14 L16 -6 L16 -4 Z" fill={P.sage} />
+      {/* The landscape and sun reuse one art paper to keep four colours. */}
+      <path d="M-16 -4 L-6 -16 L2 -9 L8 -14 L16 -6 L16 -4 Z" fill={art} />
       <path d="M4 -22 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0 Z" fill={art} />
+      {/* One folded right edge, entirely within the original frame bounds. */}
+      <path d="M16 -31 L20 -32 L20 0 L16 -4 Z" fill={P.kraftDark} />
     </g>
   );
 }
@@ -53,7 +62,12 @@ export function Sofa({ tint }: PropProps) {
         fill={P.plumLight}
       />
       <path
-        d="M-76 -4 L-76 -40 C-76 -46 -64 -46 -64 -40 L-64 -4 Z M64 -4 L64 -40 C64 -46 76 -46 76 -40 L76 -4 Z"
+        d="M-76 -4 L-76 -40 C-76 -46 -64 -46 -64 -40 L-64 -4 Z"
+        fill={cloth}
+      />
+      {/* Only the right arm turns away from the light; feet are dark material. */}
+      <path
+        d="M64 -4 L64 -40 C64 -46 76 -46 76 -40 L76 -4 Z"
         fill={P.plumDark}
       />
       <path
@@ -78,17 +92,15 @@ export function Lamp({ tint }: PropProps) {
 }
 
 /** A rug lies flat on the floor: drawn as a foreshortened shape. */
-export function Rug({ tint }: PropProps) {
-  const cloth = tint ? P[tint] : P.tomato;
+export function Rug({ tint = "tomato" }: PropProps) {
+  const cloth = P[tint];
   return (
     <g>
       <path d="M-74 0 L-62 -20 L62 -20 L74 0 Z" fill={cloth} />
-      <path
-        d="M-58 -4 L-51 -16 L51 -16 L58 -4 Z"
-        fill={P.mustardLight}
-        opacity={0.75}
-      />
+      <path d="M-58 -4 L-51 -16 L51 -16 L58 -4 Z" fill={P.mustardLight} />
       <path d="M-44 -8 L-40 -12 L40 -12 L44 -8 Z" fill={cloth} />
+      {/* Opaque ornament; the only shade is this matching front-edge fold. */}
+      <path d="M-72.2 -3 L72.2 -3 L74 0 L-74 0 Z" fill={shadedPaper(tint)} />
     </g>
   );
 }
@@ -120,6 +132,8 @@ export function Chair({ tint }: PropProps) {
         fill={wood}
       />
       <path d="M-20 -32 L20 -32 L20 -27 L-20 -27 Z" fill={P.kraft} />
+      {/* One thin underside folds beneath the seat; legs remain dark wood. */}
+      <path d="M-20 -29 L20 -29 L20 -27 L-20 -27 Z" fill={P.kraftDark} />
       <path
         d="M-17 -32 L-17 -66 L-12 -66 L-12 -32 Z M12 -32 L12 -66 L17 -66 L17 -32 Z M-17 -64 L17 -64 L17 -56 L-17 -56 Z"
         fill={wood}
@@ -173,10 +187,11 @@ export function Door({ tint }: PropProps) {
       <path d="M-27 0 L-27 -123 L27 -123 L27 0 Z" fill={wood} />
       <path
         d="M-20 -110 L-3 -110 L-3 -70 L-20 -70 Z M3 -110 L20 -110 L20 -70 L3 -70 Z M-20 -58 L20 -58 L20 -14 L-20 -14 Z"
-        fill={P.kraftDark}
-        opacity={0.45}
+        fill={P.sheet}
       />
       <path d="M14 -64 a3 3 0 1 0 6 0 a3 3 0 1 0 -6 0 Z" fill={P.mustard} />
+      {/* Panels are opaque paper decoration; only the right edge is folded. */}
+      <path d="M23 -122 L27 -123 L27 0 L23 -3 Z" fill={P.kraftDark} />
     </g>
   );
 }
@@ -200,8 +215,7 @@ export function Plant({ tint }: PropProps) {
 }
 
 export function Bookshelf({ tint }: PropProps) {
-  const wood = tint ? P[tint] : P.kraftDark;
-  const books = [P.tomato, P.teal, P.mustard, P.plum, P.sky, P.sage];
+  const wood = tint ? P[tint] : P.kraft;
   return (
     <g>
       <path d="M-36 0 L-36 -110 L36 -110 L36 0 Z" fill={wood} />
@@ -209,17 +223,19 @@ export function Bookshelf({ tint }: PropProps) {
         <g key={top}>
           <path
             d={`M-31 ${top} L31 ${top} L31 ${top + 30} L-31 ${top + 30} Z`}
-            fill={P.kraft}
+            fill={P.cream}
           />
           {[0, 1, 2, 3, 4, 5].map((i) => (
             <path
               key={i}
               d={`M${-29 + i * 9} ${top + 30} L${-29 + i * 9} ${top + 8 + ((i + r) % 3) * 4} L${-22 + i * 9} ${top + 8 + ((i + r) % 3) * 4} L${-22 + i * 9} ${top + 30} Z`}
-              fill={books[(i + r * 2) % books.length]}
+              fill={P.teal}
             />
           ))}
         </g>
       ))}
+      {/* Cream bays reveal kraft shelves; teal books leave room for one fold. */}
+      <path d="M31 -109 L36 -110 L36 0 L31 -3 Z" fill={P.kraftDark} />
     </g>
   );
 }

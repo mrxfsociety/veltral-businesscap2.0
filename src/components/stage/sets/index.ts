@@ -1,3 +1,5 @@
+import { carSeat } from "./car-seat";
+import { gettingDressed } from "./getting-dressed";
 import type { SceneSet } from "../types";
 import { genericSet } from "./generic";
 import { playgroundLeave } from "./playground-leave";
@@ -18,6 +20,8 @@ export const SETS: Record<string, SceneSet> = {
   "wrong-cup": wrongCup,
   "tablet-off": tabletOff,
   "dinner-refusal": dinnerRefusal,
+  "car-seat": carSeat,
+  "getting-dressed": gettingDressed,
 };
 
 export function setFor(scene: { id: string; place: string }): SceneSet {

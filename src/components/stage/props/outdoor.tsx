@@ -159,10 +159,9 @@ export function House({ tint }: PropProps) {
       />
       <path
         d="M-24 -46 H-22 V-24 H-24 Z M22 -46 H24 V-24 H22 Z M-34 -36 H-12 V-34 H-34 Z M12 -36 H34 V-34 H12 Z"
-        fill={P.ink}
-        opacity={0.55}
+        fill={P.plumDark}
       />
-      <path d="M-8 0 L-8 -30 L8 -30 L8 0 Z" fill={P.tomato} />
+      <path d="M-8 0 L-8 -30 L8 -30 L8 0 Z" fill={P.plum} />
     </g>
   );
 }
@@ -175,21 +174,23 @@ export function Car({ tint }: PropProps) {
         d="M-76 -14 L-74 -34 C-70 -38 -58 -40 -48 -40 L-34 -60 C-30 -64 22 -64 30 -60 L48 -40 C62 -40 74 -36 76 -28 L77 -14 Z"
         fill={body}
       />
-      <path d="M-76 -14 L77 -14 L76 -20 L-75 -22 Z" fill={P.tealDark} />
+      <path d="M-76 -14 L77 -14 L76 -20 L-75 -22 Z" fill={body} />
       <path
         d="M-30 -42 L-21 -57 L-3 -57 L-3 -42 Z M3 -42 L3 -57 L24 -57 L37 -42 Z"
         fill={P.skyLight}
       />
-      {/* the open back door */}
-      <path d="M3 -42 L-26 -48 L-28 -18 L1 -14 Z" fill={body} />
-      <path d="M-26 -48 L-28 -18 L-24 -18.5 L-22.5 -47 Z" fill={P.tealDark} />
+      {/* Rear opening receives the separate car-seat cutout. The door opens
+          toward the left wing; only its outward edge has a folded facet. */}
+      <path d="M-28 -48 L-4 -48 L-4 -18 L-28 -18 Z" fill={P.ink} />
+      <path d="M-44 -44 L-31 -51 L-29 -18 L-44 -12 Z" fill={body} />
+      <path d="M-44 -44 L-41 -45.6 L-41 -13.2 L-44 -12 Z" fill={P.tealDark} />
       <path
         d="M-52 -10 a12 12 0 1 0 24 0 a12 12 0 1 0 -24 0 Z M30 -10 a12 12 0 1 0 24 0 a12 12 0 1 0 -24 0 Z"
         fill={P.ink}
       />
       <path
         d="M-45 -10 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 Z M37 -10 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 Z"
-        fill={P.rule}
+        fill={P.skyLight}
       />
     </g>
   );

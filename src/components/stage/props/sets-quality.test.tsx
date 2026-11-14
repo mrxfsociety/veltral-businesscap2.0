@@ -5,7 +5,14 @@ import { SETS } from "../sets";
 import { PROPS } from ".";
 
 // Later scene pairs are added here when they are delivered, never as placeholders.
-const delivered = ["bedtime", "wrong-cup", "tablet-off", "dinner-refusal"];
+const delivered = [
+  "bedtime",
+  "wrong-cup",
+  "tablet-off",
+  "dinner-refusal",
+  "car-seat",
+  "getting-dressed",
+];
 const paperColours = new Set<string>(Object.values(PAPER));
 
 describe("delivered paper sets", () => {
