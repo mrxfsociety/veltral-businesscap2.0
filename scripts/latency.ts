@@ -111,6 +111,7 @@ async function measure(
   const latencies: number[] = [];
   let fallbacks = 0;
   let modelTaggedTurns = 0;
+  let modelResponses = 0;
   try {
     for (const [sceneId, text] of samples) {
       const sessionResponse = await handlers.session(
@@ -136,8 +137,13 @@ async function measure(
           `Turn handler failed with HTTP ${response.status}. No latency result was saved.`,
         );
       const turn = TurnResponseSchema.parse(await response.json());
-      if (!hasModelResponse || hasModelResponse()) latencies.push(elapsed);
-      else fallbacks += 1;
+      // Include the slow fallback requests in end-to-end latency; excluding
+      // them would make reliability failures look like a speed improvement.
+      latencies.push(elapsed);
+      if (hasModelResponse) {
+        if (hasModelResponse()) modelResponses += 1;
+        else fallbacks += 1;
+      }
       if (turn.tagging === "model") modelTaggedTurns += 1;
     }
   } finally {
@@ -149,6 +155,7 @@ async function measure(
     samples: latencies.length,
     fallbacks,
     modelTaggedTurns,
+    modelResponses,
   };
 }
 async function main() {
@@ -205,6 +212,7 @@ async function main() {
     modelSamples: model?.samples ?? 0,
     modelFallbacks: model?.fallbacks ?? 0,
     modelTaggedTurns: model?.modelTaggedTurns ?? 0,
+    modelResponses: model?.modelResponses ?? 0,
   };
   await writeFile(
     resolve(root, "eval/results.json"),
@@ -216,10 +224,10 @@ async function main() {
   );
   process.stdout.write(
     model
-      ? `Model: ${model.samples} successful provider responses, ${model.fallbacks} rules fallbacks, ${model.modelTaggedTurns} turns using model tags; median ${model.medianMs?.toFixed(2) ?? "not measured"} ms, p90 ${model.p90Ms?.toFixed(2) ?? "not measured"} ms.\n`
+      ? `Model configured: ${model.samples} real handler turns, ${model.modelResponses} successful provider responses, ${model.fallbacks} rules fallbacks, ${model.modelTaggedTurns} turns using model tags; median ${model.medianMs?.toFixed(2) ?? "not measured"} ms, p90 ${model.p90Ms?.toFixed(2) ?? "not measured"} ms (fallbacks included).\n`
       : "Model latency not measured (--rules-only). Sessions used isolated in-memory storage and were never ranked.\n",
   );
-  if (model && model.samples === 0) process.exitCode = 1;
+  if (model && model.modelResponses === 0) process.exitCode = 1;
 }
 main().catch(() => {
   process.stderr.write(

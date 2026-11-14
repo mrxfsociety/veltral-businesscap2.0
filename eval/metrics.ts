@@ -81,6 +81,7 @@ export interface EvaluationResults {
     modelSamples?: number;
     modelFallbacks?: number;
     modelTaggedTurns?: number;
+    modelResponses?: number;
   };
 }
 const ratio = (top: number, bottom: number): number =>

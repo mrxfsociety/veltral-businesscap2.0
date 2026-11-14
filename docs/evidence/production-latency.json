@@ -1,0 +1,176 @@
+{
+  "date": "2026-11-14T13:01:42.966545+00:00",
+  "commit": "fd172030d2a8c4d08db8691b32dd95050121b1c8",
+  "source": "20 public HTTPS library practice turns from production host; same samples as scripts/latency.ts; one earlier smoke warm-up",
+  "samples": 20,
+  "medianMs": 2034.68,
+  "p90Ms": 2787.47,
+  "errors": 0,
+  "modelTaggedTurns": 19,
+  "modelCalls": 20,
+  "rulesFallbacks": 1,
+  "dailyPlayersBefore": 0,
+  "dailyPlayersAfter": 0,
+  "runs": [
+    {
+      "sample": 1,
+      "sceneId": "store-candy",
+      "elapsedMs": 1968.09,
+      "tagging": "model",
+      "delta": -17,
+      "outcome": "ongoing"
+    },
+    {
+      "sample": 2,
+      "sceneId": "playground-leave",
+      "elapsedMs": 1953.12,
+      "tagging": "model",
+      "delta": 3,
+      "outcome": "ongoing"
+    },
+    {
+      "sample": 3,
+      "sceneId": "bedtime",
+      "elapsedMs": 2047.46,
+      "tagging": "model",
+      "delta": -10,
+      "outcome": "ongoing"
+    },
+    {
+      "sample": 4,
+      "sceneId": "wrong-cup",
+      "elapsedMs": 2158.62,
+      "tagging": "model",
+      "delta": -18,
+      "outcome": "ongoing"
+    },
+    {
+      "sample": 5,
+      "sceneId": "tablet-off",
+      "elapsedMs": 2201.35,
+      "tagging": "model",
+      "delta": -17,
+      "outcome": "ongoing"
+    },
+    {
+      "sample": 6,
+      "sceneId": "dinner-refusal",
+      "elapsedMs": 2417.59,
+      "tagging": "model",
+      "delta": 3,
+      "outcome": "ongoing"
+    },
+    {
+      "sample": 7,
+      "sceneId": "car-seat",
+      "elapsedMs": 2936.83,
+      "tagging": "model",
+      "delta": -17,
+      "outcome": "ongoing"
+    },
+    {
+      "sample": 8,
+      "sceneId": "getting-dressed",
+      "elapsedMs": 2021.89,
+      "tagging": "model",
+      "delta": -18,
+      "outcome": "ongoing"
+    },
+    {
+      "sample": 9,
+      "sceneId": "hit-brother",
+      "elapsedMs": 1977.1,
+      "tagging": "model",
+      "delta": -17,
+      "outcome": "ongoing"
+    },
+    {
+      "sample": 10,
+      "sceneId": "bath-time",
+      "elapsedMs": 2187.49,
+      "tagging": "model",
+      "delta": -18,
+      "outcome": "ongoing"
+    },
+    {
+      "sample": 11,
+      "sceneId": "sharing-toy",
+      "elapsedMs": 2020.82,
+      "tagging": "model",
+      "delta": -18,
+      "outcome": "ongoing"
+    },
+    {
+      "sample": 12,
+      "sceneId": "leaving-party",
+      "elapsedMs": 1864.74,
+      "tagging": "model",
+      "delta": -18,
+      "outcome": "ongoing"
+    },
+    {
+      "sample": 13,
+      "sceneId": "store-candy",
+      "elapsedMs": 4268.53,
+      "tagging": "rules",
+      "delta": -7,
+      "outcome": "ongoing"
+    },
+    {
+      "sample": 14,
+      "sceneId": "playground-leave",
+      "elapsedMs": 2787.47,
+      "tagging": "model",
+      "delta": -13,
+      "outcome": "ongoing"
+    },
+    {
+      "sample": 15,
+      "sceneId": "bedtime",
+      "elapsedMs": 1914.36,
+      "tagging": "model",
+      "delta": -11,
+      "outcome": "ongoing"
+    },
+    {
+      "sample": 16,
+      "sceneId": "wrong-cup",
+      "elapsedMs": 1731.48,
+      "tagging": "model",
+      "delta": -18,
+      "outcome": "ongoing"
+    },
+    {
+      "sample": 17,
+      "sceneId": "tablet-off",
+      "elapsedMs": 2146.93,
+      "tagging": "model",
+      "delta": -3,
+      "outcome": "ongoing"
+    },
+    {
+      "sample": 18,
+      "sceneId": "car-seat",
+      "elapsedMs": 1822.91,
+      "tagging": "model",
+      "delta": -1,
+      "outcome": "ongoing"
+    },
+    {
+      "sample": 19,
+      "sceneId": "getting-dressed",
+      "elapsedMs": 2196.69,
+      "tagging": "model",
+      "delta": -10,
+      "outcome": "ongoing"
+    },
+    {
+      "sample": 20,
+      "sceneId": "leaving-party",
+      "elapsedMs": 1869.55,
+      "tagging": "model",
+      "delta": -10,
+      "outcome": "ongoing"
+    }
+  ]
+}

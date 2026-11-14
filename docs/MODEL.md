@@ -7,53 +7,79 @@ The supplied dataset has 137 replies (74 dev, 63 test), drafted with AI assistan
 ## Targets and limitations
 
 - Rules-only unhelpful precision on test ≥85%: 100.0% — MET.
-- Rules + model micro-F1 on test ≥80%: NOT MEASURED.
+- Rules + model micro-F1 on test ≥80%: 96.6% — MET.
 - Three weakest supported rules tags on test: DISMISS (80.0% F1), NAME_FEELING (94.1% F1), HOLD_LIMIT (100.0% F1).
-- OpenAI only was selected by the owner on 2026-11-14. No cross-provider comparison is required or claimed. Model IDs are supplied through server environment variables; gpt-6-luna uses reasoning effort none for this focused task.
+- OpenAI only was selected by the owner on 2026-11-14. No cross-provider comparison is required or claimed. Model IDs are supplied through server environment variables; gpt-6-luna uses reasoning effort none and text verbosity low for this focused task.
 
 ## Rules only
 
-Measured 2026-11-14T12:14:35.886Z; provider: rules; model: deterministic. Test split: 63 replies. Accuracy-run deadline: 4000 ms per provider attempt; runtime turn deadlines remain 4000/3500 ms.
+Measured 2026-11-14T13:00:45.733Z; provider: rules; model: deterministic. Test split: 63 replies. Accuracy-run deadline: 4000 ms per provider attempt; runtime turn deadlines remain 4000/3500 ms.
 
 Micro-F1: 98.6%. Exact-set match: 96.8%. Median call latency: not measured.
 
-| Tag | Precision | Recall | F1 | Support |
-| --- | ---: | ---: | ---: | ---: |
-| NAME_FEELING | 100.0% | 88.9% | 94.1% | 9 |
-| HOLD_LIMIT | 100.0% | 100.0% | 100.0% | 8 |
-| OFFER_CHOICE | 100.0% | 100.0% | 100.0% | 6 |
-| CLEAR_COMMAND | 100.0% | 100.0% | 100.0% | 5 |
-| CONNECT | 100.0% | 100.0% | 100.0% | 3 |
-| LABELED_PRAISE | 100.0% | 100.0% | 100.0% | 3 |
-| WHEN_THEN | 100.0% | 100.0% | 100.0% | 3 |
-| THREAT | 100.0% | 100.0% | 100.0% | 3 |
-| BRIBE | 100.0% | 100.0% | 100.0% | 3 |
-| YELL | 100.0% | 100.0% | 100.0% | 3 |
-| SHAME | 100.0% | 100.0% | 100.0% | 5 |
-| DISMISS | 100.0% | 66.7% | 80.0% | 3 |
-| QUESTION_COMMAND | 100.0% | 100.0% | 100.0% | 3 |
-| LECTURE | 100.0% | 100.0% | 100.0% | 2 |
-| NEGATIVE_COMMAND | 100.0% | 100.0% | 100.0% | 2 |
-| VAGUE_COMMAND | 100.0% | 100.0% | 100.0% | 2 |
-| GIVE_IN | 100.0% | 100.0% | 100.0% | 6 |
-| NO_RESPONSE | 100.0% | 100.0% | 100.0% | 1 |
-| UNSAFE | 100.0% | 100.0% | 100.0% | 2 |
+| Tag              | Precision | Recall |     F1 | Support |
+| ---------------- | --------: | -----: | -----: | ------: |
+| NAME_FEELING     |    100.0% |  88.9% |  94.1% |       9 |
+| HOLD_LIMIT       |    100.0% | 100.0% | 100.0% |       8 |
+| OFFER_CHOICE     |    100.0% | 100.0% | 100.0% |       6 |
+| CLEAR_COMMAND    |    100.0% | 100.0% | 100.0% |       5 |
+| CONNECT          |    100.0% | 100.0% | 100.0% |       3 |
+| LABELED_PRAISE   |    100.0% | 100.0% | 100.0% |       3 |
+| WHEN_THEN        |    100.0% | 100.0% | 100.0% |       3 |
+| THREAT           |    100.0% | 100.0% | 100.0% |       3 |
+| BRIBE            |    100.0% | 100.0% | 100.0% |       3 |
+| YELL             |    100.0% | 100.0% | 100.0% |       3 |
+| SHAME            |    100.0% | 100.0% | 100.0% |       5 |
+| DISMISS          |    100.0% |  66.7% |  80.0% |       3 |
+| QUESTION_COMMAND |    100.0% | 100.0% | 100.0% |       3 |
+| LECTURE          |    100.0% | 100.0% | 100.0% |       2 |
+| NEGATIVE_COMMAND |    100.0% | 100.0% | 100.0% |       2 |
+| VAGUE_COMMAND    |    100.0% | 100.0% | 100.0% |       2 |
+| GIVE_IN          |    100.0% | 100.0% | 100.0% |       6 |
+| NO_RESPONSE      |    100.0% | 100.0% | 100.0% |       1 |
+| UNSAFE           |    100.0% | 100.0% | 100.0% |       2 |
 
 Gates: unsafeRecall: PASS; noResponseExact: PASS; yellExact: PASS; promptInjectionUntagged: PASS; complete: PASS.
 
 ## Rules + model
 
-Not measured. No live-provider accuracy or latency is claimed.
+Measured 2026-11-14T12:57:24.422Z; provider: openai; model: gpt-6-luna. Test split: 63 replies. Accuracy-run deadline: 30000 ms per provider attempt; runtime turn deadlines remain 4000/3500 ms.
+
+Micro-F1: 96.6%. Exact-set match: 92.1%. Median call latency: 1998.4 ms.
+
+| Tag              | Precision | Recall |     F1 | Support |
+| ---------------- | --------: | -----: | -----: | ------: |
+| NAME_FEELING     |    100.0% | 100.0% | 100.0% |       9 |
+| HOLD_LIMIT       |     88.9% | 100.0% |  94.1% |       8 |
+| OFFER_CHOICE     |    100.0% | 100.0% | 100.0% |       6 |
+| CLEAR_COMMAND    |    100.0% | 100.0% | 100.0% |       5 |
+| CONNECT          |    100.0% | 100.0% | 100.0% |       3 |
+| LABELED_PRAISE   |    100.0% | 100.0% | 100.0% |       3 |
+| WHEN_THEN        |    100.0% | 100.0% | 100.0% |       3 |
+| THREAT           |    100.0% | 100.0% | 100.0% |       3 |
+| BRIBE            |    100.0% | 100.0% | 100.0% |       3 |
+| YELL             |    100.0% | 100.0% | 100.0% |       3 |
+| SHAME            |     83.3% | 100.0% |  90.9% |       5 |
+| DISMISS          |    100.0% | 100.0% | 100.0% |       3 |
+| QUESTION_COMMAND |     75.0% | 100.0% |  85.7% |       3 |
+| LECTURE          |     66.7% | 100.0% |  80.0% |       2 |
+| NEGATIVE_COMMAND |    100.0% | 100.0% | 100.0% |       2 |
+| VAGUE_COMMAND    |    100.0% | 100.0% | 100.0% |       2 |
+| GIVE_IN          |     85.7% | 100.0% |  92.3% |       6 |
+| NO_RESPONSE      |    100.0% | 100.0% | 100.0% |       1 |
+| UNSAFE           |    100.0% | 100.0% | 100.0% |       2 |
+
+Gates: unsafeRecall: PASS; noResponseExact: PASS; yellExact: PASS; promptInjectionUntagged: PASS; complete: PASS.
 
 ## OpenAI development evaluation
 
-| Provider | Model | Replies | Micro-F1 | Median ms |
-| --- | --- | ---: | ---: | ---: |
-| openai | gpt-6-luna | 74 | 98.8% | 2161.5 |
+| Provider | Model      | Replies | Micro-F1 | Median ms |
+| -------- | ---------- | ------: | -------: | --------: |
+| openai   | gpt-6-luna |      74 |    98.8% |    2161.5 |
 
 ## Full-handler latency
 
-Measured 2026-11-14T11:59:16.343Z: rules-only median 0.2 ms, p90 0.5 ms; model median not measured ms, p90 not measured ms. Samples: 20 rules-only, 0 successful model responses; 0 failed model turns fell back to rules. Model tags were used on 0 turns. These measurements use isolated in-memory sessions, not an external production round trip.
+Measured 2026-11-14T12:59:27.295Z: rules-only median 8.2 ms, p90 12.0 ms; model median 2014.2 ms, p90 2378.9 ms. Samples: 20 rules-only, 20 model-configured handler turns, including timeout fallbacks; 20 successful model responses; 0 failed model turns fell back to rules. Model tags were used on 20 turns. Targets: rules median <300 ms MET; model-configured median <2500 ms MET. These measurements use isolated in-memory sessions, not an external production round trip.
 
 ## Provider implementation
 

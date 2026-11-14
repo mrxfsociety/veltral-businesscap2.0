@@ -1,0 +1,57 @@
+{
+  "date": "2026-11-14T12:48:14.751Z",
+  "scope": "Real OpenAI request with intentionally invalid credential, isolated practice session",
+  "status": 200,
+  "latencyMs": 655.6303330000001,
+  "tagging": "rules",
+  "child": {
+    "line": "Still want it.",
+    "action": "sniffles and loosens clenched hands"
+  },
+  "result": {
+    "tags": [
+      "HOLD_LIMIT",
+      "CONNECT"
+    ],
+    "before": {
+      "arousal": 75,
+      "connection": 50,
+      "limitIntact": true,
+      "turn": 0,
+      "bribed": false,
+      "lastHelpfulTags": [],
+      "lastDelta": 0
+    },
+    "after": {
+      "arousal": 62,
+      "connection": 65,
+      "limitIntact": true,
+      "turn": 1,
+      "bribed": false,
+      "lastHelpfulTags": [
+        "HOLD_LIMIT",
+        "CONNECT"
+      ],
+      "lastDelta": -13
+    },
+    "delta": -13,
+    "outcome": "ongoing",
+    "effects": [
+      {
+        "tag": "CONNECT",
+        "value": -7.2
+      }
+    ],
+    "notes": [
+      "VALIDATED_LIMIT"
+    ]
+  },
+  "attempts": [
+    {
+      "provider": "openai",
+      "model": "gpt-6-luna",
+      "success": false,
+      "latencyMs": 620.844083
+    }
+  ]
+}
