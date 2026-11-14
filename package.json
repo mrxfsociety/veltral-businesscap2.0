@@ -16,13 +16,13 @@
     "test": "vitest run",
     "e2e": "playwright test",
     "shots": "CAPTURE_SHOTS=true playwright test e2e/screenshots.spec.ts",
-    "par": "tsx scripts/par.ts",
-    "eval": "tsx eval/run.ts",
-    "eval:model": "NODE_OPTIONS=--conditions=react-server tsx eval/run.ts --model",
+    "par": "node --import tsx scripts/par.ts",
+    "eval": "node --import tsx eval/run.ts",
+    "eval:model": "node --conditions=react-server --import tsx eval/run.ts --model",
     "verify": "npm run lint && npm run typecheck && npm test && npm run eval && npm run build",
-    "latency": "NODE_OPTIONS=--conditions=react-server tsx scripts/latency.ts",
-    "eval:bakeoff": "NODE_OPTIONS=--conditions=react-server tsx eval/bakeoff.ts",
-    "check:eval-isolation": "tsx scripts/check-eval-isolation.ts"
+    "latency": "node --conditions=react-server --import tsx scripts/latency.ts",
+    "eval:bakeoff": "node --conditions=react-server --import tsx eval/bakeoff.ts",
+    "check:eval-isolation": "node --import tsx scripts/check-eval-isolation.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "latest",

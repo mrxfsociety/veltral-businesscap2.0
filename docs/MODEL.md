@@ -13,7 +13,7 @@ The supplied dataset has 137 replies (74 dev, 63 test), drafted with AI assistan
 
 ## Rules only
 
-Measured 2026-11-14T13:00:45.733Z; provider: rules; model: deterministic. Test split: 63 replies. Accuracy-run deadline: 4000 ms per provider attempt; runtime turn deadlines remain 4000/3500 ms.
+Measured 2026-11-14T17:32:31.434Z; provider: rules; model: deterministic. Test split: 63 replies. Accuracy-run deadline: 4000 ms per provider attempt; runtime turn deadlines remain 4000/3500 ms.
 
 Micro-F1: 98.6%. Exact-set match: 96.8%. Median call latency: not measured.
 

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PlayExperience } from "@/components/play/play-experience";
 import { getPublicScenes, getScenePars } from "@/lib/catalog";
 
-export const metadata: Metadata = { title: "Practice a scene · Do-Over" };
+export const metadata: Metadata = { title: "Practice a scene" };
 
 export default async function ScenePage({
   params,

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { SharedPlaybook } from "./shared-playbook";
 
 export const metadata: Metadata = {
-  title: "Shared playbook | Do-Over",
+  title: "Shared playbook",
   robots: { index: false, follow: false },
 };
 

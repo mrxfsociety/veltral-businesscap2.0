@@ -3,7 +3,7 @@ import { ProGate } from "@/components/pro-gate";
 import { ReplayForm } from "./replay-form";
 
 export const metadata: Metadata = {
-  title: "Replay your own meltdown | Do-Over",
+  title: "Replay your own meltdown",
 };
 
 export default function ReplayPage() {

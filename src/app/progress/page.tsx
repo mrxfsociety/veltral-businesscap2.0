@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Progress } from "./progress";
 
 export const metadata: Metadata = {
-  title: "Your practice | Do-Over",
+  title: "Your practice",
   description: "Your practice streak and recent sessions on this device.",
 };
 

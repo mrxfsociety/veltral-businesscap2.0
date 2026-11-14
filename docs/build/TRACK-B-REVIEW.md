@@ -1,5 +1,7 @@
 # Track B integration corrections
 
+> Historical stage report. Its test counts, implementation gaps and deployment statements describe the revision named below. See [UNIFIED-REPORT.md](UNIFIED-REPORT.md) for the latest merged A/B source and newly executed checks; the original evidence is preserved unchanged.
+
 STAGE: B/J1 review corrections
 BRANCH: `codex/integration-review`, based on B `9b6e7d2`
 B corrections are committed in the isolated integration branch; B original branch remains unchanged.

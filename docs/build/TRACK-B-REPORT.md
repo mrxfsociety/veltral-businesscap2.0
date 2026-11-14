@@ -1,5 +1,7 @@
 # Track B implementation and integration report
 
+> Historical stage report. Its test counts, implementation gaps and deployment statements describe the revision named below. See [UNIFIED-REPORT.md](UNIFIED-REPORT.md) for the latest merged A/B source and newly executed checks; the original evidence is preserved unchanged.
+
 14 November 2026. B1–B5 source implementation is complete in `j1-integration`; **release acceptance is not complete**. This report records executed checks and separates them from prepared tests. No implementation was merged into `main`, no production deployment is claimed, and the reviewer-owned acceptance table has not been marked accepted.
 
 ## Delivered scope
