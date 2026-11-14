@@ -8,11 +8,13 @@
   },
   "rules": {
     "status": "measured",
-    "date": "2026-11-14T12:08:37.414Z",
+    "date": "2026-11-14T12:14:35.886Z",
     "provider": "rules",
     "model": "deterministic",
     "dev": {
       "count": 74,
+      "n": 74,
+      "exactMatch": 1,
       "perTag": {
         "NAME_FEELING": {
           "precision": 1,
@@ -214,6 +216,8 @@
     },
     "test": {
       "count": 63,
+      "n": 63,
+      "exactMatch": 0.9682539682539683,
       "perTag": {
         "NAME_FEELING": {
           "precision": 1,

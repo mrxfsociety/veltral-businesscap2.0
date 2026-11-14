@@ -29,6 +29,9 @@ export interface TagMetric {
 }
 export interface SplitMetrics {
   count: number;
+  /** Compatibility fields consumed by the track B accuracy view. */
+  n: number;
+  exactMatch: number;
   perTag: Record<Tag, TagMetric>;
   microF1: number;
   microPrecision: number;
@@ -150,6 +153,8 @@ export function calculateMetrics(
   });
   return {
     count: rows.length,
+    n: rows.length,
+    exactMatch: ratio(exact, rows.length),
     perTag,
     microF1: ratio(2 * totals.tp, 2 * totals.tp + totals.fp + totals.fn),
     microPrecision: ratio(totals.tp, totals.tp + totals.fp),

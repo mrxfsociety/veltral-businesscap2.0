@@ -103,3 +103,7 @@ npm run latency
 ```
 
 Provide environment values securely; never commit `.env` or paste keys into a public issue. The bake-off intentionally exits non-zero when the selected provider is unavailable and does not replace measurements with rules-only output.
+
+## Parallel B integration review
+
+After B1–B4 was published, an isolated integration clone combined A with B commit `9b6e7d2`. The previously unfrozen evaluation-file interface used different names; A now exports `n` and `exactMatch` compatibility fields alongside `count` and `exactSetMatch`, computed from the same measurements. No evaluation result, label or shared API schema changed. B UI source remains owned by B.

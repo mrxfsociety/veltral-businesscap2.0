@@ -13,7 +13,7 @@ The supplied dataset has 137 replies (74 dev, 63 test), drafted with AI assistan
 
 ## Rules only
 
-Measured 2026-11-14T12:08:37.414Z; provider: rules; model: deterministic. Test split: 63 replies.
+Measured 2026-11-14T12:14:35.886Z; provider: rules; model: deterministic. Test split: 63 replies.
 
 Micro-F1: 98.6%. Exact-set match: 96.8%. Median call latency: not measured.
 

@@ -41,6 +41,8 @@ describe("evaluation metrics", () => {
     expect(result.perTag.SHAME).toMatchObject({ support: 0, falsePositive: 1 });
     expect(result.microF1).toBeCloseTo(2 / 3);
     expect(result.exactSetMatch).toBe(0);
+    expect(result.n).toBe(2);
+    expect(result.exactMatch).toBe(0);
     expect(result.unhelpfulPrecision).toBe(0.5);
   });
   it("refuses missing predictions", () =>
