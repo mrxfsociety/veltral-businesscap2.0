@@ -1,0 +1,89 @@
+{
+  "date": "2026-11-14",
+  "applicationCommit": "2ec6ee408bc2660d11f0a920c6347b6ac7745a1b",
+  "parentsRetained": {
+    "trackB": "8ee802fb990deb98c520b924e590b67e5438c6ea",
+    "reviewedA": "afb438076ea26d8e80ba680fc050c88b95818392"
+  },
+  "runtime": {
+    "node": "v26.9.0",
+    "playwright": "1.65.1",
+    "redis": "8.6.2",
+    "chromium": "159.0.8154.6"
+  },
+  "verify": {
+    "pro": {
+      "command": "RUN_REDIS_INTEGRATION=1 NEXT_PUBLIC_PRO_PREVIEW=true SITE_URL=https://veltral.aituconnect.kz npm run verify",
+      "status": "PASS",
+      "testsPassed": 445,
+      "testFiles": 30,
+      "skipped": 0,
+      "realRedis": true,
+      "lint": "PASS",
+      "typecheck": "PASS",
+      "rulesGates": 5,
+      "productionBuild": "PASS"
+    },
+    "free": {
+      "command": "RUN_REDIS_INTEGRATION=1 NEXT_PUBLIC_PRO_PREVIEW=false SITE_URL=https://veltral.aituconnect.kz npm run verify",
+      "status": "PASS",
+      "testsPassed": 445,
+      "testFiles": 30,
+      "skipped": 0,
+      "realRedis": true,
+      "lint": "PASS",
+      "typecheck": "PASS",
+      "rulesGates": 5,
+      "productionBuild": "PASS"
+    }
+  },
+  "browser": {
+    "pro": {
+      "command": "E2E_BASE_URL=http://127.0.0.1:3330 NEXT_PUBLIC_PRO_PREVIEW=true npm run e2e -- --reporter=list --max-failures=3",
+      "status": "PASS",
+      "passed": 60,
+      "skipped": 2,
+      "projects": ["desktop", "mobile"],
+      "providerKeys": "unset",
+      "target": "local production build",
+      "skipReason": "Free-only voice gate is tested in Free"
+    },
+    "free": {
+      "command": "E2E_BASE_URL=http://127.0.0.1:3330 NEXT_PUBLIC_PRO_PREVIEW=false npm run e2e -- --reporter=list --max-failures=3",
+      "status": "PASS",
+      "passed": 60,
+      "skipped": 2,
+      "projects": ["desktop", "mobile"],
+      "providerKeys": "unset",
+      "target": "local production build",
+      "skipReason": "Pro-only microphone denial is tested in Pro"
+    }
+  },
+  "frozenContractsAndLabels": "PASS: unchanged from T0 092765672dba778e0a394ac2f9bd9e3c91b753cc",
+  "evalIsolation": "PASS",
+  "par": "PASS",
+  "corrections": [
+    "Benign handshakes no longer match UNSAFE; real physical harm coverage preserved",
+    "Scrollable accuracy tables have named keyboard focus",
+    "Browser assertions target tag chips and application alerts"
+  ],
+  "productionHealth": {
+    "ok": true,
+    "commit": "afb438076ea26d8e80ba680fc050c88b95818392",
+    "time": "2026-11-14T18:19:04.752Z",
+    "redis": "up",
+    "providers": {
+      "openai": true,
+      "anthropic": false
+    },
+    "proPreview": true
+  },
+  "limitations": {
+    "liveProviders": "Prior track A evidence preserved; not rerun in this no-key pass",
+    "physicalMicrophones": "NOT_RUN: real phone/laptop acceptance remains",
+    "humanLabels": "NOT_REVIEWED",
+    "deployment": "Unified revision not deployed in this GitHub publication pass",
+    "githubActions": "Account billing lock prevented the previous jobs from starting; local checks are separate",
+    "main": "Independent repository acceptance remains pending"
+  }
+}
