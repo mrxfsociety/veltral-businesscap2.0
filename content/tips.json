@@ -1,0 +1,46 @@
+{
+  "THREAT": {
+    "why": "A threatened punishment can make the moment feel less safe and raise the tension.",
+    "tryInstead": "You are upset, {childName}. I am right here. {limit}."
+  },
+  "BRIBE": {
+    "why": "A new reward may stop the crying now, but it makes the next limit harder to hold.",
+    "tryInstead": "You really wanted {wants}. {limit}. I will stay close."
+  },
+  "YELL": {
+    "why": "A raised voice adds intensity when the child is already overwhelmed.",
+    "tryInstead": "I am right here, {childName}. You are upset. {limit}."
+  },
+  "SHAME": {
+    "why": "Labels and comparisons can hurt connection instead of showing the child what to do.",
+    "tryInstead": "You feel frustrated. I am here with you. {limit}."
+  },
+  "DISMISS": {
+    "why": "Telling a feeling to go away can leave the child feeling unheard.",
+    "tryInstead": "You really wanted {wants}. It is hard. {limit}."
+  },
+  "QUESTION_COMMAND": {
+    "why": "A question can make a necessary instruction sound optional.",
+    "tryInstead": "You are upset. I am right here. {limit}. Hold my hand."
+  },
+  "LECTURE": {
+    "why": "Long explanations are hard to take in while feelings are this strong.",
+    "tryInstead": "You are upset. I am here. {limit}."
+  },
+  "NEGATIVE_COMMAND": {
+    "why": "Saying what not to do leaves the next helpful action unclear.",
+    "tryInstead": "You are frustrated. I am here. Hold my hand. {limit}."
+  },
+  "VAGUE_COMMAND": {
+    "why": "A broad instruction does not give the child a clear next step.",
+    "tryInstead": "You are upset. I am here. Hold my hand. {limit}."
+  },
+  "GIVE_IN": {
+    "why": "The crying stopped because the limit changed, rather than because the child practised handling it.",
+    "tryInstead": "You really wanted {wants}. I am right here. {limit}."
+  },
+  "NO_RESPONSE": {
+    "why": "The child did not hear a response or feel your presence in that moment.",
+    "tryInstead": "I am here, {childName}. You are upset. {limit}."
+  }
+}

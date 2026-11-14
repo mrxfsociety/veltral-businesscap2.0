@@ -1,24 +1,39 @@
-# Do-Over foundation
+# Do-Over — track A
 
-This is the T0 development foundation for Do-Over. The API routes marked `STUB(T0)` are placeholders for parallel interface development. They must be replaced by track A; they are not an actual parenting simulation.
+Do-Over is a parenting practice game. A deterministic, tested engine decides state, outcomes and scores. OpenAI supplies language understanding and child dialogue; unavailable model calls fall back to rules and age-specific templates.
 
-Read `AGENTS.md`, `docs/SPEC.md` and `docs/build/T0-foundation.md` before implementing a stage. The shared contract is in `src/shared/api.ts` and `src/engine/types.ts`; freeze it after T0 is accepted.
+This branch implements A1–A5: engine, play/feature APIs, evaluation and voice APIs. The integrated interface is developed in parallel on track B. Implementation and verification evidence is in [the track A report](docs/build/TRACK-A-REPORT.md); measured accuracy and latency are in [MODEL.md](docs/MODEL.md). No human label review or real-life parenting benefit is claimed.
 
-Node 26 LTS is the deployment target. Package installation is still pending because this task's terminal cannot reach npm and GitHub Actions stopped before executing any steps. Generate and commit `package-lock.json` before accepting T0.
+## Local development
+
+Use Node 26 LTS (Node 24+ supported):
 
 ```sh
-npm install
+npm ci
 cp .env.example .env.local
 npm run dev
 ```
 
-`/play` exercises session creation and turn submission. `npm run verify` is the full acceptance command. Local targeted validation passed 35 contract/route tests using cached Vitest and Zod4, plus strict TypeScript. This is not a passing Next build or full verify. Docker is unavailable locally and production was not deployed. Setup and deployment are documented in `docs/DEPLOY.md`.
+Set private credentials only in the ignored environment file or deployment secret store. The owner selected OpenAI only: use `OPENAI_MODEL=gpt-6-luna`, `OPENAI_REASONING_EFFORT=none`, `LLM_PRIMARY=openai`, and leave Anthropic fields empty. Voice uses separate transcription/speech model variables. Never expose provider keys through `NEXT_PUBLIC_` variables.
 
-After installation, these calls exercise the live route wiring (the session ID must be copied from the first response):
+## Verification
 
 ```sh
-curl -sS localhost:3000/api/session -H 'Content-Type: application/json' -d '{"kind":"daily"}'
-curl -sS localhost:3000/api/turn -H 'Content-Type: application/json' -d '{"sessionId":"COPY_ID","turnIndex":0,"text":"You wanted it.","inputMode":"text"}'
+npm run verify
+RUN_REDIS_INTEGRATION=1 npm test
+npm run check:eval-isolation
+npm run par
 ```
 
-The live curl/Docker/HTTPS checks have not yet run. No stage acceptance is claimed. Voice requires the separate checkpoint decision described in `docs/build/B5-voice-ui.md`.
+Live scripts need environment variables explicitly loaded, for example:
+
+```sh
+node --env-file=.env.local --conditions=react-server --import=tsx eval/run.ts --model --dev-only --provider=openai --timeout-ms=30000
+node --env-file=.env.local --conditions=react-server --import=tsx eval/run.ts --model --timeout-ms=30000
+node --env-file=.env.local --conditions=react-server --import=tsx scripts/latency.ts
+node --env-file=.env.local --conditions=react-server --import=tsx scripts/live-smoke.ts
+```
+
+Accuracy runs may allow 30 seconds to include every model prediction; normal play keeps the 4-second deadline and records fallbacks separately. The live smoke script uses isolated practice sessions and synthetic local audio, not a microphone recording.
+
+Read [SPEC](docs/SPEC.md), [API contracts](src/shared/api.ts), [engine types](src/engine/types.ts) and [deployment instructions](docs/DEPLOY.md). Reference scenes, vectors and evaluation labels are unchanged. The supplied labels still require human review.

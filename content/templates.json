@@ -1,0 +1,278 @@
+{
+  "2-3": {
+    "calmer": [
+      {
+        "line": "Still want it.",
+        "action": "sniffles and loosens clenched hands"
+      },
+      {
+        "line": "You stay here?",
+        "action": "looks up with wet cheeks"
+      },
+      {
+        "line": "I feel sad.",
+        "action": "takes a shaky breath"
+      },
+      {
+        "line": "{childName} sad now.",
+        "action": "rubs one eye"
+      }
+    ],
+    "same": [
+      {
+        "line": "But I want it!",
+        "action": "keeps crying in short bursts"
+      },
+      {
+        "line": "No, not yet!",
+        "action": "shakes their head"
+      },
+      {
+        "line": "Want it now!",
+        "action": "stamps one foot"
+      },
+      {
+        "line": "I said no!",
+        "action": "folds their arms"
+      }
+    ],
+    "angrier": [
+      {
+        "line": "No! No! No!",
+        "action": "stomps both feet"
+      },
+      {
+        "line": "I want it now!",
+        "action": "cries louder"
+      },
+      {
+        "line": "Go away! No!",
+        "action": "turns away and sobs"
+      },
+      {
+        "line": "Not fair! Mine!",
+        "action": "clenches both fists"
+      }
+    ],
+    "resolved": [
+      {
+        "line": "Okay. You help?",
+        "action": "relaxes their hands and looks up"
+      },
+      {
+        "line": "Okay. All done.",
+        "action": "nods and stops crying"
+      },
+      {
+        "line": "I can do it.",
+        "action": "takes a breath and nods"
+      },
+      {
+        "line": "Okay. Come with me.",
+        "action": "reaches for a hand"
+      }
+    ],
+    "gotIt": [
+      {
+        "line": "Yes! I get it!",
+        "action": "smiles as the crying stops"
+      },
+      {
+        "line": "Mine! Thank you!",
+        "action": "claps their hands"
+      },
+      {
+        "line": "I wanted that!",
+        "action": "grins through wet cheeks"
+      },
+      {
+        "line": "Yay! I got it!",
+        "action": "bounces on their toes"
+      }
+    ]
+  },
+  "4-5": {
+    "calmer": [
+      {
+        "line": "I still wanted {wants}.",
+        "action": "sniffles and lowers their shoulders"
+      },
+      {
+        "line": "Can you stay close?",
+        "action": "looks up and takes a slower breath"
+      },
+      {
+        "line": "I am still a little mad.",
+        "action": "unclenches their hands"
+      },
+      {
+        "line": "I heard you. I am trying.",
+        "action": "wipes their cheeks"
+      }
+    ],
+    "same": [
+      {
+        "line": "But I wanted {wants}!",
+        "action": "frowns and keeps crying"
+      },
+      {
+        "line": "I do not want this to be over.",
+        "action": "shakes their head"
+      },
+      {
+        "line": "I am still really mad!",
+        "action": "folds their arms tightly"
+      },
+      {
+        "line": "Why does it have to be now?",
+        "action": "rocks from foot to foot"
+      }
+    ],
+    "angrier": [
+      {
+        "line": "No! I want {wants}!",
+        "action": "stamps their feet and cries louder"
+      },
+      {
+        "line": "You are not listening to me!",
+        "action": "raises their voice"
+      },
+      {
+        "line": "I said I do not want to!",
+        "action": "turns away with clenched fists"
+      },
+      {
+        "line": "That makes me even more mad!",
+        "action": "squeezes their eyes shut and shouts"
+      }
+    ],
+    "resolved": [
+      {
+        "line": "Okay. I can do that now.",
+        "action": "nods and lets their shoulders drop"
+      },
+      {
+        "line": "I still feel sad, but okay.",
+        "action": "takes a steady breath"
+      },
+      {
+        "line": "Okay. Will you stay near me?",
+        "action": "reaches for a hand"
+      },
+      {
+        "line": "All right. I am ready.",
+        "action": "wipes their face and nods"
+      }
+    ],
+    "gotIt": [
+      {
+        "line": "Really? You said yes?",
+        "action": "looks up with a sudden smile"
+      },
+      {
+        "line": "Yes! That is what I wanted!",
+        "action": "stops crying and bounces"
+      },
+      {
+        "line": "Okay! I am happy now!",
+        "action": "grins and relaxes their arms"
+      },
+      {
+        "line": "You said yes! Thank you!",
+        "action": "smiles through the last sniffle"
+      }
+    ]
+  },
+  "6-7": {
+    "calmer": [
+      {
+        "line": "I still wish I could have my way. But I hear you.",
+        "action": "takes a shaky breath and looks up"
+      },
+      {
+        "line": "It feels unfair. I am trying to calm down.",
+        "action": "loosens their crossed arms"
+      },
+      {
+        "line": "I really wanted {wants}. I am still sad.",
+        "action": "wipes their cheeks and lowers their voice"
+      },
+      {
+        "line": "Okay, I heard you. Give me a second.",
+        "action": "looks down and breathes more slowly"
+      }
+    ],
+    "same": [
+      {
+        "line": "It is not fair! I wanted {wants}.",
+        "action": "folds their arms and frowns"
+      },
+      {
+        "line": "Why do you get to decide every time?",
+        "action": "keeps their shoulders tense"
+      },
+      {
+        "line": "I heard you, but I still do not like it.",
+        "action": "looks away and sniffles"
+      },
+      {
+        "line": "I am not ready to stop being mad.",
+        "action": "shakes their head and crosses their arms"
+      }
+    ],
+    "angrier": [
+      {
+        "line": "You never listen to what I want!",
+        "action": "raises their voice and clenches their fists"
+      },
+      {
+        "line": "That is so unfair! I wanted {wants}!",
+        "action": "stamps one foot and shouts"
+      },
+      {
+        "line": "You are making it worse! Just listen!",
+        "action": "turns away and cries harder"
+      },
+      {
+        "line": "I said no! Why will you not hear me?",
+        "action": "throws their hands up"
+      }
+    ],
+    "resolved": [
+      {
+        "line": "I do not love it, but okay. I can do that.",
+        "action": "nods and relaxes their shoulders"
+      },
+      {
+        "line": "Okay. I am ready now. Stay with me?",
+        "action": "takes a steady breath and looks up"
+      },
+      {
+        "line": "All right. I understand what we are doing.",
+        "action": "uncrosses their arms"
+      },
+      {
+        "line": "I still wish it were different. But okay.",
+        "action": "wipes their face and nods"
+      }
+    ],
+    "gotIt": [
+      {
+        "line": "Yes! That is what I wanted after all!",
+        "action": "smiles and stops arguing"
+      },
+      {
+        "line": "Really? Okay! That is what I wanted.",
+        "action": "relaxes their arms with a grin"
+      },
+      {
+        "line": "You changed your mind! I knew you could.",
+        "action": "brightens and wipes their cheeks"
+      },
+      {
+        "line": "Finally! I am glad you said yes.",
+        "action": "grins as their shoulders drop"
+      }
+    ]
+  }
+}

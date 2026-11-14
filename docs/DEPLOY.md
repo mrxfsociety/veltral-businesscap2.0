@@ -41,19 +41,19 @@ Production is one Linux VPS, one domain, and Docker Compose. A person from the t
 
 Edit `.env` with your editor. Never commit it or paste its contents into reports. Set:
 
-| Variable | Production value |
-| --- | --- |
-| `DOMAIN` | Your hostname, without `https://` or a path |
-| `SITE_URL` | `https://` followed by the same hostname |
-| `REDIS_URL` | `redis://redis:6379` for the included private Redis service |
-| `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` | Provider keys; empty keys enable rules-only operation |
-| `OPENAI_MODEL`, `ANTHROPIC_MODEL` | Model IDs selected and measured by track A; no default is assumed |
-| `LLM_PRIMARY` | `openai` or `anthropic`, as chosen by the measured provider comparison |
-| `MODEL_DAILY_CALL_CAP` | Daily model budget, initially `20000` |
-| `ADMIN_KEY` | A long random value, different from the provider keys |
-| `NEXT_PUBLIC_PRO_PREVIEW` | `true` during the hackathon; `false` to test the Free limits |
-| `OPENAI_TRANSCRIBE_MODEL`, `OPENAI_TTS_MODEL` | Empty unless voice has been approved and implemented |
-| `GIT_SHA` | Leave `local`; the deploy script replaces it with the checked-out commit |
+| Variable                                      | Production value                                                         |
+| --------------------------------------------- | ------------------------------------------------------------------------ |
+| `DOMAIN`                                      | Your hostname, without `https://` or a path                              |
+| `SITE_URL`                                    | `https://` followed by the same hostname                                 |
+| `REDIS_URL`                                   | `redis://redis:6379` for the included private Redis service              |
+| `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`         | Provider keys; empty keys enable rules-only operation                    |
+| `OPENAI_MODEL`, `ANTHROPIC_MODEL`             | Model IDs selected and measured by track A; no default is assumed        |
+| `LLM_PRIMARY`                                 | `openai` or `anthropic`, as chosen by the measured provider comparison   |
+| `MODEL_DAILY_CALL_CAP`                        | Daily model budget, initially `20000`                                    |
+| `ADMIN_KEY`                                   | A long random value, different from the provider keys                    |
+| `NEXT_PUBLIC_PRO_PREVIEW`                     | `true` during the hackathon; `false` to test the Free limits             |
+| `OPENAI_TRANSCRIBE_MODEL`, `OPENAI_TTS_MODEL` | Empty unless voice has been approved and implemented                     |
+| `GIT_SHA`                                     | Leave `local`; the deploy script replaces it with the checked-out commit |
 
 `NEXT_PUBLIC_PRO_PREVIEW` is a build-time browser value. The Compose build argument and runtime setting use the same value. Run the deploy script after changing it; restarting an old image does not rebuild its browser bundle. Provider keys are runtime-only and are excluded from the build context by `.dockerignore`.
 
@@ -127,3 +127,22 @@ git switch --detach PREVIOUS_ACCEPTED_SHA
 `--no-pull` neither fetches nor switches to `main`, so the selected commit is what gets rebuilt and health-checked. The same persistent volumes are retained. Do not run `docker compose down --volumes` on production: that removes Redis data and certificates.
 
 For the next normal update, run `./scripts/deploy.sh`; it returns to the reviewed remote `main`.
+
+## Existing host: veltral.aituconnect.kz
+
+The authorized host already serves other applications through nginx. This deployment uses [deploy/compose.nginx.yml](../deploy/compose.nginx.yml) instead of the three-service Caddy setup. It preserves the existing nginx services, publishes Do-Over only on `127.0.0.1:3310`, and keeps Redis on a private Docker network with AOF persistence. The dedicated nginx site terminates HTTPS for `veltral.aituconnect.kz`; its certificate and renewal hook are independent of the existing sites.
+
+Store the application environment in `/opt/do-over/shared/.env` with mode `600`, outside all release directories and build contexts. Configure `OPENAI_MODEL=gpt-6-luna`, `OPENAI_REASONING_EFFORT=none`, `OPENAI_TEXT_VERBOSITY=low`, `LLM_PRIMARY=openai`; leave Anthropic values empty. Voice uses `gpt-4o-mini-transcribe` and `gpt-4o-mini-tts`. The current Speech API TTS model is scheduled to retire on 6 January 2027; migrate the audio adapter before then using [the official speech guide](https://developers.openai.com/api/docs/guides/text-to-speech).
+
+The tested release may be deployed from an isolated review branch while main remains awaiting team review. Always use its exact full SHA; do not silently switch to main.
+
+```sh
+export GIT_SHA='<verified-full-commit>'
+export DOOVER_RELEASE_PATH="/opt/do-over/releases/$GIT_SHA"
+docker compose --env-file /opt/do-over/shared/.env -f /opt/do-over/infra/compose.yml config -q
+docker compose --env-file /opt/do-over/shared/.env -f /opt/do-over/infra/compose.yml build web
+docker compose --env-file /opt/do-over/shared/.env -f /opt/do-over/infra/compose.yml up -d --no-build
+curl --fail https://veltral.aituconnect.kz/api/health
+```
+
+Check that health reports the selected SHA, Redis up and OpenAI configured. Then complete a real unranked library scene, check model/rules attribution, verify voice API responses and compare existing sites before/after. Never print expanded Compose configuration because it includes environment secrets. To roll back, select a previous verified SHA and release path and start its existing image with `up -d --no-build`; keep the Redis volume.
