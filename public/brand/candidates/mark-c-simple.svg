@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Do-Over rewind mark">
+  <!-- Hand-authored on a 64-unit grid. C / High take. Centre 32.5,32.5; outer radius 25; inner radius 13.5. Counter-clockwise 306-degree annular strip, flat radial tail. A narrower triangular head lifts farther above the sheet; only its underside and ink shadow describe the fold. Small-size master: no fold and no shadow. -->
+  <rect width="64" height="64" rx="3.5" fill="#F4ECDD"/>
+  <path d="M8.35 26.03 A25 25 0 1 0 23.54 9.16 L27.66 19.9 A13.5 13.5 0 1 1 19.46 29.01 Z" fill="#C8431F"/>
+  <path d="M7.6 18.2 L21.5 3.5 L28 22.6 Z" fill="#C8431F"/>
+</svg>

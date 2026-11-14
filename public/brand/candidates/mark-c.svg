@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Do-Over rewind mark">
+  <!-- Hand-authored on a 64-unit grid. C / High take. Centre 32.5,32.5; outer radius 25; inner radius 13.5. Counter-clockwise 306-degree annular strip, flat radial tail. A narrower triangular head lifts farther above the sheet; only its underside and ink shadow describe the fold. Five filled shapes including the paper sheet; no strokes or gradients. -->
+  <rect width="64" height="64" rx="3.5" fill="#F4ECDD"/>
+  <defs><filter id="tip-shadow-c" x="-50%" y="-100%" width="200%" height="300%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="0.8"/></filter></defs>
+  <path d="M8.6 20.5 L23.3 20.9 L12.4 24 Z" fill="#1E2740" opacity=".18" filter="url(#tip-shadow-c)"/>
+  <path d="M8.35 26.03 A25 25 0 1 0 23.54 9.16 L27.66 19.9 A13.5 13.5 0 1 1 19.46 29.01 Z" fill="#C8431F"/>
+  <path d="M7.6 18.2 L21.5 3.5 L28 22.6 Z" fill="#C8431F"/>
+  <path d="M7.6 18.2 L28 22.6 L22.6 17.3 Z" fill="#9E3216"/>
+</svg>

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+<!-- Opaque full-bleed paper. Critical artwork is inset to 384 px; the loop and tip fit inside the central 80%-diameter safe circle. -->
+<rect width="512" height="512" fill="#F4ECDD"/>
+<svg x="64" y="64" width="384" height="384" viewBox="0 0 64 64">
+  <!-- Hand-authored on a 64-unit grid. A / Open take. Centre 33,33; outer radius 24; inner radius 12.5. The filled annular strip travels counter-clockwise 300 degrees, from -169 to -469 degrees. Width 11.5 = 24% of loop diameter. Flat radial tail. One triangular head; its underside alone lifts. Tip shadow is ink at 18%, blurred 0.8 grid units. Five filled shapes including the paper sheet; no strokes or gradients. -->
+  <rect width="64" height="64" rx="4" fill="#F4ECDD"/>
+  <defs><filter id="tip-shadow-a" x="-50%" y="-100%" width="200%" height="300%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="0.8"/></filter></defs>
+  <path d="M9.9 21.6 L25.4 23 L14.6 24.2 Z" fill="#1E2740" opacity=".18" filter="url(#tip-shadow-a)"/>
+  <path d="M9.44 28.42 A24 24 0 1 0 25.19 10.31 L28.93 21.18 A12.5 12.5 0 1 1 20.73 30.61 Z" fill="#C8431F"/>
+  <path d="M9.5 20 L23 4.8 L30.8 25.3 Z" fill="#C8431F"/>
+  <path d="M9.5 20 L30.8 25.3 L24.2 20.3 Z" fill="#9E3216"/>
+</svg>
+</svg>

@@ -1,0 +1,141 @@
+{
+  "license": "SIL Open Font License 1.1",
+  "copyright": "Copyright 2018 The Fraunces Project Authors",
+  "originalFamily": "Fraunces",
+  "instanceFamily": "Fraunces DoOver",
+  "modification": "Pinned variable axes into full, non-subset static fonts for consistent OG rendering; renamed derived family metadata. Original glyph outlines and copyright/license records retained.",
+  "tools": {
+    "fontTools": "4.68.0",
+    "uharfbuzz": "0.57.0"
+  },
+  "source": [
+    {
+      "name": "Fraunces[SOFT,WONK,opsz,wght].ttf",
+      "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/fraunces/Fraunces%5BSOFT%2CWONK%2Copsz%2Cwght%5D.ttf",
+      "sha256": "177ff6c0f14e5550a3c624247cd1189611d4eb65d000b14944c63d967958abbb",
+      "bytes": 360440
+    },
+    {
+      "name": "Fraunces-Italic[SOFT,WONK,opsz,wght].ttf",
+      "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/fraunces/Fraunces-Italic%5BSOFT%2CWONK%2Copsz%2Cwght%5D.ttf",
+      "sha256": "b24448c43702fac4ee856781d461a0dfba8d8e594b6e8e190234b75fed2c0e01",
+      "bytes": 414904
+    },
+    {
+      "name": "OFL.txt",
+      "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/fraunces/OFL.txt",
+      "sha256": "bdf4c22802eaf804f998195871c6b8938aac2ac14b2d78a8bd66a6f1eced833b",
+      "bytes": 4391
+    },
+    {
+      "name": "METADATA.pb",
+      "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/fraunces/METADATA.pb",
+      "sha256": "812aeaea90af8021a306b8fbb5490e0a861c27a5291d2253b403d9fc9f37afd5",
+      "bytes": 1197
+    }
+  ],
+  "instances": [
+    {
+      "file": "Fraunces-Brand700.ttf",
+      "source": "Fraunces[SOFT,WONK,opsz,wght].ttf",
+      "axes": {
+        "wght": 700,
+        "opsz": 72,
+        "SOFT": 100,
+        "WONK": 1
+      },
+      "sourceAxes": {
+        "opsz": {
+          "min": 9.0,
+          "default": 9.0,
+          "max": 144.0
+        },
+        "wght": {
+          "min": 100.0,
+          "default": 900.0,
+          "max": 900.0
+        },
+        "SOFT": {
+          "min": 0.0,
+          "default": 0.0,
+          "max": 100.0
+        },
+        "WONK": {
+          "min": 0.0,
+          "default": 1.0,
+          "max": 1.0
+        }
+      },
+      "sha256": "630fcbff7a04d667d277d60bc7feeb6c50f6eeca9814f3ca145fea18d918b283",
+      "bytes": 73144
+    },
+    {
+      "file": "Fraunces-Display640.ttf",
+      "source": "Fraunces[SOFT,WONK,opsz,wght].ttf",
+      "axes": {
+        "wght": 640,
+        "opsz": 72,
+        "SOFT": 100,
+        "WONK": 1
+      },
+      "sourceAxes": {
+        "opsz": {
+          "min": 9.0,
+          "default": 9.0,
+          "max": 144.0
+        },
+        "wght": {
+          "min": 100.0,
+          "default": 900.0,
+          "max": 900.0
+        },
+        "SOFT": {
+          "min": 0.0,
+          "default": 0.0,
+          "max": 100.0
+        },
+        "WONK": {
+          "min": 0.0,
+          "default": 1.0,
+          "max": 1.0
+        }
+      },
+      "sha256": "3b1add7fabc7503081353eb89584b71f2e1ed2ce49a9d3fab40b532632755cfb",
+      "bytes": 73088
+    },
+    {
+      "file": "Fraunces-Display640Italic.ttf",
+      "source": "Fraunces-Italic[SOFT,WONK,opsz,wght].ttf",
+      "axes": {
+        "wght": 640,
+        "opsz": 72,
+        "SOFT": 100,
+        "WONK": 1
+      },
+      "sourceAxes": {
+        "opsz": {
+          "min": 9.0,
+          "default": 9.0,
+          "max": 144.0
+        },
+        "wght": {
+          "min": 100.0,
+          "default": 900.0,
+          "max": 900.0
+        },
+        "SOFT": {
+          "min": 0.0,
+          "default": 0.0,
+          "max": 100.0
+        },
+        "WONK": {
+          "min": 0.0,
+          "default": 1.0,
+          "max": 1.0
+        }
+      },
+      "sha256": "acbf4d150081ee6e8fb72bdb38ea7c8290ff452286353f76fbc276bb7beafb4c",
+      "bytes": 89180
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Do-Over rewind mark">
+  <!-- Hand-authored on a 64-unit grid. B / Broad take. Centre 33,33; outer radius 23; inner radius 11.5. Counter-clockwise 294-degree annular strip, flat radial tail. A broader triangular head carries a deep diagonal underside fold; only this tip casts an ink shadow. Small-size master: no fold and no shadow. -->
+  <rect width="64" height="64" rx="5" fill="#F4ECDD"/>
+  <path d="M10.13 30.6 A23 23 0 1 0 25.89 11.13 L29.45 22.06 A11.5 11.5 0 1 1 21.56 31.8 Z" fill="#C8431F"/>
+  <path d="M10.7 22 L21.5 5.4 L33 27 Z" fill="#C8431F"/>
+</svg>
