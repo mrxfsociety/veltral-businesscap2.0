@@ -13,7 +13,12 @@ export async function turnOrDebrief(page: Page): Promise<"debrief" | "input"> {
     .poll(
       async () => {
         if (await debrief.isVisible()) state = "debrief";
-        else if (await input.isEditable().catch(() => false)) state = "input";
+        else if (
+          // A short timeout: the box disappears when the scene ends, and
+          // isEditable would otherwise wait for it to come back.
+          await input.isEditable({ timeout: 300 }).catch(() => false)
+        )
+          state = "input";
         return state;
       },
       { timeout: 15000 },

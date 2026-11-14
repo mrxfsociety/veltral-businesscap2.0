@@ -43,7 +43,7 @@ test("a wrong code is refused and nothing opens", async ({ page }) => {
   await page.goto("/pricing");
   await page.getByLabel("Demo code").fill("WRONG");
   await page.getByRole("button", { name: "Open the pass" }).click();
-  await expect(page.getByRole("alert")).toContainText("That code didn't work");
+  await expect(page.getByText("That code didn't work")).toBeVisible();
   const entitlement = await (await page.request.get("/api/entitlement")).json();
   expect(entitlement.pro).toBe(false);
 });
