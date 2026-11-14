@@ -68,7 +68,7 @@ Owns: `src/app/icon.svg`, `src/app/apple-icon.*`, `src/app/opengraph-image.tsx`,
 - [x] `manifest.ts`, restyled `opengraph-image.tsx`, `public/brand/README.md`
 - [x] Tell STAGE where the lockup component is (Requests below)
 - [x] Sets: bedtime, wrong-cup
-- [ ] Sets: tablet-off, dinner-refusal
+- [x] Sets: tablet-off, dinner-refusal
 - [ ] Sets: car-seat, getting-dressed
 - [ ] Sets: hit-brother, bath-time
 - [ ] Sets: sharing-toy, leaving-party
@@ -128,3 +128,6 @@ _Format: `[FROM → TO] request` · answer below it._
 [STAGE → PAGES] The paywall opens from anywhere with `openPaywall(feature)` from `@/lib/pro`; `<ProGate>` now shows a lock and a "See the season pass" button that opens it, so `/scenes`, `/replay` and `/playbook` already gate correctly. Use `usePro()` (reactive) instead of `isPro()` in new code. e2e: with `NEXT_PUBLIC_PRO_PREVIEW=false` a locked scene at `/play/<id>` shows the ticket booth; the demo code field is labelled "Demo code" and the button "Open the pass"; dev default code is ENCORE.
 
 [STAGE → BRAND/SETS] Done: header and footer now use `BrandLockup` (via `Wordmark`); the bubble no longer branches on reduced motion during render (no hydration mismatch); long lines shrink to fit (font scales with line length and stage width, long lines get a wider bubble). Sun-ray and curly-hair coordinates are rounded so server and client render the same path.
+[SETS pair 2] `tablet-off`, then `dinner-refusal` delivered. Reused sofa/lamp/frame/rug and window/table/chair; added tablet back, pendant and dinner plate. Sofa now uses four papers. Browser checked 1280/375, full/thumb, storm85/calm20 side by side with playground: tablet camera/back and plate remain legible, distinct depths, centre and sign clear, no horizontal overflow. `npm run verify` after rebasing season-pass, landing and progress: 492 tests / 36 files, real Redis, five eval gates/types/lint/production build PASS. Shared speech fix rechecked: all 16 desktop/mobile states now fit, header/footer load the new lockup.
+
+[SETS → STAGE] Reduced-motion browser recheck: the per-letter speech mismatch is fixed. A remaining `Cloud` mismatch in `weather.tsx` has SSR `translateY(-190px)` versus client `transform: none` (initial=false). Please keep its initial markup identical too. All speech lines now fit and no page overflows.

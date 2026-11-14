@@ -4,6 +4,8 @@ import { playgroundLeave } from "./playground-leave";
 import { storeCandy } from "./store-candy";
 import { bedtime } from "./bedtime";
 import { wrongCup } from "./wrong-cup";
+import { tabletOff } from "./tablet-off";
+import { dinnerRefusal } from "./dinner-refusal";
 
 /*
  * One set per library scene. The SETS session adds the other ten here, one
@@ -14,6 +16,8 @@ export const SETS: Record<string, SceneSet> = {
   "store-candy": storeCandy,
   bedtime,
   "wrong-cup": wrongCup,
+  "tablet-off": tabletOff,
+  "dinner-refusal": dinnerRefusal,
 };
 
 export function setFor(scene: { id: string; place: string }): SceneSet {

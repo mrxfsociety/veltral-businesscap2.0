@@ -58,7 +58,7 @@ export function Sofa({ tint }: PropProps) {
       />
       <path
         d="M-66 0 L-64 -6 L-58 -6 L-60 0 Z M58 0 L60 -6 L66 -6 L68 0 Z"
-        fill={P.ink}
+        fill={P.plumDark}
       />
       <path d="M-40 -60 L-18 -62 L-16 -40 L-38 -38 Z" fill={P.mustard} />
     </g>
