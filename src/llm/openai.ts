@@ -1,12 +1,14 @@
 import "server-only";
 import OpenAI from "openai";
-import { z } from "zod";
+import { zodTextFormat } from "openai/helpers/zod";
+import type { ServerEnv } from "../server/env";
 import type { JsonProvider, ProviderRequest } from "./provider";
 
 export function createOpenAIProvider(
   apiKey: string,
   model: string,
   client = new OpenAI({ apiKey, maxRetries: 0 }),
+  reasoningEffort?: ServerEnv["OPENAI_REASONING_EFFORT"],
 ): JsonProvider {
   return {
     name: "openai",
@@ -16,17 +18,15 @@ export function createOpenAIProvider(
         {
           model,
           store: false,
+          ...(reasoningEffort === undefined
+            ? {}
+            : { reasoning: { effort: reasoningEffort } }),
           input: [
             { role: "system", content: request.system },
             { role: "user", content: request.user },
           ],
           text: {
-            format: {
-              type: "json_schema",
-              name: "do_over",
-              strict: true,
-              schema: z.toJSONSchema(request.schema),
-            },
+            format: zodTextFormat(request.schema, "do_over"),
           },
           max_output_tokens: request.maxOutputTokens,
         },

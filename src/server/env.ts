@@ -20,6 +20,10 @@ export const EnvSchema = z.object({
   ),
   OPENAI_API_KEY: optionalText,
   OPENAI_MODEL: optionalText,
+  OPENAI_REASONING_EFFORT: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.enum(["none", "low", "medium", "high", "xhigh", "max"]).optional(),
+  ),
   ANTHROPIC_API_KEY: optionalText,
   ANTHROPIC_MODEL: optionalText,
   LLM_PRIMARY: z.enum(["openai", "anthropic"]).default("openai"),

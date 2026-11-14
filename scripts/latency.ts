@@ -159,6 +159,8 @@ async function main() {
     providers.openai = createOpenAIProvider(
       env.OPENAI_API_KEY,
       env.OPENAI_MODEL,
+      undefined,
+      env.OPENAI_REASONING_EFFORT,
     );
   if (!rulesOnly && env.ANTHROPIC_API_KEY && env.ANTHROPIC_MODEL)
     providers.anthropic = createAnthropicProvider(

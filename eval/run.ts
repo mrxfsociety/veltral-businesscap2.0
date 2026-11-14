@@ -88,13 +88,25 @@ async function main(): Promise<void> {
       import("../src/llm/anthropic"),
       import("../src/llm/turn"),
     ]);
-    const { OPENAI_API_KEY, OPENAI_MODEL, ANTHROPIC_API_KEY, ANTHROPIC_MODEL } =
-      process.env;
+    const { getEnv } = await import("../src/server/env");
+    const {
+      OPENAI_API_KEY,
+      OPENAI_MODEL,
+      OPENAI_REASONING_EFFORT,
+      ANTHROPIC_API_KEY,
+      ANTHROPIC_MODEL,
+      LLM_PRIMARY,
+    } = getEnv();
     const openai =
       OPENAI_API_KEY &&
       OPENAI_MODEL &&
       (!providerFlag || providerFlag === "openai")
-        ? createOpenAIProvider(OPENAI_API_KEY, OPENAI_MODEL)
+        ? createOpenAIProvider(
+            OPENAI_API_KEY,
+            OPENAI_MODEL,
+            undefined,
+            OPENAI_REASONING_EFFORT,
+          )
         : undefined;
     const anthropic =
       ANTHROPIC_API_KEY &&
@@ -112,9 +124,7 @@ async function main(): Promise<void> {
         ...(openai ? { openai } : {}),
         ...(anthropic ? { anthropic } : {}),
       },
-      primary:
-        providerFlag ??
-        (process.env.LLM_PRIMARY === "anthropic" ? "anthropic" : "openai"),
+      primary: providerFlag ?? LLM_PRIMARY,
       reserveCall: reserveModelCall,
       onAttempt: (attempt) => {
         if (attempt.success) {

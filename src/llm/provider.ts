@@ -106,6 +106,8 @@ export const completeJson: JsonCompleter = async <T>(
     providers.openai = createOpenAIProvider(
       env.OPENAI_API_KEY,
       env.OPENAI_MODEL,
+      undefined,
+      env.OPENAI_REASONING_EFFORT,
     );
   }
   if (env.ANTHROPIC_API_KEY && env.ANTHROPIC_MODEL) {
