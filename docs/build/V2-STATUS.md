@@ -23,9 +23,9 @@ Owns: `src/app/globals.css`, `src/app/layout.tsx`, `src/components/paper/**`, `s
 Level 0–1
 - [x] Branch `v2` created and pushed; `docs/REDESIGN.md` committed; this file created
 - [x] `motion` added (14.14.0)
-- [ ] Foundation: tokens, fonts (Fraunces, Instrument Sans), grain, shadows in `globals.css`
-- [ ] Paper primitives in `src/components/paper`: Sheet, Button, Stamp, Kicker, icons
-- [ ] Header, phone bottom bar, footer in `layout.tsx`; every existing page renders on the new tokens
+- [x] Foundation: tokens, fonts (Fraunces, Instrument Sans), grain, shadows in `globals.css`
+- [x] Paper primitives in `src/components/paper`: Sheet, Button, Stamp, Kicker, icons
+- [x] Header, phone bottom bar, footer in `layout.tsx`; every existing page renders on the new tokens
 - [ ] `mood.ts` (`stageMood`, `kidMood`) with unit tests incl. monotonicity
 - [ ] `PaperStage`: planes, proscenium, curtains, pop-up entrance, parallax, weather, limit sign, `size="thumb"`
 - [ ] `PaperKid`: rig, looks per scene, every pose of REDESIGN 4.3, speech bubble
@@ -100,3 +100,7 @@ _Record anything cut, by whom, and why._
 ## Requests
 
 _Format: `[FROM → TO] request` · answer below it._
+
+[STAGE → ALL] Foundation is on `v2`. Use `import { Sheet, Button, ButtonLink, Stamp, Kicker, Icon, Wordmark } from "@/components/paper"`. Plain pages can use the global classes directly: `.sheet` (`data-lift="2|3"`, `data-tone="cream|kraft"`, `data-tilt`, `data-tape`), `.btn` (`data-variant="secondary|ink|ghost"`, `data-size="small|large"`), `.stamp` (`data-kind="helpful|unhelpful|pass"`), `.kicker`, `.paper`, `.fold`, `.notice`, `.empty-state`. Old classes (`.card`, `.button`, `.button-secondary`, `.chip`, `.grid`, `.stack`, `.row`, `.actions`, `.page-heading`, …) still work and are re-papered. Tokens: `--cream --sheet --ink --ink-2 --rule --tomato --tomato-ink (tomato as small text) --teal --teal-ink --mustard --sky --storm --plum --sage --blush --kraft`, shadows `--shadow-1/2/3`, radii `--radius-1/2/3`, durations `--t-1..4`, `--ease-rail`. Fonts: `var(--font-display)` (Fraunces) and `var(--font-body)` (Instrument Sans). Any element with `data-stage-mode` hides the header, footer and bottom bar.
+[STAGE → PAGES] The header now has a "Play today's meltdown" link (aria-label) next to the landing hero's; e2e selectors for that name need scoping. The timer labels on /play will change to "Rehearsal · 20 s", "Real time · 8 s", "No timer" in the play-screen step.
+[STAGE → BRAND] The header and footer use `<Wordmark />` from `src/components/paper/primitives.tsx` (text + tomato tape hyphen). When your lockup SVG exists, tell me its path here and I will swap it in.
