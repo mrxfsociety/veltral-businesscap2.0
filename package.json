@@ -1,0 +1,52 @@
+{
+  "name": "do-over",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "e2e": "playwright test",
+    "shots": "CAPTURE_SHOTS=true playwright test e2e/screenshots.spec.ts",
+    "par": "node --import tsx scripts/par.ts",
+    "eval": "node --import tsx eval/run.ts",
+    "eval:model": "node --conditions=react-server --import tsx eval/run.ts --model",
+    "verify": "npm run lint && npm run typecheck && npm test && npm run eval && npm run build",
+    "latency": "node --conditions=react-server --import tsx scripts/latency.ts",
+    "eval:bakeoff": "node --conditions=react-server --import tsx eval/bakeoff.ts",
+    "check:eval-isolation": "node --import tsx scripts/check-eval-isolation.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "latest",
+    "ioredis": "latest",
+    "next": "16.4.6",
+    "openai": "latest",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "zod": "4.6.7",
+    "server-only": "0.0.1"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "latest",
+    "@playwright/test": "latest",
+    "@tailwindcss/postcss": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "eslint": "latest",
+    "eslint-config-next": "16.4.6",
+    "prettier": "latest",
+    "tailwindcss": "latest",
+    "typescript": "6.0.3",
+    "vitest": "latest",
+    "tsx": "4.23.15"
+  }
+}

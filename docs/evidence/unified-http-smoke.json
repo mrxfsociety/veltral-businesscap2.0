@@ -1,0 +1,210 @@
+{
+  "scope": "Real HTTP requests to local standalone production build; model keys unset; memory storage; no external production requests; all sessions library or practice.",
+  "generatedAt": "2026-11-14T17:29:33.384Z",
+  "checks": [
+    {
+      "name": "health",
+      "passed": true,
+      "health": {
+        "ok": true,
+        "commit": "local-unified-check",
+        "time": "2026-11-14T17:29:33.412Z",
+        "redis": "memory",
+        "providers": {
+          "openai": false,
+          "anthropic": false
+        },
+        "proPreview": true
+      }
+    },
+    {
+      "name": "daily",
+      "passed": true,
+      "sceneId": "store-candy",
+      "dayKey": "2026-11-14",
+      "players": 1
+    },
+    {
+      "name": "store-candy: helpful",
+      "ageBand": "2-3",
+      "outcome": "calm_limit_held",
+      "turns": 3,
+      "grid": ["good", "good", "good"],
+      "passed": true
+    },
+    {
+      "name": "store-candy: threats",
+      "ageBand": "2-3",
+      "outcome": "out_of_turns",
+      "turns": 8,
+      "grid": ["bad", "bad", "bad", "bad", "bad", "bad", "bad", "bad"],
+      "passed": true
+    },
+    {
+      "name": "store-candy: giving in",
+      "ageBand": "2-3",
+      "outcome": "calm_gave_in",
+      "grid": ["bad"],
+      "passed": true
+    },
+    {
+      "name": "store-candy: unsafe stop",
+      "ageBand": "2-3",
+      "outcome": "stopped_unsafe",
+      "passed": true
+    },
+    {
+      "name": "tablet-off: helpful",
+      "ageBand": "4-5",
+      "outcome": "calm_limit_held",
+      "turns": 4,
+      "grid": ["good", "good", "good", "good"],
+      "passed": true
+    },
+    {
+      "name": "tablet-off: threats",
+      "ageBand": "4-5",
+      "outcome": "out_of_turns",
+      "turns": 8,
+      "grid": ["bad", "bad", "bad", "bad", "bad", "bad", "bad", "bad"],
+      "passed": true
+    },
+    {
+      "name": "tablet-off: giving in",
+      "ageBand": "4-5",
+      "outcome": "calm_gave_in",
+      "grid": ["bad"],
+      "passed": true
+    },
+    {
+      "name": "tablet-off: unsafe stop",
+      "ageBand": "4-5",
+      "outcome": "stopped_unsafe",
+      "passed": true
+    },
+    {
+      "name": "bedtime: helpful",
+      "ageBand": "6-7",
+      "outcome": "calm_limit_held",
+      "turns": 3,
+      "grid": ["good", "good", "good"],
+      "passed": true
+    },
+    {
+      "name": "bedtime: threats",
+      "ageBand": "6-7",
+      "outcome": "out_of_turns",
+      "turns": 8,
+      "grid": ["bad", "bad", "bad", "bad", "bad", "bad", "bad", "bad"],
+      "passed": true
+    },
+    {
+      "name": "bedtime: giving in",
+      "ageBand": "6-7",
+      "outcome": "calm_gave_in",
+      "grid": ["bad"],
+      "passed": true
+    },
+    {
+      "name": "bedtime: unsafe stop",
+      "ageBand": "6-7",
+      "outcome": "stopped_unsafe",
+      "passed": true
+    },
+    {
+      "name": "do-over retains earlier state and finishes a new path",
+      "passed": true,
+      "outcome": "calm_limit_held",
+      "usedDoOver": true
+    },
+    {
+      "name": "real API conflict and expired-session errors",
+      "passed": true
+    },
+    {
+      "name": "custom scene no-key fallback and unsafe refusal",
+      "passed": true
+    },
+    {
+      "name": "coach no-key fallback",
+      "passed": true,
+      "source": "tips",
+      "suggestions": 0
+    },
+    {
+      "name": "daily practice does not enter ranking",
+      "passed": true
+    },
+    {
+      "name": "SSR /",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "SSR /play",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "SSR /scenes",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "SSR /playbook",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "SSR /progress",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "SSR /replay",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "SSR /pricing",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "SSR /privacy",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "rules displayed evaluation matches file",
+      "passed": true,
+      "testCount": 63,
+      "microF1": 0.9859154929577465,
+      "rows": 19
+    },
+    {
+      "name": "merged displayed evaluation matches file",
+      "passed": true,
+      "testCount": 63,
+      "microF1": 0.9664429530201343,
+      "rows": 19
+    },
+    {
+      "name": "SSR /how-it-works",
+      "passed": true,
+      "status": 200
+    },
+    {
+      "name": "Open Graph image endpoint",
+      "passed": true,
+      "bytes": 48749
+    }
+  ],
+  "rulesHttpLatencyMs": {
+    "count": 34,
+    "median": 2,
+    "max": 12
+  },
+  "passed": true,
+  "turnRequests": 46
+}

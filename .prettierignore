@@ -1,0 +1,10 @@
+.next
+node_modules
+package-lock.json
+docs/reference
+docs/SPEC.md
+docs/build
+content
+eval/labeled.jsonl
+AGENTS.md
+CLAUDE.md
