@@ -12,9 +12,11 @@ import { ProBadge, ProGate } from "@/components/pro-gate";
 export function Playbook() {
   const { playbook } = useStore();
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const [shareUrl, setShareUrl] = useState("");
 
   async function copyLine(text: string) {
+    setError("");
     setMessage(
       (await copyText(text))
         ? "Line copied."
@@ -23,6 +25,7 @@ export function Playbook() {
   }
 
   async function share() {
+    setError("");
     try {
       const url = buildPlaybookUrl(playbook, window.location.origin);
       setShareUrl(url);
@@ -123,9 +126,16 @@ export function Playbook() {
                   <button
                     className="button-secondary"
                     onClick={() => {
-                      removePlaybook(line.id);
-                      setShareUrl("");
-                      setMessage("Line deleted from this browser.");
+                      setError("");
+                      setMessage("");
+                      if (removePlaybook(line.id)) {
+                        setShareUrl("");
+                        setMessage("Line deleted from this browser.");
+                      } else {
+                        setError(
+                          "We couldn't delete this line because browser storage is full or unavailable. Your saved line is unchanged. Please try again.",
+                        );
+                      }
                     }}
                     aria-label={`Delete line: ${line.text}`}
                   >
@@ -143,6 +153,7 @@ export function Playbook() {
       <p role="status" aria-live="polite">
         {message}
       </p>
+      {error && <p role="alert">{error}</p>}
     </div>
   );
 }

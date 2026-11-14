@@ -268,9 +268,13 @@ export function savePlaybook(
   return { ok: true, entry: parsed.data };
 }
 
-export function removePlaybook(id: string): void {
-  updateStore((current) => ({
-    ...current,
-    playbook: current.playbook.filter((entry) => entry.id !== id),
-  }));
+export function removePlaybook(id: string): boolean {
+  const current = readStore();
+  const updated = writeStore(
+    {
+      playbook: current.playbook.filter((entry) => entry.id !== id),
+    },
+    true,
+  );
+  return updated !== current;
 }

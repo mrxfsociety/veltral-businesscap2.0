@@ -97,6 +97,71 @@ test("malformed shared playbook has a useful empty state", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("a blocked deletion keeps the saved line through reload and allows a retry", async ({
+  page,
+}) => {
+  await page.goto("/playbook");
+  await page.evaluate(() => {
+    localStorage.setItem(
+      "doover:v1",
+      JSON.stringify({
+        settings: { timer: 0, voice: false, calmBaselineDb: null },
+        history: [],
+        dailyDone: {},
+        waitlistJoined: false,
+        playbook: [
+          {
+            id: "deletion-test-line",
+            at: "2026-11-14T10:00:00.000Z",
+            text: "I'm here with you.",
+            tags: ["CONNECT"],
+            sceneTitle: "Test practice scene",
+          },
+        ],
+      }),
+    );
+  });
+  await page.reload();
+  await expect(
+    page.getByText("I'm here with you.", { exact: true }),
+  ).toBeVisible();
+  const persisted = await page.evaluate(() =>
+    localStorage.getItem("doover:v1"),
+  );
+  await page.evaluate(() => {
+    Storage.prototype.setItem = () => {
+      throw new DOMException("Storage quota exceeded", "QuotaExceededError");
+    };
+  });
+  await page
+    .getByRole("button", { name: "Delete line: I'm here with you." })
+    .click();
+  await expect(page.getByRole("alert")).toContainText(
+    "Your saved line is unchanged.",
+  );
+  await expect(page.getByRole("status")).not.toContainText("Line deleted");
+  await expect(
+    page.getByText("I'm here with you.", { exact: true }),
+  ).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem("doover:v1"))).toBe(
+    persisted,
+  );
+  await page.reload();
+  await expect(
+    page.getByText("I'm here with you.", { exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Delete line: I'm here with you." })
+    .click();
+  await expect(page.getByRole("status")).toContainText(
+    "Line deleted from this browser.",
+  );
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { name: "Your words will go here." }),
+  ).toBeVisible();
+});
+
 test("empty progress invites practice without invented sessions", async ({
   page,
 }) => {

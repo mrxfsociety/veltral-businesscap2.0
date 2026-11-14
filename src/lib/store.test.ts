@@ -222,6 +222,31 @@ describe("browser store", () => {
     expect(readStore().playbook).toEqual([playbookEntry]);
   });
 
+  it("preserves a line after denied removal and reload, then persists a successful retry", async () => {
+    expect(savePlaybook(playbookEntry, true).ok).toBe(true);
+    const persisted = storage.get(STORE_KEY);
+    const setItem = local.setItem;
+    local.setItem = () => {
+      throw new DOMException("Storage quota exceeded", "QuotaExceededError");
+    };
+    const changed = vi.fn();
+    const unsubscribe = subscribeStore(changed);
+    expect(removePlaybook(playbookEntry.id)).toBe(false);
+    expect(readStore().playbook).toEqual([playbookEntry]);
+    expect(storage.get(STORE_KEY)).toBe(persisted);
+    expect(changed).not.toHaveBeenCalled();
+    unsubscribe();
+
+    vi.resetModules();
+    const reloaded = await import("./store");
+    expect(reloaded.readStore().playbook).toEqual([playbookEntry]);
+    local.setItem = setItem;
+    expect(reloaded.removePlaybook(playbookEntry.id)).toBe(true);
+    vi.resetModules();
+    const retried = await import("./store");
+    expect(retried.readStore().playbook).toEqual([]);
+  });
+
   it("refreshes once for a change from another tab", () => {
     const first = vi.fn();
     const second = vi.fn();
