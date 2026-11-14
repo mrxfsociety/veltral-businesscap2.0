@@ -8,7 +8,57 @@ Rules: own paths only (REDESIGN section 10). `npm run verify` before every push.
 
 ## Operator notes (production)
 
-_PAGES writes the production findings here (step 1)._
+### DEPLOY — 15 November 2026, 04:22 Astana (UTC+05:00)
+
+Production: https://veltral.aituconnect.kz. Deployed commit: `16407b2c0e645c0719413c677478cd4e9c641b1b`. Previous production commit: `ac6fa98f4daf9fae087a2700352a8552572ed39b`.
+
+- GitHub check: fetched `origin`; both `origin/main` and `origin/v2` resolved to the requested `16407b2c0e645c0719413c677478cd4e9c641b1b`. No push to `main` was needed.
+- Environment backed up to `/opt/do-over/shared/.env.bak.040657` before editing. Set `NEXT_PUBLIC_PRO_PREVIEW=false` and `DEMO_CODE=ENCORE`; generated the previously missing `ENTITLEMENT_SECRET` on the server with `openssl rand -hex 32`. No secret values are recorded here. No Stripe key was supplied, so `STRIPE_SECRET_KEY` remains absent and checkout is code-only. All other existing lines, including `OPENAI_*`, `SITE_URL`, and `ADMIN_KEY`, were verified unchanged.
+- Copied the operator's existing `do-over-v2/deploy-main.sh` to `/opt/do-over/deploy-main.sh` unchanged. The script backed up compose to `/opt/do-over/infra/compose.yml.bak.040740`, built the requested release, and printed `Healthy commit: 16407b2c0e645c0719413c677478cd4e9c641b1b` at 04:12:35 Astana. One transient 502 during container replacement cleared on the next health retry. Web and Redis containers are healthy; the existing Redis container was preserved. No rollback was performed.
+- Runtime checks confirmed the requested commit and environment settings, the new entitlement secret reaching the web container, and the existing OpenAI key preserved. Application code was not edited.
+
+**External API checks — PASS**, run from the operator's Mac, outside the server, at 04:13:44 Astana:
+
+`GET /api/health`:
+
+```json
+{"ok":true,"commit":"16407b2c0e645c0719413c677478cd4e9c641b1b","time":"2026-11-14T23:13:44.368Z","redis":"up","providers":{"openai":true,"anthropic":false},"proPreview":false}
+```
+
+`GET /api/entitlement` in a fresh session:
+
+```json
+{"pro":false,"source":null,"checkout":"code_only","demoCode":"ENCORE"}
+```
+
+`POST /api/session` with `{"kind":"library","sceneId":"car-seat"}` returned **402**. `/api/daily` returned `sceneId: "store-candy"` and `dayKey: "2026-11-14"`, so car-seat was correctly locked.
+
+**Real-browser checks**, Chromium in two fresh isolated private contexts, 1280×900 and 375×812:
+
+| Check | 1280 px | 375 px | Evidence |
+| --- | --- | --- | --- |
+| `/` live paper stage | PASS | PASS | Stage visible; page HTTP 200. |
+| `/play` starts and plays a real turn | PASS | PASS | Rehearsal selected initially; tested with No timer. Turn HTTP 200, storm 75 → 57, three helpful tags, reply enabled afterward. |
+| Turn stamps inside the stage | PASS | FAIL | Desktop shows all three stamps inside the stage. Mobile renders the feedback slip below the stage; its lower provenance line is partly overlapped by the reply dock in the checked viewport. |
+| `/scenes` → locked car-seat → paywall → ENCORE | PASS | PASS | Paywall opens, code grants `pro: true`, and car-seat can start. Stripe trial controls absent as expected with code-only checkout. |
+| `/pricing` → Return to Free | PASS | PASS | Entitlement becomes `pro: false`; car-seat is locked again and cannot start. |
+| `/progress` → Show a sample week | PASS | PASS | Seven sample labels shown; stored user history unchanged; sample mode off after reload. |
+| `/jury` | PASS | PASS | HTTP 200, walkthrough heading visible, `noindex, nofollow`. |
+| Horizontal overflow / browser errors | PASS | PASS | No horizontal overflow on checked pages; no page errors or console errors captured. |
+
+**Model versus rules:** both tested turns displayed **"Tagged by rules only"** and returned `tagging: "rules"`, with `NAME_FEELING`, `HOLD_LIMIT`, and `CONNECT` tags. No "Tagged with the model" result was observed. Health reports OpenAI configured, but successful model tagging is **not confirmed**. Web logs contained startup messages and did not establish the fallback cause. OpenAI settings were left unchanged.
+
+The 375 px stamp placement is existing application behavior (`wide && slip` inside the stage, `!wide && slip` below it). It is recorded as a failed layout requirement for the code owner; no application change was made during deployment. Stripe payment processing was not tested because no test key was supplied.
+
+**Repository verification:** `git pull --rebase origin v2`, `npm ci`, and `npm run verify` passed in an isolated worktree: lint, typecheck, 494 tests passed, four opt-in Redis integration tests skipped, evaluation all five gates passed (micro-F1 0.9859, exact match 0.9683, unhelpful precision 1.0), and production build passed. Generated verification files were backed up and restored; this report is the only committed change. This documentation update goes to `v2` only and does not trigger a redeploy.
+
+**Rollback command** (not executed):
+
+```sh
+cd /opt/do-over && ./deploy-main.sh ac6fa98f4daf9fae087a2700352a8552572ed39b
+```
+
+This switches back to the previous release using the current shared environment. The environment and compose backups are listed above.
 
 ## Clock (Astana)
 
