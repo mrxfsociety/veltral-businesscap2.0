@@ -36,10 +36,6 @@ export default function RootLayout({
           </Link>
         </header>
         <main id="main" className="site-main">
-          <p className="notice" role="note">
-            Development preview: simulation responses use temporary
-            placeholders. This build is not ready for parenting practice.
-          </p>
           {children}
         </main>
         <footer className="site-footer">

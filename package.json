@@ -16,10 +16,13 @@
     "test": "vitest run",
     "e2e": "playwright test",
     "shots": "CAPTURE_SHOTS=true playwright test e2e/screenshots.spec.ts",
-    "par": "node scripts/pending-stage.mjs A1",
-    "eval": "node scripts/pending-stage.mjs A1",
-    "eval:model": "node scripts/pending-stage.mjs A2",
-    "verify": "npm run lint && npm run typecheck && npm test && npm run eval && npm run build"
+    "par": "tsx scripts/par.ts",
+    "eval": "tsx eval/run.ts",
+    "eval:model": "NODE_OPTIONS=--conditions=react-server tsx eval/run.ts --model",
+    "verify": "npm run lint && npm run typecheck && npm test && npm run eval && npm run build",
+    "latency": "NODE_OPTIONS=--conditions=react-server tsx scripts/latency.ts",
+    "eval:bakeoff": "NODE_OPTIONS=--conditions=react-server tsx eval/bakeoff.ts",
+    "check:eval-isolation": "tsx scripts/check-eval-isolation.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "latest",
@@ -28,7 +31,8 @@
     "openai": "latest",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "zod": "4.6.7"
+    "zod": "4.6.7",
+    "server-only": "0.0.1"
   },
   "devDependencies": {
     "@axe-core/playwright": "latest",
@@ -41,7 +45,8 @@
     "eslint-config-next": "16.4.6",
     "prettier": "latest",
     "tailwindcss": "latest",
-    "typescript": "latest",
-    "vitest": "latest"
+    "typescript": "6.0.3",
+    "vitest": "latest",
+    "tsx": "4.23.15"
   }
 }

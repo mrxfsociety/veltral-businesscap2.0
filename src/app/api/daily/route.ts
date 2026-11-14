@@ -1,7 +1,4 @@
-// STUB(T0): replaced in stage A3.
-import { DailyResponseSchema } from "@/shared/api";
-import { t0Daily } from "@/server/t0-stubs";
+import { createFeatureHandlers } from "@/server/features";
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export function GET(): Response {
-  return Response.json(DailyResponseSchema.parse(t0Daily()));
-}
+export const GET = createFeatureHandlers().daily;

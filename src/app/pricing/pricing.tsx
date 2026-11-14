@@ -180,7 +180,10 @@ export function Pricing() {
             </select>
             <p className="muted">
               We store your email and chosen plan for the waitlist.{" "}
-              <Link href="/privacy">Read our privacy information</Link>.
+              <Link href="/privacy" style={{ textDecoration: "underline" }}>
+                Read our privacy information
+              </Link>
+              .
             </p>
             <button className="button" type="submit" disabled={pending}>
               {pending ? "Joining…" : "Join waitlist"}

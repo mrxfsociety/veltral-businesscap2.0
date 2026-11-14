@@ -7,10 +7,6 @@ export const metadata: Metadata = {
 };
 export const dynamic = "force-dynamic";
 export default function Privacy() {
-  const providers = [
-    process.env.OPENAI_API_KEY ? "OpenAI" : null,
-    process.env.ANTHROPIC_API_KEY ? "Anthropic" : null,
-  ].filter(Boolean);
   return (
     <article className="prose">
       <header className="page-heading">
@@ -32,22 +28,32 @@ export default function Privacy() {
           run the simulation. Don’t include real names or identifying details.
         </p>
         <p>
-          {providers.length
-            ? `Configured AI providers: ${providers.join(" and ")}. When model features are available, text is sent to these providers for tagging, child dialogue and optional scene generation or coaching. Their own data policies also apply.`
-            : "No AI provider is configured in this deployment. Model-generated scenes and coaching are unavailable; the server can use its rules-only path when the engine is connected."}
+          When AI features are available, text is sent to OpenAI for tagging,
+          child dialogue, custom scene generation or coaching. OpenAI’s own data
+          policies also apply. If AI is unavailable, the daily scene and library
+          can use rules and template dialogue. A failed AI request may still
+          have sent your text before this fallback takes over.
         </p>
         <p>
-          Session data is designed to expire after six hours; custom scenes
-          after 24 hours. Daily standings use a random session ID and a score,
-          rather than your name or reply text, and expire after 14 days. The
-          deployment’s actual storage status is available at{" "}
-          <a href="/api/health">the health endpoint</a>.
+          Session data, including replies, expires six hours after the session
+          starts. Generated custom scenes expire after 24 hours. Daily standings
+          store a random session ID and a score, rather than your name or reply
+          text, with a 14-day expiry window.
         </p>
         <p>
-          The current development preview keeps sessions and waitlist
-          submissions in process memory. It does not yet implement daily
-          standings or generated custom scenes. These details must be updated at
-          integration when the production server replaces the foundation.
+          Server data uses Redis storage. If it is unavailable, the app falls
+          back to server memory, which can be lost when the app restarts.
+        </p>
+        <p>
+          The waitlist stores your submitted email address, chosen plan and
+          submission date on our server. No payment details are requested. There
+          is no automatic expiry for waitlist entries.
+        </p>
+        <p>
+          To limit abuse, the server keeps a hash of your IP address with
+          request counts for up to a day. It also keeps daily totals, such as
+          sessions started and model calls, with a 30-day expiry window. These
+          counters do not contain your replies.
         </p>
       </section>
       <section>
@@ -64,9 +70,9 @@ export default function Privacy() {
           receives the link can read the lines, and copies cannot be recalled.
         </p>
         <p>
-          The waitlist stores the email address and chosen plan that you submit.
-          No payment details are requested. There is no automatic expiry for
-          waitlist entries.
+          Clearing browser data below removes local history, saved lines and
+          preferences. It does not remove server sessions, a submitted waitlist
+          entry or copies of a shared link.
         </p>
         <p>
           Voice recording is not enabled in this build. The app does not request

@@ -3,6 +3,7 @@ import {
   STORE_KEY,
   clearStore,
   readStore,
+  removePlaybook,
   saveHistory,
   savePlaybook,
   saveSettings,
@@ -146,6 +147,79 @@ describe("browser store", () => {
       ok: false,
       reason: "invalid",
     });
+  });
+
+  it("rejects oversized growth without replacing existing saved data", () => {
+    saveHistory(historyEntry);
+    expect(savePlaybook(playbookEntry, true).ok).toBe(true);
+    const current = readStore();
+    const persisted = storage.get(STORE_KEY);
+    const oversized = Array.from({ length: 5_000 }, (_, index) => ({
+      ...playbookEntry,
+      id: `line-${index}`,
+      text: "A".repeat(300),
+    }));
+    expect(
+      JSON.stringify({ ...current, playbook: oversized }).length,
+    ).toBeGreaterThan(2_000_000);
+    expect(updateStore({ playbook: oversized })).toBe(current);
+    expect(storage.get(STORE_KEY)).toBe(persisted);
+    expect(readStore().history).toEqual([historyEntry]);
+    expect(readStore().playbook).toEqual([playbookEntry]);
+  });
+
+  it("preserves and can shrink a valid oversized playbook from an older build", async () => {
+    const legacyStore = {
+      ...readStore(),
+      history: [historyEntry],
+      playbook: Array.from({ length: 5_000 }, (_, index) => ({
+        ...playbookEntry,
+        id: `legacy-${index}`,
+        text: "A".repeat(300),
+      })),
+    };
+    const persisted = JSON.stringify(legacyStore);
+    expect(persisted.length).toBeGreaterThan(2_000_000);
+    storage.set(STORE_KEY, persisted);
+    expect(readStore().playbook).toHaveLength(5_000);
+    expect(savePlaybook({ ...playbookEntry, id: "new-line" }, true)).toEqual({
+      ok: false,
+      reason: "storage",
+    });
+    expect(storage.get(STORE_KEY)).toBe(persisted);
+    expect(readStore().history).toEqual([historyEntry]);
+    const nextRun = { ...historyEntry, id: "another-completed-run" };
+    expect(saveHistory(nextRun)).toBe(true);
+    expect(readStore().history).toEqual([nextRun, historyEntry]);
+    expect(readStore().dailyDone[historyEntry.dayKey]).toBe(true);
+    saveSettings({ timer: 0 });
+    expect(readStore().settings.timer).toBe(0);
+    const beforeRemoval = storage.get(STORE_KEY) ?? "";
+    removePlaybook("legacy-0");
+    expect(readStore().playbook).toHaveLength(4_999);
+    expect((storage.get(STORE_KEY) ?? "").length).toBeLessThan(
+      beforeRemoval.length,
+    );
+
+    vi.resetModules();
+    const reloaded = await import("./store");
+    expect(reloaded.readStore().playbook).toHaveLength(4_999);
+    expect(reloaded.readStore().history).toEqual([nextRun, historyEntry]);
+    expect(reloaded.readStore().dailyDone[historyEntry.dayKey]).toBe(true);
+  });
+
+  it("reports a failed playbook save and preserves saved lines when storage rejects writes", () => {
+    expect(savePlaybook(playbookEntry, true).ok).toBe(true);
+    const persisted = storage.get(STORE_KEY);
+    local.setItem = () => {
+      throw new Error("quota");
+    };
+    expect(savePlaybook({ ...playbookEntry, id: "unsaved" }, true)).toEqual({
+      ok: false,
+      reason: "storage",
+    });
+    expect(storage.get(STORE_KEY)).toBe(persisted);
+    expect(readStore().playbook).toEqual([playbookEntry]);
   });
 
   it("refreshes once for a change from another tab", () => {

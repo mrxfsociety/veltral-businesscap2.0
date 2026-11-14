@@ -212,9 +212,9 @@ test("lost sessions give a clear restart path", async ({ page }) => {
   );
   await page.getByLabel("What do you say?").fill("A reply");
   await page.getByRole("button", { name: "Send reply" }).click();
-  await expect(page.getByRole("alert")).toContainText(
-    "This session has expired",
-  );
+  await expect(
+    page.getByRole("alert").filter({ hasText: "This session has expired" }),
+  ).toContainText("This session has expired");
   await page.getByRole("button", { name: "Restart scene" }).click();
   await expect(
     page.getByRole("button", { name: "Start", exact: true }),

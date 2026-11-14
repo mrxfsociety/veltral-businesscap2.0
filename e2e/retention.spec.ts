@@ -263,3 +263,47 @@ test("the sixth saved line is gated only outside Pro preview", async ({
     ),
   ).toBe(proPreview ? 6 : 5);
 });
+
+test("a blocked playbook save explains the failure and preserves existing data", async ({
+  page,
+}) => {
+  await page.goto("/play");
+  await page.getByLabel("Timer off", { exact: true }).check();
+  await page.getByRole("button", { name: "Start", exact: true }).click();
+  for (let n = 0; n < 8; n++) {
+    if (await page.getByTestId("debrief").isVisible()) break;
+    const input = page.getByLabel("What do you say?");
+    await expect(input).toBeEditable();
+    await input.fill(
+      n % 2 === 0
+        ? "You're sad. The answer is still no. Do you want to hold my hand or walk with me?"
+        : "I'm right here. Thank you for using a quiet voice.",
+    );
+    await page.getByRole("button", { name: "Send reply" }).click();
+    await expect(page.getByTestId(`reply-${n}`)).toBeVisible();
+  }
+  await expect(page.getByTestId("debrief")).toBeVisible();
+  const persisted = await page.evaluate(() =>
+    localStorage.getItem("doover:v1"),
+  );
+  await page.evaluate(() => {
+    Storage.prototype.setItem = () => {
+      throw new DOMException("Storage quota exceeded", "QuotaExceededError");
+    };
+  });
+  await page
+    .getByRole("button", { name: "Save to playbook", exact: true })
+    .first()
+    .click();
+  await expect(
+    page
+      .getByRole("alert")
+      .filter({ hasText: "browser storage is full or unavailable" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Saved to playbook ✓" }),
+  ).toHaveCount(0);
+  expect(await page.evaluate(() => localStorage.getItem("doover:v1"))).toBe(
+    persisted,
+  );
+});

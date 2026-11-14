@@ -121,13 +121,13 @@ export default function Home() {
             </h2>
             <p>
               Our design puts the outcome in a deterministic engine. AI proposes
-              tags and child dialogue; it does not decide whether your child
-              calms down.
+              tags and child dialogue; it does not decide whether the simulated
+              child calms down.
             </p>
             <p>
               {results.rules
                 ? `Rules-only test micro F1: ${results.rules.test.microF1.toFixed(3)}, measured on ${results.rules.test.n} test replies.`
-                : "Measured tagging accuracy is not available yet. The foundation endpoints are still development placeholders pending engine integration."}
+                : "Measured tagging accuracy is not available in this build. See the method and its limits before interpreting a score."}
             </p>
             <Link href="/how-it-works">See the method and its limits ↗</Link>
           </div>

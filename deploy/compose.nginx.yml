@@ -1,0 +1,60 @@
+name: do-over
+services:
+  web:
+    build:
+      context: ${DOOVER_RELEASE_PATH:?Set the verified release directory}
+      args:
+        NEXT_PUBLIC_PRO_PREVIEW: ${NEXT_PUBLIC_PRO_PREVIEW:-true}
+    image: do-over-web:${GIT_SHA:?Set the verified release commit}
+    restart: unless-stopped
+    init: true
+    env_file:
+      - /opt/do-over/shared/.env
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+      REDIS_URL: redis://redis:6379
+      GIT_SHA: ${GIT_SHA:?Set the verified release commit}
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports:
+      - "127.0.0.1:3310:3000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 1g
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+  redis:
+    image: redis:7-alpine
+    command:
+      [
+        "redis-server",
+        "--appendonly",
+        "yes",
+        "--maxmemory",
+        "192mb",
+        "--maxmemory-policy",
+        "noeviction",
+      ]
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    mem_limit: 256m
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+volumes:
+  redis-data:
