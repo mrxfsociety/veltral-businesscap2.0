@@ -5,6 +5,7 @@ services:
       context: ${DOOVER_RELEASE_PATH:?Set the verified release directory}
       args:
         NEXT_PUBLIC_PRO_PREVIEW: ${NEXT_PUBLIC_PRO_PREVIEW:-true}
+        SITE_URL: ${SITE_URL:?Set SITE_URL in the private runtime environment}
     image: do-over-web:${GIT_SHA:?Set the verified release commit}
     restart: unless-stopped
     init: true
