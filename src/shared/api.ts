@@ -2,19 +2,48 @@ import { z } from "zod";
 
 /** Frozen T0 contract. Both tracks import these schemas instead of redefining payloads. */
 export const TagSchema = z.enum([
-  "NAME_FEELING", "HOLD_LIMIT", "OFFER_CHOICE", "CLEAR_COMMAND", "CONNECT",
-  "LABELED_PRAISE", "WHEN_THEN", "THREAT", "BRIBE", "YELL", "SHAME", "DISMISS",
-  "QUESTION_COMMAND", "LECTURE", "NEGATIVE_COMMAND", "VAGUE_COMMAND", "GIVE_IN",
-  "NO_RESPONSE", "UNSAFE",
+  "NAME_FEELING",
+  "HOLD_LIMIT",
+  "OFFER_CHOICE",
+  "CLEAR_COMMAND",
+  "CONNECT",
+  "LABELED_PRAISE",
+  "WHEN_THEN",
+  "THREAT",
+  "BRIBE",
+  "YELL",
+  "SHAME",
+  "DISMISS",
+  "QUESTION_COMMAND",
+  "LECTURE",
+  "NEGATIVE_COMMAND",
+  "VAGUE_COMMAND",
+  "GIVE_IN",
+  "NO_RESPONSE",
+  "UNSAFE",
 ]);
 export const AgeBandSchema = z.enum(["2-3", "4-5", "6-7"]);
 export const TemperamentSchema = z.enum(["easygoing", "sensitive", "spirited"]);
 export const OutcomeSchema = z.enum([
-  "ongoing", "calm_limit_held", "calm_gave_in", "out_of_turns", "stopped_unsafe",
+  "ongoing",
+  "calm_limit_held",
+  "calm_gave_in",
+  "out_of_turns",
+  "stopped_unsafe",
 ]);
 export const NoteSchema = z.enum([
-  "REPEAT", "HIGH_CONNECTION", "LOW_CONNECTION", "MIXED_MESSAGE", "COMMAND_TOO_SOON",
-  "CAPPED", "VALIDATED_LIMIT", "BARE_LIMIT", "NO_HELPFUL_MOVE", "BRIBE_TAX", "GAVE_IN", "UNSAFE_STOP",
+  "REPEAT",
+  "HIGH_CONNECTION",
+  "LOW_CONNECTION",
+  "MIXED_MESSAGE",
+  "COMMAND_TOO_SOON",
+  "CAPPED",
+  "VALIDATED_LIMIT",
+  "BARE_LIMIT",
+  "NO_HELPFUL_MOVE",
+  "BRIBE_TAX",
+  "GAVE_IN",
+  "UNSAFE_STOP",
 ]);
 export const SessionKindSchema = z.enum(["daily", "library", "custom"]);
 export const DayKeySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
@@ -75,9 +104,12 @@ export const ScoreSchema = z.object({
   unhelpfulCount: count,
   finalArousal: meter,
   grid: z.array(z.enum(["good", "mixed", "bad"])),
-  turningPoint: count,
+  turningPoint: z.number().int().min(-1),
 });
-export const ChildLineSchema = z.object({ line: z.string().min(1).max(120), action: z.string().max(80) });
+export const ChildLineSchema = z.object({
+  line: z.string().min(1).max(120),
+  action: z.string().max(80),
+});
 export const DailyStandingSchema = z.object({
   dayKey: DayKeySchema,
   players: count,
@@ -85,14 +117,21 @@ export const DailyStandingSchema = z.object({
   beatPct: meter.nullable(),
 });
 
-export const ErrorResponseSchema = z.object({ error: z.string().min(1), message: z.string().min(1) });
-export const SessionRequestSchema = z.object({
-  kind: SessionKindSchema,
-  sceneId: identifier.optional(),
-  practice: z.boolean().optional(),
-}).strict().refine((value) => value.kind === "daily" || Boolean(value.sceneId), {
-  message: "A scene id is required for library and custom sessions.", path: ["sceneId"],
+export const ErrorResponseSchema = z.object({
+  error: z.string().min(1),
+  message: z.string().min(1),
 });
+export const SessionRequestSchema = z
+  .object({
+    kind: SessionKindSchema,
+    sceneId: identifier.optional(),
+    practice: z.boolean().optional(),
+  })
+  .strict()
+  .refine((value) => value.kind === "daily" || Boolean(value.sceneId), {
+    message: "A scene id is required for library and custom sessions.",
+    path: ["sceneId"],
+  });
 export const SessionResponseSchema = z.object({
   sessionId: identifier,
   kind: SessionKindSchema,
@@ -103,14 +142,16 @@ export const SessionResponseSchema = z.object({
   dayKey: DayKeySchema,
   dayNumber: z.number().int(),
 });
-export const TurnRequestSchema = z.object({
-  sessionId: identifier,
-  turnIndex: count,
-  text: z.string().max(300),
-  loud: z.boolean().optional(),
-  timedOut: z.boolean().optional(),
-  inputMode: z.enum(["text", "voice"]),
-}).strict();
+export const TurnRequestSchema = z
+  .object({
+    sessionId: identifier,
+    turnIndex: count,
+    text: z.string(),
+    loud: z.boolean().optional(),
+    timedOut: z.boolean().optional(),
+    inputMode: z.enum(["text", "voice"]),
+  })
+  .strict();
 export const TurnResponseSchema = z.object({
   turnIndex: count,
   text: z.string().max(300),
@@ -122,24 +163,42 @@ export const TurnResponseSchema = z.object({
   daily: DailyStandingSchema.nullable(),
   usedDoOver: z.boolean(),
 });
-export const CustomSceneRequestSchema = z.object({
-  description: z.string().trim().min(10).max(500),
-  ageBand: AgeBandSchema,
-  childName: z.string().trim().max(40).optional(),
-}).strict();
+export const CustomSceneRequestSchema = z
+  .object({
+    description: z.string().trim().min(10).max(500),
+    ageBand: AgeBandSchema,
+    childName: z.string().trim().max(40).optional(),
+  })
+  .strict();
 export const CustomSceneResponseSchema = z.discriminatedUnion("ok", [
-  z.object({ ok: z.literal(true), sceneId: identifier, scene: PublicSceneSchema }),
+  z.object({
+    ok: z.literal(true),
+    sceneId: identifier,
+    scene: PublicSceneSchema,
+  }),
   z.object({
     ok: z.literal(false),
     reason: z.enum(["unsafe", "not_a_meltdown", "model_unavailable"]),
     message: z.string().min(1),
   }),
 ]);
-export const CoachRequestSchema = z.object({ sessionId: identifier, turnIndex: count }).strict();
+export const CoachRequestSchema = z
+  .object({ sessionId: identifier, turnIndex: count })
+  .strict();
 export const CoachResponseSchema = z.object({
   source: z.enum(["model", "tips"]),
-  suggestions: z.array(z.object({ text: z.string().min(1), tags: z.array(TagSchema), delta: z.number() })).max(3),
-  tip: z.object({ tag: TagSchema, why: z.string(), tryInstead: z.string() }).nullable(),
+  suggestions: z
+    .array(
+      z.object({
+        text: z.string().min(1),
+        tags: z.array(TagSchema),
+        delta: z.number(),
+      }),
+    )
+    .max(3),
+  tip: z
+    .object({ tag: TagSchema, why: z.string(), tryInstead: z.string() })
+    .nullable(),
 });
 export const DailyResponseSchema = z.object({
   dayKey: DayKeySchema,
@@ -149,7 +208,12 @@ export const DailyResponseSchema = z.object({
   par: z.number().int().positive(),
   players: count,
 });
-export const WaitlistRequestSchema = z.object({ email: z.string().trim().email().max(254), plan: z.enum(["monthly", "yearly"]) }).strict();
+export const WaitlistRequestSchema = z
+  .object({
+    email: z.string().trim().email().max(254),
+    plan: z.enum(["monthly", "yearly"]),
+  })
+  .strict();
 export const WaitlistResponseSchema = z.object({ ok: z.literal(true) });
 export const HealthResponseSchema = z.object({
   ok: z.boolean(),
@@ -159,7 +223,9 @@ export const HealthResponseSchema = z.object({
   providers: z.object({ openai: z.boolean(), anthropic: z.boolean() }),
   proPreview: z.boolean(),
 });
-export const AdminStatsRequestSchema = z.object({ key: z.string().min(1) }).strict();
+export const AdminStatsRequestSchema = z
+  .object({ key: z.string().min(1) })
+  .strict();
 export const AdminStatsSchema = z.object({
   dayKey: DayKeySchema,
   sessionsStarted: count,
@@ -170,12 +236,18 @@ export const AdminStatsSchema = z.object({
 });
 /** Multipart audio is validated after Request.formData(), never JSON serialized. */
 export const TranscribeRequestSchema = z.object({
-  audio: z.custom<Blob>((value) => typeof Blob !== "undefined" && value instanceof Blob),
+  audio: z.custom<Blob>(
+    (value) => typeof Blob !== "undefined" && value instanceof Blob,
+  ),
 });
 export const TranscribeResponseSchema = z.object({ text: z.string() });
-export const SpeakRequestSchema = z.object({ sessionId: identifier, turnIndex: z.number().int().min(-1) }).strict();
+export const SpeakRequestSchema = z
+  .object({ sessionId: identifier, turnIndex: z.number().int().min(-1) })
+  .strict();
 /** Speech responses contain binary audio, not a JSON envelope. */
-export const SpeakResponseSchema = z.custom<Blob>((value) => typeof Blob !== "undefined" && value instanceof Blob);
+export const SpeakResponseSchema = z.custom<Blob>(
+  (value) => typeof Blob !== "undefined" && value instanceof Blob,
+);
 
 export type SessionRequest = z.infer<typeof SessionRequestSchema>;
 export type SessionResponse = z.infer<typeof SessionResponseSchema>;

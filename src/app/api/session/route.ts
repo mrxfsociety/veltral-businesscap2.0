@@ -7,5 +7,11 @@ export async function POST(request: Request): Promise<Response> {
   const parsed = await parseBody(request, SessionRequestSchema);
   if (!parsed.ok) return parsed.response;
   const session = t0Session(parsed.data);
-  return session ? Response.json(session) : apiError("scene_not_found", "This scene is unavailable. Choose another from the library.", 404);
+  return session
+    ? Response.json(session)
+    : apiError(
+        "scene_not_found",
+        "This scene is unavailable. Choose another from the library.",
+        404,
+      );
 }
