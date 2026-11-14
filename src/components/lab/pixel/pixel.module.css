@@ -1,0 +1,209 @@
+/* Pixel (lab). One 16-colour palette; hard edges; nothing eases. */
+.root {
+  --ink: #1e2740;
+  --storm: #39435c;
+  --slate: #6b7590;
+  --mist: #a9b4c2;
+  --cream: #f4ecdd;
+  --gold: #e2a93b;
+  --tomato: #c8431f;
+  --teal: #2b7a72;
+  --b: max(2px, var(--u));
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  font-family: var(--font-pixel), monospace;
+  color: var(--cream);
+  font-size: max(12px, calc(var(--u) * 5));
+  line-height: 1.25;
+  -webkit-font-smoothing: none;
+}
+.screen {
+  position: relative;
+  width: var(--stage-w);
+  height: var(--stage-h);
+  margin-left: var(--offset);
+  background: var(--ink);
+  overflow: hidden;
+}
+.canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+.off {
+  position: absolute;
+  inset: 0;
+  background: var(--ink);
+}
+.overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* A pixel border: four hard offsets, notched corners, no blur. */
+.hudBox,
+.dialogue,
+.stamp {
+  box-shadow:
+    0 calc(var(--b) * -1) 0 0 var(--ink),
+    0 var(--b) 0 0 var(--ink),
+    calc(var(--b) * -1) 0 0 0 var(--ink),
+    var(--b) 0 0 0 var(--ink);
+}
+
+.hud {
+  position: absolute;
+  top: calc(var(--u) * 4);
+  left: calc(var(--u) * 4);
+}
+.hudBox {
+  background: var(--storm);
+  padding: calc(var(--u) * 2) calc(var(--u) * 3);
+  font-size: max(10px, calc(var(--u) * 4));
+  min-width: calc(var(--u) * 52);
+}
+.hudRow {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: calc(var(--u) * 2);
+}
+.hudNumber {
+  font-size: 2em;
+  line-height: 1;
+  color: var(--cream);
+  font-variant-numeric: tabular-nums;
+}
+.hudTrend {
+  color: var(--mist);
+}
+.hudTrend[data-trend="rising"] {
+  color: var(--gold);
+}
+.segments {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: var(--u);
+  margin: var(--u) 0 calc(var(--u) * 2);
+}
+.segments span {
+  height: calc(var(--u) * 3);
+  background: var(--ink);
+}
+.segments span[data-on] {
+  background: var(--mist);
+}
+.segments span[data-on][data-hot] {
+  background: var(--gold);
+}
+.thread {
+  flex: 1;
+  height: var(--u);
+  min-height: 2px;
+  background: var(--ink);
+  display: block;
+  align-self: center;
+}
+.thread span {
+  display: block;
+  height: 100%;
+  background: var(--cream);
+}
+
+.dialogue {
+  position: relative;
+  margin: calc(var(--b) + var(--u) * 2) 0 0 calc(var(--offset) + var(--b));
+  width: calc(var(--stage-w) - var(--b) * 2);
+  background: var(--ink);
+  padding: calc(var(--u) * 3) calc(var(--u) * 4) calc(var(--u) * 4);
+  min-height: calc(var(--u) * 26);
+}
+.speaker {
+  color: var(--gold);
+  font-size: 0.8em;
+  margin-bottom: calc(var(--u) * 1);
+}
+.line {
+  margin: 0;
+  color: var(--cream);
+}
+.caret {
+  display: inline-block;
+  width: 0.5em;
+  height: 0.5em;
+  margin-left: 0.3em;
+  background: var(--gold);
+  animation: blink 1s steps(1, end) infinite;
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+.action {
+  margin: calc(var(--u) * 2) 0 0;
+  color: var(--mist);
+  font-size: 0.85em;
+}
+.action::before {
+  content: "* ";
+}
+
+.stamps {
+  position: absolute;
+  top: calc(var(--u) * 4);
+  right: calc(var(--u) * 4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: calc(var(--u) * 3);
+  justify-items: end;
+}
+.stamp {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 2);
+  padding: var(--u) calc(var(--u) * 2);
+  font-size: max(10px, calc(var(--u) * 4));
+  color: var(--cream);
+  background: var(--teal);
+  animation: pop 200ms steps(1, end) both;
+}
+.stamp[data-kind="unhelpful"] {
+  background: var(--tomato);
+}
+.glyph {
+  width: calc(var(--u) * 4);
+  height: calc(var(--u) * 4);
+  min-width: 8px;
+  min-height: 8px;
+}
+/* Two frames: first a cropped badge, then the whole one. */
+@keyframes pop {
+  0% {
+    clip-path: inset(25% 30%);
+  }
+  50% {
+    clip-path: inset(0);
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) {
+  .stamp,
+  .caret {
+    animation: none;
+  }
+}

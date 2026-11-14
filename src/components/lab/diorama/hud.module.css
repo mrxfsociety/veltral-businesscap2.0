@@ -1,0 +1,114 @@
+.card {
+  padding: 6px 10px 8px;
+  background: var(--sheet);
+  color: var(--ink);
+  border-radius: var(--radius-3);
+  box-shadow: var(--shadow-2);
+  min-width: 132px;
+}
+.storm {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 8px;
+}
+.label {
+  font-size: 12px;
+  font-weight: 600;
+}
+.value {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 640;
+  letter-spacing: -0.02em;
+}
+.trend {
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.trend[data-trend="rising"] {
+  color: var(--tomato-ink);
+  font-weight: 600;
+}
+.thread {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 6px;
+  align-items: center;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--ink-2);
+}
+.bar {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--rule);
+  overflow: hidden;
+}
+.bar > span {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+  transform-origin: left;
+  transition: transform 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.stamps {
+  position: absolute;
+  z-index: 4;
+  left: 10px;
+  bottom: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 70%;
+}
+.stamp {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: var(--radius-3);
+  background: var(--sheet);
+  color: var(--teal-ink);
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: var(--shadow-2);
+  animation: rise 520ms cubic-bezier(0.2, 0.9, 0.25, 1.25) both;
+}
+.stamp[data-kind="unhelpful"] {
+  color: var(--tomato-ink);
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.92);
+  }
+}
+@media (min-width: 1024px) {
+  .card {
+    padding: 12px 16px 14px;
+    min-width: 220px;
+  }
+  .value {
+    font-size: 54px;
+  }
+  .stamps {
+    left: 24px;
+    bottom: 24px;
+  }
+  .stamp {
+    font-size: 15px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stamp {
+    animation: none;
+  }
+}
