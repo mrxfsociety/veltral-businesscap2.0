@@ -3,6 +3,7 @@ import { Fraunces, Instrument_Sans } from "next/font/google";
 import Link from "next/link";
 import { ButtonLink, Wordmark } from "@/components/paper/primitives";
 import { BottomBar, SiteNav } from "@/components/paper/site-nav";
+import { PaywallHost } from "@/components/paywall/paywall";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -83,6 +84,7 @@ export default function RootLayout({
           </p>
         </footer>
         <BottomBar />
+        <PaywallHost />
       </body>
     </html>
   );

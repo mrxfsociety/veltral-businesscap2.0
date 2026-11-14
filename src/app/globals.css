@@ -498,6 +498,8 @@ code {
   color: var(--sheet);
 }
 .badge {
+  align-self: flex-start;
+  width: fit-content;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -785,6 +787,18 @@ code {
 .turn-square.bad {
   background: var(--tomato);
 }
+.pro-lock {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+.pro-lock p {
+  margin: 0;
+}
+.pro-lock svg {
+  vertical-align: -2px;
+  color: var(--plum);
+}
 .pro-gate {
   border-radius: var(--radius-3);
   padding: 24px;
@@ -1063,4 +1077,37 @@ body:has([data-stage-mode]) .site-main {
     transition-duration: 150ms !important;
     transition-property: opacity !important;
   }
+}
+
+/* season pass pages */
+.pricing-booth,
+.welcome-sheet {
+  max-width: 640px;
+  padding: 0;
+}
+.welcome-sheet {
+  margin: 24px auto;
+  padding: 32px 28px;
+  display: grid;
+  gap: 14px;
+}
+.welcome-sheet h1 {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+.welcome-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.welcome-list svg,
+.tag-table svg,
+table svg {
+  color: var(--teal-ink);
+  vertical-align: -2px;
+}
+.pass-state p {
+  margin: 0;
 }

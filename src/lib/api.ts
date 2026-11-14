@@ -115,6 +115,21 @@ export const api = {
       c.WaitlistRequestSchema.parse(value),
     ),
   health: () => request("/api/health", c.HealthResponseSchema),
+  entitlement: () => request("/api/entitlement", c.EntitlementResponseSchema),
+  redeem: (value: c.RedeemRequest) =>
+    request(
+      "/api/redeem",
+      c.OkResponseSchema,
+      c.RedeemRequestSchema.parse(value),
+    ),
+  resetEntitlement: () =>
+    request("/api/entitlement/reset", c.OkResponseSchema, {}),
+  checkout: (value: c.CheckoutRequest) =>
+    request(
+      "/api/checkout",
+      c.CheckoutResponseSchema,
+      c.CheckoutRequestSchema.parse(value),
+    ),
   stats: (key: string) =>
     request(
       `/api/admin/stats?key=${encodeURIComponent(key)}`,

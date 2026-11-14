@@ -2,11 +2,16 @@ import type { Metadata } from "next";
 import { Pricing } from "./pricing";
 
 export const metadata: Metadata = {
-  title: "Free and Pro",
+  title: "Free and season pass",
   description:
-    "Free daily practice and planned Pro features. No payments are connected.",
+    "Today's meltdown is free. The season pass opens every scene, your own replays, coach suggestions and voice.",
 };
 
-export default function PricingPage() {
-  return <Pricing />;
+export default async function PricingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ checkout?: string }>;
+}) {
+  const { checkout } = await searchParams;
+  return <Pricing checkoutIncomplete={checkout === "incomplete"} />;
 }

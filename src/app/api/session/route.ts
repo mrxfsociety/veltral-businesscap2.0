@@ -1,4 +1,6 @@
 import { createPlayHandlers } from "../../../server/play";
+import { sessionNeedsPro, withPro } from "@/server/entitlement";
 
 export const runtime = "nodejs";
-export const POST = createPlayHandlers().session;
+// Today's scene is free; other library scenes and custom scenes need the season pass.
+export const POST = withPro(createPlayHandlers().session, sessionNeedsPro);

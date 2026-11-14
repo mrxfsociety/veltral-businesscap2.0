@@ -14,7 +14,8 @@ import { api, ApiError } from "@/lib/api";
 import { readStore, saveHistory, saveSettings } from "@/lib/store";
 import { useStore } from "@/lib/use-store";
 import { isHelpfulTag } from "@/lib/presentation";
-import { isPro } from "@/lib/pro";
+import { isPro, usePro } from "@/lib/pro";
+import { TicketBooth } from "@/components/paywall/paywall";
 import { ProBadge, ProGate } from "@/components/pro-gate";
 import { Icon } from "@/components/paper/icons";
 import {
@@ -116,7 +117,8 @@ export function PlayExperience({
   );
   const firstVisit = !paceChosen && store.history.length === 0;
   const timer: Pace = firstVisit ? 20 : store.settings.timer;
-  const voice = store.settings.voice && isPro();
+  const { pro, loading: proLoading } = usePro();
+  const voice = store.settings.voice && pro;
   const [voiceStatus, setVoiceStatus] = useState<
     "idle" | "requesting" | "recording" | "transcribing"
   >("idle");
@@ -298,7 +300,7 @@ export function PlayExperience({
   }
 
   async function start() {
-    if (requestPending.current || (needsGate && !isPro())) return;
+    if (requestPending.current || (needsGate && !pro)) return;
     if (voice && store.settings.calmBaselineDb === null) {
       setCalibrating(true);
       return;
@@ -528,7 +530,7 @@ export function PlayExperience({
       switchToTyping();
       return;
     }
-    if (!isPro()) return;
+    if (!pro) return;
     if (
       !window.isSecureContext ||
       !navigator.mediaDevices?.getUserMedia ||
@@ -899,11 +901,56 @@ export function PlayExperience({
         </div>
       </Sheet>
     );
-  if (needsGate && !isPro())
-    return (
+  if (needsGate && !pro && (proLoading || !activeScene))
+    return proLoading ? (
+      <div className={styles.theatre} data-stage-mode="">
+        <section className={styles.notice} role="status">
+          <Kicker>One moment</Kicker>
+          <h1>Checking your season pass…</h1>
+        </section>
+      </div>
+    ) : (
       <ProGate feature={custom ? "Replay your own meltdown" : "Scene library"}>
         <p>Choose your scene.</p>
       </ProGate>
+    );
+  if (needsGate && !pro && activeScene)
+    return (
+      <div className={styles.theatre} data-stage-mode="" data-phase="intro">
+        <header className={styles.topBar}>
+          <Link href="/scenes" className={styles.leave}>
+            <Icon name="back" size={18} /> Scenes
+          </Link>
+          <p className={styles.topTitle}>{activeScene.title}</p>
+          <Link href="/play" className={styles.leave}>
+            Today
+          </Link>
+        </header>
+        <div className={styles.house}>
+          <div className={styles.centre}>
+            <PaperStage
+              scene={activeScene}
+              state={{
+                arousal: activeScene.startArousal,
+                connection: 50,
+                lastDelta: 0,
+                turn: 0,
+              }}
+              outcome="intro"
+              curtain="closed"
+              hud={
+                <div className={styles.hudIntro}>
+                  <span>{activeScene.place}</span>
+                  {par !== undefined && <span>Par {par}</span>}
+                </div>
+              }
+            />
+            <section className={styles.playbill} aria-label="Season pass">
+              <TicketBooth feature={activeScene.title} />
+            </section>
+          </div>
+        </div>
+      </div>
     );
   if (!activeScene && !failure)
     return (

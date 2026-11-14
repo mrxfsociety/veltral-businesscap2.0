@@ -1,13 +1,26 @@
 "use client";
 
-import Link from "next/link";
 import type { ReactNode } from "react";
-import { isPro } from "@/lib/pro";
+import { openPaywall, usePro } from "@/lib/pro";
+import { Icon } from "@/components/paper/icons";
+import { Button } from "@/components/paper/primitives";
 
+/** A small mark on unlocked season-pass features (preview or pass). */
 export function ProBadge() {
-  return isPro() ? <span className="chip">Pro preview</span> : null;
+  const { pro, entitlement } = usePro();
+  if (!pro) return null;
+  return (
+    <span className="badge">
+      <Icon name="ticket" size={14} />
+      {entitlement?.source === "preview" ? "Pro preview" : "Season pass"}
+    </span>
+  );
 }
 
+/**
+ * Shows its children with the season pass, and a locked ticket that opens
+ * the paywall without it. The server enforces the same rule.
+ */
 export function ProGate({
   feature,
   children,
@@ -17,31 +30,36 @@ export function ProGate({
   children?: ReactNode;
   compact?: boolean;
 }) {
-  if (isPro()) {
+  const { pro, loading } = usePro();
+  if (pro) return <div className="stack">{children}</div>;
+  if (loading)
     return (
-      <div className="stack">
-        <ProBadge />
-        {children}
-      </div>
+      <p className="muted small" aria-busy="true">
+        Checking your season pass…
+      </p>
     );
-  }
   return (
     <aside
-      className={compact ? "stack" : "card stack"}
-      aria-label={`${feature} requires Pro`}
+      className={compact ? "pro-lock" : "pro-lock sheet"}
+      aria-label={`${feature} needs the season pass`}
     >
       <p>
-        <strong>{feature}</strong> is a planned Pro feature.
+        <Icon name="lock" size={16} /> <strong>{feature}</strong> is part of the
+        season pass.
       </p>
       {!compact && (
         <p className="muted">
-          Today&apos;s meltdown, do-overs and your progress are free. Payments
-          are not connected yet.
+          Today&apos;s meltdown, do-overs and your progress stay free.
         </p>
       )}
-      <Link className="button-secondary" href="/pricing">
-        Explore Pro
-      </Link>
+      <Button
+        variant="secondary"
+        size="small"
+        icon="ticket"
+        onClick={() => openPaywall(feature)}
+      >
+        See the season pass
+      </Button>
     </aside>
   );
 }

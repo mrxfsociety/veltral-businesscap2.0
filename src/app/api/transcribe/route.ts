@@ -1,3 +1,4 @@
 import { createVoiceHandlers } from "@/server/voice";
+import { withPro } from "@/server/entitlement";
 export const runtime = "nodejs";
-export const POST = createVoiceHandlers().transcribe;
+export const POST = withPro(createVoiceHandlers().transcribe);

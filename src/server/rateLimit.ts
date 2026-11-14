@@ -10,6 +10,9 @@ export const RATE_LIMITS = {
   waitlist: { limit: 5, windowMs: HOUR },
   // Speech synthesis is billed too; apply the voice-input allowance.
   speak: { limit: 120, windowMs: HOUR },
+  // Test checkout and demo code: 10 attempts an hour per address.
+  checkout: { limit: 10, windowMs: HOUR },
+  redeem: { limit: 10, windowMs: HOUR },
 } as const;
 export type RateLimitBucket = keyof typeof RATE_LIMITS;
 

@@ -10,7 +10,7 @@ import type {
   TurnResponse,
 } from "@/shared/api";
 import { api } from "@/lib/api";
-import { isPro } from "@/lib/pro";
+import { usePro } from "@/lib/pro";
 import { isPlaybookEligible } from "@/lib/playbook";
 import { savePlaybook } from "@/lib/store";
 import { buildShareText, copyText } from "@/lib/share";
@@ -34,11 +34,12 @@ function Coach({
   sessionId: string;
   turnIndex: number;
 }) {
+  const { pro } = usePro();
   const [result, setResult] = useState<CoachResponse | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   async function ask() {
-    if (pending || !isPro()) return;
+    if (pending || !pro) return;
     setPending(true);
     setError("");
     try {

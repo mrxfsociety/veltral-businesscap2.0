@@ -269,3 +269,24 @@ export type TranscribeRequest = z.infer<typeof TranscribeRequestSchema>;
 export type TranscribeResponse = z.infer<typeof TranscribeResponseSchema>;
 export type SpeakRequest = z.infer<typeof SpeakRequestSchema>;
 export type SpeakResponse = z.infer<typeof SpeakResponseSchema>;
+
+/* ─── v2 additions (REDESIGN section 7): entitlement and test checkout ─── */
+export const EntitlementSourceSchema = z.enum(["stripe_test", "code", "preview"]);
+export const EntitlementResponseSchema = z.object({
+  pro: z.boolean(),
+  source: EntitlementSourceSchema.nullable(),
+  checkout: z.enum(["stripe_test", "code_only"]),
+  demoCode: z.string().nullable(),
+});
+export const CheckoutRequestSchema = z
+  .object({ plan: z.enum(["monthly", "yearly"]) })
+  .strict();
+export const CheckoutResponseSchema = z.object({ url: z.string().url() });
+export const RedeemRequestSchema = z
+  .object({ code: z.string().trim().min(1).max(64) })
+  .strict();
+export const OkResponseSchema = z.object({ ok: z.literal(true) });
+
+export type EntitlementResponse = z.infer<typeof EntitlementResponseSchema>;
+export type CheckoutRequest = z.infer<typeof CheckoutRequestSchema>;
+export type RedeemRequest = z.infer<typeof RedeemRequestSchema>;

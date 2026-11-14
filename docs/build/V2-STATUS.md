@@ -38,17 +38,19 @@ Level 0–1
 Level 3
 - [x] Sound (`src/lib/sound.ts`), speaker toggle (preference in localStorage `doover:sound`, default on; starts only from Start)
 
-## MONEY (OPUS-2)
+## MONEY (OPUS-2) — taken over by STAGE at 03:50 on the operator's instruction
+
+No MONEY session had pushed by 03:45. STAGE (OPUS-1) now owns these paths. If an OPUS-2 session starts, read this section and `git log` first and coordinate here before editing.
 
 Owns: `src/server/entitlement.ts`, `src/app/api/{entitlement,checkout,redeem}/**`, Pro checks inside existing API handlers, `src/shared/api.ts` (additions), `src/lib/pro.ts`, `src/components/pro-gate.tsx`, `src/components/paywall/**`, `src/app/pricing/**`, `src/app/pro/**`, `.env.example`, `src/app/page.tsx`, `src/app/progress/**`, `src/lib/{progress,moves,plan,demo-week,store}.ts`.
 
 Level 1
-- [ ] `stripe` added
-- [ ] Entitlement cookie (sign/verify, constant time, tests incl. tampered and expired)
-- [ ] `GET /api/entitlement`, `POST /api/redeem`, `POST /api/entitlement/reset`; 402 `pro_required` in existing handlers; rate limits
-- [ ] `usePro()` on the client, `isPro()` kept as compatible helper
-- [ ] Test checkout: `POST /api/checkout`, `GET /api/checkout/confirm`; refuses non-`sk_test_` keys; no button without key
-- [ ] `<Paywall feature>`, `/pricing` (incl. "Return to Free"), `/pro/welcome`
+- [x] `stripe` added
+- [x] Entitlement cookie (sign/verify, constant time, tests incl. tampered and expired)
+- [x] `GET /api/entitlement`, `POST /api/redeem`, `POST /api/entitlement/reset`; 402 `pro_required` in existing handlers; rate limits
+- [x] `usePro()` on the client, `isPro()` kept as compatible helper
+- [x] Test checkout: `POST /api/checkout`, `GET /api/checkout/confirm`; refuses non-`sk_test_` keys; no button without key
+- [x] `<Paywall feature>`, `/pricing` (incl. "Return to Free"), `/pro/welcome`
 - [ ] E2E: Free → locked scene → paywall → code → unlocked → Return to Free
 - [ ] Landing hero with live `PaperStage`
 
@@ -121,3 +123,6 @@ _Format: `[FROM → TO] request` · answer below it._
 
 [SETS pair 1] `bedtime`, then `wrong-cup` delivered. Reused window/frame/bed/lamp/rug and fridge/table/chair; added only book, cup and shelf. Reused window/fridge/bed now respect the four-paper budget; the night window contains a moon. Three planes, clear child band, stage-right sign. Browser checked both scenes side by side with playground at 1280/375, full/thumb, storm85/calm20; red cup shifted right after inspection so the storm bubble does not hide it. No horizontal page overflow. Rendered-prop tests enforce <=25 paths, 2–4 palette papers and all three populated planes. `npm run verify`: 467 tests / 34 files, real Redis, all gates/types/lint/build PASS.
 [SETS → STAGE] Long storm opening lines clip above the proscenium in bedtime (desktop) and wrong-cup (375px), independently of props. Please constrain/fit the shared speech bubble to the stage; SETS left that owner path untouched and proceeds to the next pair as instructed.
+
+[STAGE → OPERATOR] Season pass is on `v2`. Server environment for production (in `/opt/do-over/shared/.env`): `NEXT_PUBLIC_PRO_PREVIEW=false`, `ENTITLEMENT_SECRET=<openssl rand -hex 32>` (required in production, otherwise nobody can open the pass), `DEMO_CODE=ENCORE`, `STRIPE_SECRET_KEY=sk_test_…` (optional; any key not starting with `sk_test_` is refused). `docker-compose.yml` now passes these three to the container and defaults `NEXT_PUBLIC_PRO_PREVIEW` to `false`.
+[STAGE → PAGES] The paywall opens from anywhere with `openPaywall(feature)` from `@/lib/pro`; `<ProGate>` now shows a lock and a "See the season pass" button that opens it, so `/scenes`, `/replay` and `/playbook` already gate correctly. Use `usePro()` (reactive) instead of `isPro()` in new code. e2e: with `NEXT_PUBLIC_PRO_PREVIEW=false` a locked scene at `/play/<id>` shows the ticket booth; the demo code field is labelled "Demo code" and the button "Open the pass"; dev default code is ENCORE.
