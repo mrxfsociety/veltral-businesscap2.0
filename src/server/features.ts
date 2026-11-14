@@ -121,6 +121,13 @@ export function createFeatureHandlers(
           },
           CustomSceneResponseSchema,
         );
+      // The boundary shown to the player must also work when the model is down.
+      const displayedLimit = cleanHints([generated.scene.limit])[0];
+      const groundedLimitHints = limitHints.some((hint) =>
+        displayedLimit.includes(hint),
+      )
+        ? limitHints
+        : cleanHints([displayedLimit, ...limitHints]);
       const scene = SceneSchema.parse({
         ...generated.scene,
         id: `custom-${randomUUID()}`,
@@ -129,7 +136,7 @@ export function createFeatureHandlers(
         startArousal: Math.round(
           Math.max(60, Math.min(90, generated.scene.startArousal)),
         ),
-        limitHints,
+        limitHints: groundedLimitHints,
         giveInHints,
       });
       await sessions().saveCustomScene(scene);
