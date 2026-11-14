@@ -4,12 +4,12 @@
 
 ## Source provenance
 
-The real merge commit is `bf90ddd767be17379b485ee373c2477801256cdc` with two parents:
+The published merge commit is `df32ce672cd4251a942105495e97ce61a34efaa2` (identical tree to local merge `bf90ddd767be17379b485ee373c2477801256cdc`) with two parents:
 
 - Complete B: `8ee802fb990deb98c520b924e590b67e5438c6ea`.
 - Reviewed integration: `afb438076ea26d8e80ba680fc050c88b95818392`, including latest A `1b7852dd985a46d7f2b82cceb5ab69d879e78c43`.
 
-Commit `a41acb73713f09ff44b558f8b6a2bcae40f13ec4` adds the playbook-deletion persistence correction. A failed browser-storage deletion now reports failure, retains the saved line across reload and permits a successful retry. The planned publication is the consolidated `codex/unified-product` branch and a PR against `main`; no PR number or successful publication is assumed in this report before the actual push/create result.
+Published commit `33c017c057b4076508bbacdec30572b257ff5aa0` (local `a41acb7`) adds the playbook-deletion persistence correction. A failed browser-storage deletion now reports failure, retains the saved line across reload and permits a successful retry. The consolidated [codex/unified-product branch](https://github.com/mrxfsociety/veltral-businesscap2.0/tree/codex/unified-product) and [PR #6](https://github.com/mrxfsociety/veltral-businesscap2.0/pull/6) against `main` are published. Implementation commit `2b41460dec55f246b98094485163d29329c12e11` has tree `f2bf0aa915d34cc04edcfb9017d79dea32a5fc49`, identical to verified local `856a196`. GitHub API publication was used because terminal HTTPS credentials were unavailable; both original parent histories are retained. This final documentation update changes no application code.
 
 `src/shared/api.ts`, `src/engine/types.ts` and `eval/labeled.jsonl` are byte-unchanged. The merge retains both source histories rather than replacing one track with a snapshot.
 
@@ -69,9 +69,14 @@ The existing service is [https://veltral.aituconnect.kz](https://veltral.aitucon
 
 The preserved first-release HTTPS timing artifact identifies `fd172030d2a8c4d08db8691b32dd95050121b1c8`. That historical measurement also must not be relabelled as a measurement of the unified build.
 
+## GitHub checks
+
+[Actions run 43622116340](https://github.com/mrxfsociety/veltral-businesscap2.0/actions/runs/43622116340) did not start any verification steps. Its annotation says: "The job was not started because your account is locked due to a billing issue." Container and browser jobs were skipped. This is an account-level blocker, not a passing CI result. The PR is mergeable, but final acceptance and `main` remain unchanged under the repository review protocol.
+
+Tracked-file secret-pattern and generated-artifact checks passed; no environment credentials, dependencies or build output were added.
+
 ## Remaining acceptance gates
 
-- Record the actual GitHub branch/PR after publication.
 - Run the full current-revision browser/accessibility suite in an environment that can launch Chromium.
 - Complete real phone and laptop microphone, loudness, denial and playback tests over HTTPS.
 - Obtain human review of all labels and independent team stage acceptance.

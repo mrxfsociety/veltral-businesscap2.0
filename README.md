@@ -2,7 +2,7 @@
 
 Do-Over is a responsive practice simulator for parents of children aged 2–7. Answer a simulated child under time pressure, see the moves detected in your words, and replay any turn. No account is needed. It is a practice tool, not therapy, medical advice or a diagnosis.
 
-**A and B are now one merged product.** The unified source combines the latest reviewed engine, model/server work and complete B1–B5 interface, including voice. Exact-lock installation and full verification passed: **435 tests in 30 files, with real Redis and no skipped tests**, lint, strict TypeScript, all five evaluation gates and both Pro and Free production builds. See [the unified report](docs/build/UNIFIED-REPORT.md) for the executed checks and remaining acceptance gates.
+**A and B are now one merged product, published in [PR #6](https://github.com/mrxfsociety/veltral-businesscap2.0/pull/6) on [`codex/unified-product`](https://github.com/mrxfsociety/veltral-businesscap2.0/tree/codex/unified-product).** The unified source combines the latest reviewed engine, model/server work and complete B1–B5 interface, including voice. Exact-lock installation and full verification passed: **435 tests in 30 files, with real Redis and no skipped tests**, lint, strict TypeScript, all five evaluation gates and both Pro and Free production builds. See [the unified report](docs/build/UNIFIED-REPORT.md) for the executed checks and remaining acceptance gates.
 
 The existing deployment is [veltral.aituconnect.kz](https://veltral.aituconnect.kz). Health observed on 14 November 2026 at 17:22 UTC still reported review commit `afb43807`; **the new unified commit has not been deployed**. This handoff targets GitHub. Team acceptance, human label review and real-device microphone testing remain outstanding.
 
@@ -80,7 +80,7 @@ The Free configuration also passed the full 435-test verification and production
 
 The CLI Playwright runner could not launch Chromium because the OS sandbox denied its Mach port. The current unified run therefore does **not** claim a completed full Playwright suite or axe scan. Earlier review-branch browser passes remain historical evidence for their own revision. Real phone/laptop microphone checks, independent stage acceptance and deployment of this unified revision remain separate gates.
 
-Stop a running development server before switching preview flags. `E2E_BASE_URL` targets an actual deployed origin and uses that server's configuration. `npm run shots` captures actual UI; screenshots are never substitutes for executed tests. GitHub Actions had an account billing lock in the earlier A report; no new passing CI result is inferred from local checks.
+Stop a running development server before switching preview flags. `E2E_BASE_URL` targets an actual deployed origin and uses that server's configuration. `npm run shots` captures actual UI; screenshots are never substitutes for executed tests. GitHub Actions run [43622116340](https://github.com/mrxfsociety/veltral-businesscap2.0/actions/runs/43622116340) did not start because GitHub reports an account billing lock; browser/container jobs were skipped. Local passes are not represented as CI passes.
 
 ## Voice and privacy
 

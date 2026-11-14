@@ -16,7 +16,7 @@ Updated 14 November 2026. Times are Astana time (UTC+5). Implementation and exec
 | B4 Landing and trust | codex/unified-product | B | implemented; verified in build/HTTP checks | | Nine SSR routes, OG 200 and exact metric tables; full axe suite pending |
 | A5 Voice API | a5-voice-api → unified product | A | implemented; checks pass | | Media validation and attributed prior synthetic live-provider audio |
 | B5 Voice interface | codex/unified-product | B | implemented; unit/build and focused browser checks pass | | Calibration cancel checked; real phone/laptop microphone acceptance pending |
-| J2 Release | codex/unified-product | A + B | GitHub handoff being finalized; not accepted | | Publication/PR, full browser checks and team acceptance; no deployment requested |
+| J2 Release | codex/unified-product | A + B | published in PR #6; not accepted | | Full browser checks and team acceptance; no deployment requested |
 
 ## Decisions
 
@@ -24,7 +24,7 @@ Updated 14 November 2026. Times are Astana time (UTC+5). Implementation and exec
 - A1–A5 were delivered in the isolated `a5-voice-api` branch. `codex/integration-review` combines tested A with B and reviewed B fixes; main and the parallel B branch are preserved.
 - The existing VPS already serves other applications through nginx. Do-Over uses its own nginx site and a private web/Redis Compose deployment, preserving existing services.
 
-- 2026-11-14: the owner requested a unified working A/B product and GitHub publication. Merge `bf90ddd` retains B `8ee802fb` and review `afb43807` (including latest A `1b7852dd`); `a41acb7` fixes failed playbook deletion persistence. The consolidated branch is `codex/unified-product`; PR details are recorded only after actual creation.
+- 2026-11-14: the owner requested a unified working A/B product and GitHub publication. Merge `bf90ddd` retains B `8ee802fb` and review `afb43807` (including latest A `1b7852dd`); `a41acb7` fixes failed playbook deletion persistence. The consolidated branch is `codex/unified-product`, published as [PR #6](https://github.com/mrxfsociety/veltral-businesscap2.0/pull/6). API-published merge `df32ce67` and fix `33c017c0` preserve identical trees and both source histories; implementation `2b41460d` matches verified local `856a196`.
 - Unified exact-lock verification passed with 435 tests in 30 files, no skips and real Redis. Human acceptance is deliberately separate from these engineering checks.
 - Production health observed at 22:22 Astana still reported `afb43807`. Publishing the unified branch does not deploy it or change the existing nginx service.
 
@@ -38,14 +38,14 @@ Lines of `eval/labeled.jsonl` whose label someone questions. A human decides; ag
 
 - The CLI browser runner cannot launch Chromium because of an OS sandbox Mach-port denial. Focused connected-browser checks are complete; a full current-revision Playwright/axe pass is not claimed.
 - Real phone/laptop microphone and playback acceptance, human label review and independent stage acceptance remain pending.
-- Prior GitHub Actions jobs were blocked by an account billing restriction. Local passes are not CI passes.
+- GitHub Actions run 43622116340 was blocked before any steps by an account billing restriction; browser/container jobs were skipped. Local passes are not CI passes.
 - The current public deployment is the prior review SHA, not the new unified product. No deployment is part of this GitHub-only handoff.
 
 ## Submission checklist
 
 - [ ] Production link opens in a private window with no login and the final intended daily scene can be finished
 - [ ] `/api/health` shows the final accepted commit of `main`
-- [ ] Repository publication/PR completed; README current; final secret/history check recorded
+- [x] Repository publication/PR completed; README current; tracked secret/artifact checks passed and both source histories retained
 - [x] Exact-lock clean installation and `npm run verify` pass on the unified checkout, including real Redis
 - [ ] Full current-revision browser/accessibility suite completed
 - [ ] Real phone and laptop microphone acceptance completed
