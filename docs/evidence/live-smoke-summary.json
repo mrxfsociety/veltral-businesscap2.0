@@ -1,0 +1,382 @@
+{
+  "generatedAt": "2026-11-14T12:50:42.287879+00:00",
+  "scope": "Real-provider feature/child-line/voice handlers. Isolated memory storage and synthetic descriptions; no production ranking entries.",
+  "evidenceFiles": [
+    "initial.json",
+    "retry-children-2.json",
+    "reflection-fixed.json",
+    "bedtime-fixed-retry.json"
+  ],
+  "additionalHarnessOnlyArtifact": {
+    "path": "retry-children.json",
+    "providerAttempts": 0,
+    "cause": "Local smoke-script punctuation refactor was corrected before rerun."
+  },
+  "customScenes": {
+    "generated": 2,
+    "generationPassed": true,
+    "playable": true,
+    "details": [
+      {
+        "title": "The Watering Can Stays Outside",
+        "limit": "The watering can stays outside.",
+        "limitHints": [
+          "the can stays outside",
+          "leave the watering can outdoors",
+          "keep the can in the garden",
+          "the watering can remains outside"
+        ],
+        "giveInHints": [
+          "take the can indoors",
+          "bring it inside now",
+          "let the can come indoors",
+          "carry it into the house"
+        ],
+        "generationMs": 3307,
+        "firstTurnMs": 2133,
+        "firstTurnModelSucceeded": true,
+        "firstTurnOutcome": "ongoing"
+      },
+      {
+        "title": "One More Round",
+        "limit": "It’s time to put the game away for dinner.",
+        "limitHints": [
+          "the game goes away now",
+          "put the game away for dinner",
+          "game time is over for dinner",
+          "we’re packing up the game"
+        ],
+        "giveInHints": [
+          "play one more round",
+          "keep playing before dinner",
+          "leave the game out for another round",
+          "deal another hand first"
+        ],
+        "generationMs": 2243,
+        "firstTurnMs": 4006,
+        "firstTurnModelSucceeded": false,
+        "firstTurnOutcome": "ongoing"
+      }
+    ]
+  },
+  "coach": {
+    "elapsedMs": 2646,
+    "source": "model",
+    "suggestions": [
+      {
+        "text": "You really want that chocolate bar. No candy today. You can stand beside me or hold my hand.",
+        "declaredDelta": -18,
+        "computedDelta": -18,
+        "tags": [
+          "NAME_FEELING",
+          "HOLD_LIMIT",
+          "OFFER_CHOICE",
+          "CONNECT"
+        ]
+      },
+      {
+        "text": "You’re upset because you wanted the chocolate. No candy today. Stay close beside me.",
+        "declaredDelta": -18,
+        "computedDelta": -18,
+        "tags": [
+          "NAME_FEELING",
+          "HOLD_LIMIT",
+          "CLEAR_COMMAND",
+          "CONNECT"
+        ]
+      }
+    ],
+    "fallbackTip": null,
+    "passed": true
+  },
+  "childQuality": {
+    "threeDistinctScenesPerAgeBand": true,
+    "allCompletedWithRealModelReplies": true,
+    "scenes": {
+      "store-candy": {
+        "evidenceFile": "initial.json",
+        "ageBand": "2-3",
+        "outcome": "calm_limit_held",
+        "turns": 3,
+        "allRealModelReplies": true,
+        "passed": true,
+        "lines": [
+          {
+            "line": "Stay here, please.",
+            "action": "leans against the cart"
+          },
+          {
+            "line": "Hug, please.",
+            "action": "leans in"
+          },
+          {
+            "line": "Okay, no candy today.",
+            "action": "settles beside the parent"
+          }
+        ]
+      },
+      "wrong-cup": {
+        "evidenceFile": "initial.json",
+        "ageBand": "2-3",
+        "outcome": "calm_limit_held",
+        "turns": 3,
+        "allRealModelReplies": true,
+        "passed": true,
+        "lines": [
+          {
+            "line": "Blue cup, please.",
+            "action": "reaches toward the cup"
+          },
+          {
+            "line": "Hug, please.",
+            "action": "leans toward the parent"
+          },
+          {
+            "line": "Okay, blue milk.",
+            "action": "takes a sip"
+          }
+        ]
+      },
+      "car-seat": {
+        "evidenceFile": "initial.json",
+        "ageBand": "2-3",
+        "outcome": "calm_limit_held",
+        "turns": 4,
+        "allRealModelReplies": true,
+        "passed": true,
+        "lines": [
+          {
+            "line": "Stay out? Sit with me.",
+            "action": "leans toward the parent"
+          },
+          {
+            "line": "Hug, please.",
+            "action": "reaches toward the parent"
+          },
+          {
+            "line": "Sit here, please.",
+            "action": "leans toward the parent"
+          },
+          {
+            "line": "Okay, buckle me.",
+            "action": "settles into the seat"
+          }
+        ]
+      },
+      "playground-leave": {
+        "evidenceFile": "initial.json",
+        "ageBand": "4-5",
+        "outcome": "calm_limit_held",
+        "turns": 3,
+        "allRealModelReplies": true,
+        "passed": true,
+        "lines": [
+          {
+            "line": "Can you hold my hand?",
+            "action": "reaches toward the parent"
+          },
+          {
+            "line": "A hug, please.",
+            "action": "reaches for a hug"
+          },
+          {
+            "line": "Okay. Can you hold my hand?",
+            "action": "gets up beside the parent"
+          }
+        ]
+      },
+      "tablet-off": {
+        "evidenceFile": "retry-children-2.json",
+        "ageBand": "4-5",
+        "outcome": "calm_limit_held",
+        "turns": 5,
+        "allRealModelReplies": true,
+        "passed": true,
+        "lines": [
+          {
+            "line": "Can you stay here?",
+            "action": "leans against the parent"
+          },
+          {
+            "line": "A hug, please.",
+            "action": "leans toward the parent"
+          },
+          {
+            "line": "Sit by me, please.",
+            "action": "leans against the parent"
+          },
+          {
+            "line": "Can I sit with you?",
+            "action": "leans toward the parent"
+          },
+          {
+            "line": "A hug, please. The tablet can stay off.",
+            "action": "moves closer for a hug"
+          }
+        ]
+      },
+      "getting-dressed": {
+        "evidenceFile": "reflection-fixed.json",
+        "ageBand": "4-5",
+        "outcome": "calm_limit_held",
+        "turns": 3,
+        "allRealModelReplies": true,
+        "passed": true,
+        "lines": [
+          {
+            "line": "I still like my pajamas.",
+            "action": "looks at the clothes"
+          },
+          {
+            "line": "A hug, please.",
+            "action": "leans toward the parent"
+          },
+          {
+            "line": "Okay, I'll get dressed now.",
+            "action": "reaches for an outfit"
+          }
+        ]
+      },
+      "bedtime": {
+        "evidenceFile": "bedtime-fixed-retry.json",
+        "ageBand": "6-7",
+        "outcome": "calm_limit_held",
+        "turns": 3,
+        "allRealModelReplies": true,
+        "passed": true,
+        "lines": [
+          {
+            "line": "Okay, I can stay in bed.",
+            "action": "climbs back under the covers"
+          },
+          {
+            "line": "Quiet space, please.",
+            "action": "settles back into bed"
+          },
+          {
+            "line": "Okay, I'll stay in bed.",
+            "action": "lies back down"
+          }
+        ]
+      },
+      "hit-brother": {
+        "evidenceFile": "retry-children-2.json",
+        "ageBand": "6-7",
+        "outcome": "calm_limit_held",
+        "turns": 4,
+        "allRealModelReplies": true,
+        "passed": true,
+        "lines": [
+          {
+            "line": "I still wanted to win, but I won't hit him.",
+            "action": "takes a breath and steps back"
+          },
+          {
+            "line": "Quiet space, please.",
+            "action": "steps away to a quiet spot"
+          },
+          {
+            "line": "I wish I had won.",
+            "action": "sits quietly nearby"
+          },
+          {
+            "line": "Okay. I won't hit him.",
+            "action": "sits beside the parent"
+          }
+        ]
+      },
+      "dinner-refusal": {
+        "evidenceFile": "initial.json",
+        "ageBand": "6-7",
+        "outcome": "calm_limit_held",
+        "turns": 3,
+        "allRealModelReplies": true,
+        "passed": true,
+        "lines": [
+          {
+            "line": "I still wish we had nuggets.",
+            "action": "looks at the pasta"
+          },
+          {
+            "line": "A hug, please.",
+            "action": "leans toward the parent"
+          },
+          {
+            "line": "Okay, I'll try some pasta with you here.",
+            "action": "picks up the fork"
+          }
+        ]
+      }
+    },
+    "review": "Observed toddler lines were short (2–5 words); older-child lines used short requests and simple arguments/cooperation. Choice replies reacted to hug/space offers. This is qualitative review of synthetic interaction, not evidence about real children."
+  },
+  "regressionFixVerification": {
+    "reflectionFalseGiveIn": "Initially reproduced in getting-dressed and bedtime. After the generalized fix, both same-wording probes held the limit and completed in three real model turns.",
+    "displayedCustomLimit": "Omitted exact displayed-limit hint was reported; root implemented separate grounded hint normalization. Original custom-generation evidence predates that normalization."
+  },
+  "providerReliability": {
+    "jsonAttempts": 47,
+    "successes": 43,
+    "failures": 4,
+    "productionTimeoutsMs": [
+      4000,
+      3500
+    ],
+    "failedRunsRetained": true,
+    "note": "Four measured JSON requests reached the production first-provider deadline and used rules fallback. Successful targeted retries do not remove those failures. Initial/default-verbosity and later/low-verbosity runs are distinguished in evidence."
+  },
+  "voice": {
+    "fixture": "Synthetic macOS speech; no microphone capture.",
+    "fixturePhrase": "I hear you. You wanted another turn. I am here.",
+    "input": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "pcm_s16le",
+          "sample_rate": "16000",
+          "channels": 1
+        }
+      ],
+      "format": {
+        "duration": "3.796500",
+        "size": "121566"
+      }
+    },
+    "transcript": "I hear you, you wanted another turn. I am here.",
+    "transcriptMatches": true,
+    "transcribeModel": "gpt-4o-mini-transcribe",
+    "transcribeMs": 1816,
+    "childLine": "I'm NOT tired! One more chapter! You never let me do anything!",
+    "speechModel": "gpt-4o-mini-tts",
+    "synthesizeMs": 2566,
+    "cachedMs": 1,
+    "cacheMatches": true,
+    "output": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "mp3",
+          "sample_rate": "24000",
+          "channels": 1
+        }
+      ],
+      "format": {
+        "duration": "5.160000",
+        "size": "82560"
+      }
+    },
+    "decodePassed": true,
+    "passed": true
+  },
+  "limitations": [
+    "Voice input was synthetic macOS speech, not a human microphone recording.",
+    "Provider deadlines still caused intermittent rules fallback; no claim of zero failures.",
+    "Real Anthropic comparison was not performed because that provider was not configured."
+  ],
+  "scriptChecks": [
+    "ESLint passed for scripts/live-smoke.ts",
+    "Full TypeScript typecheck passed"
+  ]
+}

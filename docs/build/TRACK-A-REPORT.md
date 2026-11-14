@@ -1,109 +1,91 @@
-# Track A implementation and verification
+# Track A — implementation and verification
 
-14 November 2026, Astana time. This is an executor report, not a reviewer acceptance or a production-release claim.
+14 November 2026. Engineering implementation and the executed A1–A5 checks are complete. This does not claim human label review, team stage acceptance or competition submission.
 
-## Delivery
+## Delivered
 
-A1–A5 are implemented together on `a5-voice-api`, based on track B's T0 commit `092765672dba778e0a394ac2f9bd9e3c91b753cc`. T0 was still awaiting acceptance, so the work continued in an isolated clone instead of waiting for each intermediate merge. No push or merge to `main` was performed. Frozen `src/shared/api.ts`, `src/engine/types.ts`, supplied scenes, reference vectors and evaluation labels are unchanged.
+A1–A5 are implemented on `a5-voice-api`, based on T0 `0927656`. The isolated `codex/integration-review` branch combines A with B `9b6e7d2` and reviewed B corrections. Main and B’s original branch are unchanged. The owner explicitly selected **OpenAI only**; an Anthropic comparison is no longer required.
 
-The only shared build changes are the required real A scripts, the lockfile, compatible TypeScript 6.0.3, `tsx` for TypeScript command-line scripts, and `server-only` with a Vitest test alias. The current typescript-eslint parser accepts TypeScript below 6.1; unqualified `latest` had selected unsupported TypeScript 7. No UI, deployment or track B source was edited.
+- Deterministic transitions, scoring, par, day rotation, 19 tag families, normalized exact quotes, merge rules, 60 age/variant templates and 11 tips.
+- OpenAI structured responses (`gpt-6-luna`, reasoning `none`, verbosity `low`), strict validation, server-only credentials, daily call caps and 4-second runtime deadline. Model failures use rules and templates; the model never decides state or score.
+- Session/turn/do-over, custom scenes, engine-checked coaching, real daily standings, waitlist, protected admin stats and health APIs. Redis persistence and bounded sticky memory fallback retain quotas under pressure.
+- Transcription and stored-child-line speech APIs; 12-second/1MB audio validation, in-memory processing and bounded one-hour synthesis cache.
 
-## Acceptance evidence
+Frozen `src/shared/api.ts`, `src/engine/types.ts`, reference scenes/vectors and `eval/labeled.jsonl` are unchanged. No evaluation reply was copied into source. Scripts and reports are reproducible; secrets remain outside Git and build contexts.
 
-| Area | Executed check | Result |
-| --- | --- | --- |
-| Clean installation | `npm ci --no-audit --no-fund` | PASS, 409 packages from the committed lockfile |
-| Full gate | `npm run verify` | PASS: lint, strict types, 315 unit tests, rules evaluation, production build |
-| Redis integration | `RUN_REDIS_INTEGRATION=1 npm test` | PASS: 319 tests, 17 files, no skipped tests |
-| Engine vectors | Golden-vector tests | All 37 vectors, every turn and complete score objects match |
-| Par | `npm run par` + tests | All 12 reference values match; all 279 valid custom-scene combinations yield par at most 4 |
-| Rule evaluation | `npm run eval` | All five gates PASS on all 137 replies; test split 63 replies |
-| Rules test results | Generated `eval/results.json` | Micro-F1 0.9859; exact-set 0.9683; unhelpful precision 1.0000 |
-| Labels/source isolation | `npm run check:eval-isolation` | Labels unchanged; no complete nontrivial evaluation reply (4+ characters) in source |
-| Pure engine | Forbidden-import scan | No React, Next, LLM, server or network imports |
-| Server boundary | Built `.next/static` scan | No provider key names, key prefixes, ioredis or server/provider module paths |
-| Shared contract | Git diff against T0 | Empty for both frozen files and `eval/labeled.jsonl` |
-| Source cleanup | Source scan | No T0 stubs, ts-ignore, explicit any types, console.log or unfinished TODOs in A source |
-| Formatting | Prettier check of A files and changed build files | PASS |
-| Production HTTP | Next standalone server on localhost | PASS: session, turn, daily prerequisites, no-key fallback, do-over, safety, 400/404/409, custom refusals and protected admin route |
-| Complete scene | Standalone HTTP, rules only | Calm with limit held in 3 turns |
-| HTTP timing | 20 standalone HTTP turns, library sessions | Median 0.61 ms, p90 0.69 ms on this local machine; not a deployed-network claim |
-| Audio validation | 13 duration/format tests plus actual WAV/WebM/MP4 fixtures | 1-second clips accepted, 13-second clips rejected; forged duration metadata rejected |
+## Executed checks
 
-The default test run skips four tests that launch a real Redis process; the explicit Redis run above executed all four. The inherited T0 PostCSS configuration has one non-fatal ESLint warning. Repository-wide formatting still includes unformatted B/T0 files; A's files were checked separately to preserve ownership and the frozen contract.
+| Check | Result |
+| --- | --- |
+| Track A `RUN_REDIS_INTEGRATION=1 npm run verify` | **PASS: 360 tests, 17 files**, including actual Redis, strict types, lint, evaluation and production build |
+| Integrated A+B full verify with Redis | **PASS: 399 tests, 26 files**, evaluation and production build |
+| Engine reference | All 37 vectors and all 12 pars match; all 279 valid custom age/temperament/arousal combinations have par ≤4 |
+| Full rules evaluation | 137 replies (74 dev /63 test); all gates pass |
+| Full OpenAI + merge evaluation | All 137 replies predicted; all safety/injection gates pass; no fallback counted as a model prediction |
+| B browser review | 26/26; Free-mode6/6; final focused smoke2/2 |
+| Secret boundary | Supplied key/password absent from tracked files, Git history and built client bundle; environment files ignored |
+| Eval isolation | PASS; labels and frozen API contracts unchanged |
 
-## A1 — Engine
+The inherited PostCSS file has one nonfatal lint warning. GitHub Actions currently cannot start because of the account billing lock; this report distinguishes executed local/server checks from unavailable CI.
 
-Implemented transition, score, breadth-first par, New York day rotation, all 19 tag definitions, conservative rule families, normalized quote mapping, merge exclusions, deterministic child-line selection, 60 age/variant templates and 11 unhelpful tips. Golden vectors and date-boundary tests pass. The weakest supported test tags are DISMISS (precision 1.00, recall 0.6667), NAME_FEELING (precision 1.00, recall 0.8889), then all remaining tags tied at perfect F1. Full per-tag values are generated in `docs/MODEL.md`.
+## Measured accuracy and latency
 
-## A2 — Model and play API
+| Test-split metric | Rules only | Rules + OpenAI |
+| --- | ---: | ---: |
+| Micro-F1 | 0.9859 | 0.9664 |
+| Exact-set match | 0.9683 | 0.9206 |
+| Unhelpful-tag precision | 1.0000 | 0.8974 |
 
-Implemented current official OpenAI and Anthropic SDK adapters, structured-output validation, 4-second/3.5-second fallback chain without SDK retries, a daily model-call budget, server-only boundaries and six original prompt examples. State and scores only come from the deterministic engine. Parent input is normalized and truncated to 300 characters before the shared request schema is parsed.
+SPEC 13 targets are met: rules unhelpful precision ≥85%, combined micro-F1 ≥80%. Rules outperform the model-assisted mode on this small supplied dataset; no claim to the contrary is made. All five recorded gates pass. Human review of labels remains unconfirmed; dev disagreements L005/L007 are listed in STATUS.md without changing labels.
 
-Session mutations are serialized, do-over truncates future turns, unsafe turns are unscored, expired sessions return 404, and client-supplied state/tags/scores are rejected. Sessions expire six hours after creation, including after subsequent writes. Redis loss switches the process to sticky memory fallback rather than reconnecting to stale state.
+Accuracy collection used an explicitly recorded 30-second per-attempt deadline to obtain every prediction without selection bias. Runtime remains4seconds. The separate latency script measured 20 real handler turns per mode with production deadlines and includes every fallback in timing: rules median 8.19ms/p90 12.04ms; OpenAI median 2014.16ms/p90 2378.90ms. All 20 model requests succeeded in this run. **SPEC 14 medians (<300ms rules, <2500ms model) are met.** These local handler measurements exclude the external browser/network round trip.
 
-Three actual no-key HTTP probes gave:
+Earlier live feature/quality checks had 43 successful JSON calls out of 47, with 4 deadline fallbacks. Successful targeted retries did not erase those failures. `docs/MODEL.md` is generated from the actual measurements and includes per-tag support.
 
-| Parent reply | Tags | Delta / outcome |
-| --- | --- | --- |
-| I can see you're disappointed. I'm right here. The answer is still no. | NAME_FEELING, HOLD_LIMIT, CONNECT | −18, ongoing |
-| If you keep shouting you lose your toys tonight. | THREAT | +18, ongoing |
-| Fine, you can take the candy. | GIVE_IN | −60, calm_gave_in |
+## Real feature and child-line checks
 
-Real provider comparisons and three live-model replies have not been run: neither provider key/model pair is configured. `eval/results.json` keeps `merged: null`, and the report makes no provider-winner claim.
+Two descriptions generated playable custom scenes:
 
-## A3 — Feature APIs
+1. **The Watering Can Stays Outside** — limit: The watering can stays outside. Generation 3307ms. Limit hints: the can stays outside, leave the watering can outdoors, keep the can in the garden, the watering can remains outside. Give-in hints: take the can indoors, bring it inside now, let the can come indoors, carry it into the house.
+2. **One More Round** — limit: It’s time to put the game away for dinner. Generation 2243ms. Limit hints: the game goes away now, put the game away for dinner, game time is over for dinner, we’re packing up the game. Give-in hints: play one more round, keep playing before dinner, leave the game out for another round, deal another hand first. Its first turn safely used rules after the model deadline.
 
-Custom scenes have unsafe pre-checks before any provider call, age/name authority from the request, arousal clamping, deduplicated lowercase hints, 24-hour retention and rules-engine play. Fewer than three valid hints cause an honest refusal rather than invented hints. Coach suggestions must have every quote verified, no unhelpful tags and a negative engine delta; fallback tips use actual turn effects and filled scene slots.
+The coach produced two real suggestions, independently checked by the engine at −18 each. Nine distinct scenes (three per age band) completed with real model child replies. Short toddler phrases and older-child requests/cooperation reacted to the parent’s wording. This qualitative synthetic interaction is not evidence about actual children.
 
-Daily standings use real sorted-set entries only, preserve the first score, exclude practice/do-over/unsafe sessions and withhold percentages below 20 players. Waitlist email validation/storage, rate limits, real health state and timing-safe admin-key checks are implemented.
+Live checks exposed and fixed false GIVE_IN tags when a parent reflected a wish. The same getting-dressed and bedtime probes now hold the limit and finish in three real model turns. Punctuation-ended hints now match correctly, and custom scenes include their displayed boundary in rules hints when needed, so model loss does not make that boundary unrecognizable.
 
-Two live generated scenes remain unverified without provider credentials. Fake-provider tests exercise every acceptance branch; they are not reported as live generation.
+## Failure drills
 
-## A4 — Accuracy and resilience
+| Drill | Observed result |
+| --- | --- |
+| Wrong key | Real official OpenAI request with intentionally invalid credential: safe HTTP 200 rules fallback in about 621ms; no provider error leaked |
+| Provider timeout | Actual live 4-second timeouts safely fell back; automated abort/no-retry tests pass |
+| Redis loss | Actual Redis shutdown integration passes; memory stays consistent; quotas cannot be evicted by session churn |
+| Daily call cap | Atomic counter/handler tests pass; no model call after cap |
+| Long reply | Normalized and truncated to 300 characters; handler and HTTP probes pass |
+| Other language | Handler regression passes with deterministic response |
+| Emoji only | Valid response, no invented tags |
+| Prompt injection | Both supplied injection lines remain untagged in rules and live combined mode |
 
-| Failure drill | Evidence | Result |
-| --- | --- | --- |
-| Wrong API key | Official adapter transport rejects with auth error; chain test | Safe fallback, no leaked error details; live bad-key request not performed |
-| Provider timeout | Aborting deadline and fallback provider tests | PASS |
-| Redis unavailable | Real local Redis shut down during the integration test, plus standalone memory scene | PASS |
-| Daily call cap reached | Atomic counter and play-handler tests | Rules fallback without model call |
-| 300-character / longer reply | Handler tests and HTTP overlong reply | Trimmed/collapsed/truncated to 300 |
-| Another language | Handler regression | Valid deterministic response |
-| Emoji-only reply | Handler regression | Valid response without fabricated tags |
-| Model-directed instruction | Gate examples plus original prompt/helper tests | Rules injection gate PASS; live merged gate pending credentials |
+## Voice
 
-No labels were changed or silently disputed. Human label review has not been asserted. `npm run latency -- --rules-only` measures 20 actual handler calls in isolated, unranked library sessions; live model timing is explicitly unmeasured. Quality review of live child lines across all age bands remains pending keys; fallback templates are tested for age length and safe text.
+A synthetic 3.80-second WAV phrase was transcribed correctly by `gpt-4o-mini-transcribe` in 1816 ms. `gpt-4o-mini-tts` returned a decodable 5.16-second MP3 of the server-stored opening line in 2566 ms; repeated synthesis came from cache in 1 ms. Input is explicitly **synthetic macOS speech, not a microphone recording**. No audio is retained by application storage.
 
-## A5 — Voice API
+Tests cover malformed/oversized media, deadlines, failure, rate limits, cache behavior and authentic sample duration. Exactly 12-second AAC MP4 is accepted after validating encoder priming/padding; forged timing and 13-second recordings remain rejected. B5 microphone/playback UI is still separate unfinished B work.
 
-Implemented multipart transcription (single audio, bounded body, 1 MB and 12 seconds) and synthesis of stored child lines only (`turnIndex: -1` means opening). Input audio remains in memory and is discarded; synthesized output is cached by session and text hash for at most one hour. Concurrent synthesis requests share one provider call. Limits and model budget apply, with safe errors for UI/browser fallback.
+## Deployment and remaining team work
 
-Supported recording containers: WebM/Opus, WAV PCM/float, regular or fragmented MP4/AAC-LC. Actual packet/sample timing is checked, including MediaRecorder WebM files without a duration header. Unsupported formats are rejected clearly. B should stop capture around 11.8 seconds to leave room for encoder padding within the strict 12-second server limit.
+The first integrated release is running at [veltral.aituconnect.kz](https://veltral.aituconnect.kz), with dedicated HTTPS, a non-root web container and private persistent Redis. Existing host applications are preserved. On first release `fd17203`, 20 public HTTPS practice turns all returned 200: median 2034.68ms, p90 2787.47ms, 19 model responses and 1 safe rules fallback. All timings include the fallback; daily players stayed 0→0. The separate warmup also fell back safely. This meets the actual SPEC 14 median target (<2500 ms). Evidence is in `docs/evidence/production-latency.json`; the final refresh and exact current SHA are verified through `/api/health`.
 
-Live transcription and playable provider speech are unmeasured without speech model configuration/credentials.
+Remaining work outside A implementation: B5 voice UI; human review of the 137 labels; team stage/merge approval and competition submission; resolving GitHub account billing so CI can execute. Optional Anthropic code is unused. TTS model retirement on 6 January 2027 is documented in DEPLOY.md.
 
-## Needs from track B and the team
-
-- Integrate this branch after the T0 contract is accepted; no contract migration is required.
-- Finish B1–B5 and run browser/accessibility/gating checks against these real endpoints.
-- Show source `tagging` honestly, handle API errors, and do not imply live-model accuracy while `merged` is null.
-- Configure actual provider credentials/model IDs through deployment secrets; run dev bake-off, model evaluation and live latency/audio checks.
-- Supply VPS/domain access and run deployment; Docker runtime, production HTTPS and external health have not been verified here.
-- Resolve GitHub Actions account billing lock: observed workflow jobs were rejected before starting.
-- Human review of dataset labels, independent reviewer acceptance and submission remain outstanding.
-
-## Commands for the remaining credentialed checks
+## Reproduce
 
 ```sh
-npm run eval:bakeoff -- --provider=openai
-npm run eval:bakeoff -- --provider=anthropic
-npm run eval:model
-npm run latency
+npm ci
+RUN_REDIS_INTEGRATION=1 npm run verify
+npm run check:eval-isolation
+node --env-file=.env.local --conditions=react-server --import=tsx eval/run.ts --model --dev-only --provider=openai --timeout-ms=30000
+node --env-file=.env.local --conditions=react-server --import=tsx eval/run.ts --model --timeout-ms=30000
+node --env-file=.env.local --conditions=react-server --import=tsx scripts/latency.ts
+node --env-file=.env.local --conditions=react-server --import=tsx scripts/live-smoke.ts
 ```
-
-Provide environment values securely; never commit `.env` or paste keys into a public issue. The bake-off intentionally exits non-zero when the selected provider is unavailable and does not replace measurements with rules-only output.
-
-## Parallel B integration review
-
-After B1–B4 was published, an isolated integration clone combined A with B commit `9b6e7d2`. The previously unfrozen evaluation-file interface used different names; A now exports `n` and `exactMatch` compatibility fields alongside `count` and `exactSetMatch`, computed from the same measurements. No evaluation result, label or shared API schema changed. B UI source remains owned by B.
