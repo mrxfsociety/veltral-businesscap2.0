@@ -7,7 +7,7 @@ import {
   CUSTOM_TTL_MS,
   SESSION_TTL_MS,
 } from "./sessionStore";
-import { Storage } from "./redis";
+import { Storage, type RedisConnection } from "./redis";
 import { checkRateLimit, clientIp } from "./rateLimit";
 import { getStats, incrementStat, reserveModelCall } from "./stats";
 import { getDailyPlayers, recordDaily } from "./daily";
@@ -128,6 +128,113 @@ describe("session storage and fallback", () => {
 });
 
 describe("rate limiting and model budget", () => {
+  it("retains active quotas and statistics while session entries are evicted", async () => {
+    const storage = new Storage({ maxEntries: 3 });
+    stores.push(storage);
+    for (let index = 0; index < 5; index++)
+      await checkRateLimit("waitlist", "same-client", storage);
+    expect(await reserveModelCall(storage, 1)).toBe(true);
+    for (let index = 0; index < 12; index++) {
+      await storage.set(`session:capacity-${index}`, { turn: index }, 60_000);
+      await incrementStat("sessionsStarted", storage);
+    }
+    expect(
+      (await checkRateLimit("waitlist", "same-client", storage)).allowed,
+    ).toBe(false);
+    expect(await reserveModelCall(storage, 1)).toBe(false);
+    expect(await getStats(undefined, storage)).toMatchObject({
+      sessionsStarted: 12,
+      modelCalls: 1,
+    });
+    expect(await storage.get("session:capacity-0")).toBeNull();
+    expect(await storage.get("session:capacity-11")).toEqual({ turn: 11 });
+  });
+
+  it("fails closed at protected capacity without losing existing data or adding keys", async () => {
+    let now = Date.parse("2026-11-14T12:00:00Z");
+    const storage = new Storage({ maxEntries: 3, now: () => now });
+    stores.push(storage);
+    await storage.consume("rl:existing", 1, 60_000);
+    await reserveModelCall(storage, 1);
+    const email = { email: "capacity@example.org", plan: "monthly" };
+    await storage.append("waitlist", email);
+    await expect(
+      storage.set("session:overflow", { turns: [] }, 60_000),
+    ).rejects.toThrow("Memory storage capacity reached");
+    for (let index = 0; index < 10; index++) {
+      const key = `rl:overflow-${index}`;
+      expect((await storage.consume(key, 1, 60_000)).allowed).toBe(false);
+      expect(await storage.get(key)).toBeNull();
+    }
+    expect(
+      await storage.incrementHash("stats:overflow", "modelCalls", 60_000, 1),
+    ).toBe(false);
+    expect(await storage.get("stats:overflow")).toBeNull();
+    expect(await storage.get("session:overflow")).toBeNull();
+    expect(await storage.get("waitlist")).toEqual([email]);
+    expect((await storage.consume("rl:existing", 1, 60_000)).allowed).toBe(
+      false,
+    );
+    expect(await reserveModelCall(storage, 1)).toBe(false);
+    now += 60_001;
+    expect((await storage.consume("rl:after-expiry", 1, 60_000)).allowed).toBe(
+      true,
+    );
+    expect(await reserveModelCall(storage, 1)).toBe(false);
+    expect(await storage.get("waitlist")).toEqual([email]);
+  });
+
+  it("keeps Redis authoritative at mirror capacity and denies unknown quotas after failure", async () => {
+    let online = true;
+    const client: RedisConnection = {
+      status: "ready",
+      connect: async () => undefined,
+      disconnect: () => undefined,
+      on: () => undefined,
+      ping: async () => "PONG",
+      get: async () => null,
+      pttl: async () => 60_000,
+      set: async () => "OK",
+      del: async () => 1,
+      eval: async () => {
+        if (!online) throw new Error("Redis unavailable");
+        return [1, 1, 60_000];
+      },
+      hgetall: async () => ({}),
+      zrange: async () => [],
+      rpush: async () => 1,
+    };
+    const storage = new Storage({ maxEntries: 1, client });
+    stores.push(storage);
+    expect((await storage.consume("rl:cached", 1, 60_000)).allowed).toBe(true);
+    expect((await storage.consume("rl:uncached", 1, 60_000)).allowed).toBe(
+      true,
+    );
+    expect(
+      await storage.incrementHash("stats:uncached", "modelCalls", 60_000, 1),
+    ).toBe(true);
+    await expect(
+      storage.set("session:uncached", { turns: [] }, 60_000),
+    ).resolves.toBeUndefined();
+    expect(await storage.mode()).toBe("up");
+    // Free capacity before the outage: an uncached remote quota is still unknown.
+    await storage.delete("rl:cached");
+    online = false;
+    expect((await storage.consume("rl:uncached", 1, 60_000)).allowed).toBe(
+      false,
+    );
+    expect(
+      await storage.incrementHash("stats:uncached", "modelCalls", 60_000, 1),
+    ).toBe(false);
+    expect((await storage.consume("rl:cached", 1, 60_000)).allowed).toBe(false);
+    expect(await storage.get("rl:uncached")).toBeNull();
+    await storage.incrementHash("stats:partial", "sessionsStarted", 60_000);
+    expect(
+      await storage.incrementHash("stats:partial", "modelCalls", 60_000, 1),
+    ).toBe(false);
+    expect(await storage.mode()).toBe("memory");
+  });
+
   it("enforces an atomic allowance without extending the rate window", async () => {
     let now = 1_000;
     const storage = memory(() => now);

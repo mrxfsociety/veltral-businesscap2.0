@@ -108,10 +108,12 @@ export function readStore(): BrowserStore {
   try {
     if (value === storedValue) return snapshot;
     storedValue = value;
-    if (value === null || value.length > MAX_STORE_CHARACTERS) {
+    if (value === null) {
       snapshot = emptyStore();
       return snapshot;
     }
+    // Older builds could persist larger valid stores. Keep them readable so
+    // users can copy or remove their lines instead of losing the whole store.
     const parsed = BrowserStoreSchema.safeParse(JSON.parse(value));
     snapshot = parsed.success ? parsed.data : emptyStore();
   } catch {
@@ -150,6 +152,13 @@ function onStorage(event: StorageEvent): void {
 export function updateStore(
   update: Partial<BrowserStore> | ((current: BrowserStore) => BrowserStore),
 ): BrowserStore {
+  return writeStore(update, false);
+}
+
+function writeStore(
+  update: Partial<BrowserStore> | ((current: BrowserStore) => BrowserStore),
+  requirePersistence: boolean,
+): BrowserStore {
   const current = readStore();
   const next =
     typeof update === "function" ? update(current) : { ...current, ...update };
@@ -158,16 +167,29 @@ export function updateStore(
     history: next.history.slice(0, HISTORY_LIMIT),
   });
   if (!parsed.success) return current;
-  snapshot = parsed.data;
-  const serialized = JSON.stringify(snapshot);
-  storedValue = serialized;
-  try {
-    if (typeof window !== "undefined")
-      window.localStorage.setItem(STORE_KEY, serialized);
-    memoryOnly = false;
-  } catch {
-    memoryOnly = true;
+  const serialized = JSON.stringify(parsed.data);
+  // Bound playbook growth while keeping completed runs and settings usable.
+  // Older oversized playbooks remain readable and can still shrink.
+  if (
+    serialized.length > MAX_STORE_CHARACTERS &&
+    JSON.stringify(parsed.data.playbook).length >
+      JSON.stringify(current.playbook).length
+  ) {
+    return current;
   }
+  let persisted = false;
+  try {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(STORE_KEY, serialized);
+      persisted = true;
+    }
+  } catch {
+    // Play can continue in memory, but a saved line must survive a reload.
+  }
+  if (requirePersistence && !persisted) return current;
+  snapshot = parsed.data;
+  storedValue = serialized;
+  memoryOnly = !persisted;
   notify();
   return snapshot;
 }
@@ -201,7 +223,8 @@ export function saveSettings(settings: Partial<Settings>): void {
 export function saveHistory(entry: HistoryEntry): boolean {
   const parsed = HistoryEntrySchema.safeParse(entry);
   if (!parsed.success) return false;
-  updateStore((current) => ({
+  const current = readStore();
+  const updated = updateStore((current) => ({
     ...current,
     history: [
       parsed.data,
@@ -214,12 +237,12 @@ export function saveHistory(entry: HistoryEntry): boolean {
         ? { ...current.dailyDone, [entry.dayKey]: true }
         : current.dailyDone,
   }));
-  return true;
+  return updated !== current;
 }
 
 export type SavePlaybookResult =
   | { ok: true; entry: PlaybookEntry }
-  | { ok: false; reason: "limit" | "invalid" };
+  | { ok: false; reason: "limit" | "invalid" | "storage" };
 
 export function savePlaybook(
   entry: PlaybookEntry,
@@ -232,12 +255,16 @@ export function savePlaybook(
   if (!existing && !canSavePlaybook(current.playbook.length, pro)) {
     return { ok: false, reason: "limit" };
   }
-  updateStore({
-    playbook: [
-      parsed.data,
-      ...current.playbook.filter(({ id }) => id !== entry.id),
-    ],
-  });
+  const updated = writeStore(
+    {
+      playbook: [
+        parsed.data,
+        ...current.playbook.filter(({ id }) => id !== entry.id),
+      ],
+    },
+    true,
+  );
+  if (updated === current) return { ok: false, reason: "storage" };
   return { ok: true, entry: parsed.data };
 }
 

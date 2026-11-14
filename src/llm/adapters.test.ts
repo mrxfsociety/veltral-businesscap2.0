@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import { createOpenAIProvider } from "./openai";
 import { createAnthropicProvider } from "./anthropic";
+import { getEnv } from "../server/env";
 
 const schema = z.object({ accepted: z.boolean() }).strict();
 const request = {
@@ -71,10 +72,88 @@ describe("official SDK JSON adapters", () => {
       max_output_tokens: 64,
       text: { format: { type: "json_schema", strict: true } },
     });
+    expect(body).not.toHaveProperty("reasoning");
+    expect(body.text).not.toHaveProperty("verbosity");
     expect(body.input).toEqual([
       { role: "system", content: request.system },
       { role: "user", content: request.user },
     ]);
+  });
+
+  it("sends optional reasoning effort from validated environment without changing the client argument", async () => {
+    const fetcher = vi.fn<typeof fetch>(
+      async () =>
+        new Response(JSON.stringify(openaiResponse('{"accepted":true}')), {
+          headers: { "content-type": "application/json" },
+        }),
+    );
+    const client = new OpenAI({
+      apiKey: "test-only-key",
+      fetch: fetcher,
+      maxRetries: 0,
+    });
+    const env = getEnv({ OPENAI_REASONING_EFFORT: "none" });
+    const provider = createOpenAIProvider(
+      "test-only-key",
+      "configured-id",
+      client,
+      env.OPENAI_REASONING_EFFORT,
+    );
+    expect(await provider.completeJson(request)).toEqual({ accepted: true });
+    const body = JSON.parse(String(fetcher.mock.calls[0]?.[1]?.body));
+    expect(body).toMatchObject({
+      reasoning: { effort: "none" },
+      max_output_tokens: 64,
+    });
+  });
+
+  it("treats an empty reasoning setting as optional and rejects unsupported values", () => {
+    expect(
+      getEnv({ OPENAI_REASONING_EFFORT: "" }).OPENAI_REASONING_EFFORT,
+    ).toBeUndefined();
+    expect(
+      getEnv({ OPENAI_REASONING_EFFORT: "low" }).OPENAI_REASONING_EFFORT,
+    ).toBe("low");
+    expect(() => getEnv({ OPENAI_REASONING_EFFORT: "automatic" })).toThrow(
+      "OPENAI_REASONING_EFFORT",
+    );
+  });
+
+  it("sends optional low verbosity with reasoning and strict JSON through the real SDK transport", async () => {
+    const fetcher = vi.fn<typeof fetch>(
+      async () =>
+        new Response(JSON.stringify(openaiResponse('{"accepted":true}')), {
+          headers: { "content-type": "application/json" },
+        }),
+    );
+    const client = new OpenAI({
+      apiKey: "test-only-key",
+      fetch: fetcher,
+      maxRetries: 0,
+    });
+    const env = getEnv({
+      OPENAI_REASONING_EFFORT: "none",
+      OPENAI_TEXT_VERBOSITY: "low",
+    });
+    const provider = createOpenAIProvider(
+      "test-only-key",
+      "configured-id",
+      client,
+      env.OPENAI_REASONING_EFFORT,
+      env.OPENAI_TEXT_VERBOSITY,
+    );
+    expect(await provider.completeJson(request)).toEqual({ accepted: true });
+    const body = JSON.parse(String(fetcher.mock.calls[0]?.[1]?.body));
+    expect(body).toMatchObject({
+      reasoning: { effort: "none" },
+      text: { verbosity: "low", format: { type: "json_schema", strict: true } },
+    });
+    expect(
+      getEnv({ OPENAI_TEXT_VERBOSITY: "" }).OPENAI_TEXT_VERBOSITY,
+    ).toBeUndefined();
+    expect(() => getEnv({ OPENAI_TEXT_VERBOSITY: "brief" })).toThrow(
+      "OPENAI_TEXT_VERBOSITY",
+    );
   });
 
   it("rejects invalid JSON instead of returning it to the engine", async () => {

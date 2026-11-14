@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { readEvaluation } from "@/lib/evaluation";
+import { SCENES } from "@/engine/scenes";
 import { TAG_DEFINITIONS } from "@/engine/tags";
+import type { ChildState } from "@/engine/types";
 import {
   CALM_AT,
   DELTA_MIN,
@@ -11,6 +13,7 @@ import {
   MAX_TURNS,
   REPEAT_FACTOR,
   START_CONNECTION,
+  initialState,
 } from "@/engine/transition";
 export const metadata: Metadata = {
   title: "How it works",
@@ -18,8 +21,19 @@ export const metadata: Metadata = {
     "The simulation, its tagging system, measured accuracy and what we have not measured.",
 };
 export const dynamic = "force-dynamic";
+const stateLabels: Record<keyof ChildState, string> = {
+  arousal: "Arousal",
+  connection: "Connection",
+  limitIntact: "Limit still held",
+  turn: "Turns played",
+  bribed: "Earlier bribe",
+  lastHelpfulTags: "Previous helpful moves",
+  lastDelta: "Previous arousal change",
+};
 export default function HowItWorks() {
   const results = readEvaluation();
+  const exampleScene = SCENES[0];
+  const startingState = initialState(exampleScene);
   return (
     <article className="prose">
       <header className="page-heading">
@@ -53,6 +67,43 @@ export default function HowItWorks() {
         otherwise kind language. Use the debrief to try a different response,
         rather than treating a score as a judgment about your parenting.
       </p>
+      <h2>What the engine keeps track of</h2>
+      <p>
+        Each reply updates arousal and connection while keeping track of the
+        limit, earlier bribes and previous helpful moves. Starting arousal comes
+        from the scene. This example uses the same starting-state function as
+        the simulation.
+      </p>
+      <div className="table-wrap">
+        <table>
+          <caption>Starting state: {exampleScene.title}</caption>
+          <thead>
+            <tr>
+              <th scope="col">State</th>
+              <th scope="col">Starting value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(Object.keys(startingState) as (keyof ChildState)[]).map((key) => {
+              const value = startingState[key];
+              return (
+                <tr key={key}>
+                  <th scope="row">{stateLabels[key]}</th>
+                  <td>
+                    {Array.isArray(value)
+                      ? value.join(", ") || "None"
+                      : typeof value === "boolean"
+                        ? value
+                          ? "Yes"
+                          : "No"
+                        : value}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
       <div className="table-wrap">
         <table>
           <caption>Current engine settings</caption>
@@ -104,23 +155,32 @@ export default function HowItWorks() {
             <tr>
               <th scope="col">Move</th>
               <th scope="col">Type</th>
-              <th scope="col">Meaning</th>
+              <th scope="col">Meaning and examples</th>
             </tr>
           </thead>
           <tbody>
-            {TAG_DEFINITIONS.map(({ tag, label, kind, definition }) => (
-              <tr key={tag}>
-                <th scope="row">{label}</th>
-                <td>
-                  {kind === "helpful"
-                    ? "✓ Helpful"
-                    : tag === "UNSAFE"
-                      ? "Pause for safety"
-                      : "× Unhelpful"}
-                </td>
-                <td>{definition}</td>
-              </tr>
-            ))}
+            {TAG_DEFINITIONS.map(
+              ({ tag, label, kind, definition, examples }) => (
+                <tr key={tag}>
+                  <th scope="row">{label}</th>
+                  <td>
+                    {kind === "helpful"
+                      ? "✓ Helpful"
+                      : tag === "UNSAFE"
+                        ? "Pause for safety"
+                        : "× Unhelpful"}
+                  </td>
+                  <td>
+                    <p>{definition}</p>
+                    {examples.map((example) => (
+                      <p className="small" key={example}>
+                        “{example}”
+                      </p>
+                    ))}
+                  </td>
+                </tr>
+              ),
+            )}
           </tbody>
         </table>
       </div>
@@ -132,6 +192,12 @@ export default function HowItWorks() {
       </p>
       {(["rules", "merged"] as const).map((mode) => {
         const block = results[mode];
+        const weakest = block
+          ? Object.entries(block.test.perTag)
+              .filter(([, metric]) => metric.support > 0 && metric.f1 < 1)
+              .sort((left, right) => left[1].f1 - right[1].f1)
+              .slice(0, 3)
+          : [];
         return (
           <section key={mode}>
             <h3>{mode === "rules" ? "Rules only" : "Rules + model"}</h3>
@@ -146,6 +212,33 @@ export default function HowItWorks() {
                   Micro F1: {block.test.microF1.toFixed(3)} · Exact set match:{" "}
                   {(block.test.exactSetMatch * 100).toFixed(1)}%
                 </p>
+                <p>
+                  Unhelpful-tag precision:{" "}
+                  {(block.test.unhelpfulPrecision * 100).toFixed(1)}%.
+                  {block.test.medianLatencyMs !== null
+                    ? ` Median tagging latency: ${(block.test.medianLatencyMs / 1000).toFixed(2)} seconds.`
+                    : " Tagging latency was not recorded for this test run."}
+                </p>
+                {block.requestTimeoutMs !== undefined && (
+                  <p className="small muted">
+                    This evaluation allowed up to{" "}
+                    {block.requestTimeoutMs / 1000} seconds per model request.
+                    These are benchmark results, not a promise of live response
+                    time.
+                  </p>
+                )}
+                {weakest.length > 0 && (
+                  <p className="small">
+                    Lowest test F1 among tags with examples:{" "}
+                    {weakest
+                      .map(
+                        ([tag, metric]) =>
+                          `${tag} ${metric.f1.toFixed(3)} (${metric.support} examples)`,
+                      )
+                      .join("; ")}
+                    . Small per-tag samples limit what these scores establish.
+                  </p>
+                )}
                 <div className="table-wrap">
                   <table>
                     <caption>

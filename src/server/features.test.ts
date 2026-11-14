@@ -94,6 +94,48 @@ async function finishedSession(tags: Tag[] = ["THREAT", "SHAME"]) {
 }
 
 describe("custom scene handlers", () => {
+  it("recognizes the displayed boundary without a model even when generated hints only paraphrase it", async () => {
+    const limit = "The wooden cars remain in this box.";
+    const output = fake({
+      ok: true,
+      refusal: null,
+      scene: { ...generatedScene, limit },
+    });
+    const features = createFeatureHandlers({
+      storage,
+      complete: output.complete,
+    });
+    const created = CustomSceneResponseSchema.parse(
+      await (
+        await features.customScene(post("custom-scene", customInput))
+      ).json(),
+    );
+    if (!created.ok) throw new Error("Expected generated scene.");
+    const play = createPlayHandlers({ storage, complete: fake(null).complete });
+    const started = SessionResponseSchema.parse(
+      await (
+        await play.session(
+          post("session", { kind: "custom", sceneId: created.sceneId }),
+        )
+      ).json(),
+    );
+    const reply = TurnResponseSchema.parse(
+      await (
+        await play.turn(
+          post("turn", {
+            sessionId: started.sessionId,
+            turnIndex: 0,
+            text: limit,
+            inputMode: "text",
+          }),
+        )
+      ).json(),
+    );
+    expect(reply.tagging).toBe("rules");
+    expect(reply.result.tags).toContain("HOLD_LIMIT");
+    expect(reply.result.after.limitIntact).toBe(true);
+  });
+
   it("stores a generated scene, hides hints, and plays it through the engine", async () => {
     const model = fake({ ok: true, refusal: null, scene: generatedScene });
     const handlers = createFeatureHandlers({
@@ -202,6 +244,30 @@ describe("custom scene handlers", () => {
       ).toMatchObject({ ok: false, reason: "model_unavailable" });
     }
   });
+
+  it.each(["No. ", "    "])(
+    "refuses a generated boundary that cannot be grounded after normalization: %j",
+    async (limit) => {
+      const handlers = createFeatureHandlers({
+        storage,
+        complete: fake({
+          ok: true,
+          refusal: null,
+          scene: { ...generatedScene, limit },
+        }).complete,
+      });
+      const response = await handlers.customScene(
+        post("custom-scene", customInput),
+      );
+      expect(response.status).toBe(200);
+      expect(
+        CustomSceneResponseSchema.parse(await response.json()),
+      ).toMatchObject({
+        ok: false,
+        reason: "model_unavailable",
+      });
+    },
+  );
 
   it.each([
     [120, 90],

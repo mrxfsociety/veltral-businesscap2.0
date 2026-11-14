@@ -6,6 +6,7 @@ services:
       context: .
       args:
         NEXT_PUBLIC_PRO_PREVIEW: ${NEXT_PUBLIC_PRO_PREVIEW:-true}
+        SITE_URL: ${SITE_URL:?Set SITE_URL in .env}
     image: do-over-web:${GIT_SHA:-local}
     restart: unless-stopped
     init: true
@@ -15,6 +16,8 @@ services:
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_MODEL: ${OPENAI_MODEL:-}
+      OPENAI_REASONING_EFFORT: ${OPENAI_REASONING_EFFORT:-}
+      OPENAI_TEXT_VERBOSITY: ${OPENAI_TEXT_VERBOSITY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-}
       LLM_PRIMARY: ${LLM_PRIMARY:-openai}

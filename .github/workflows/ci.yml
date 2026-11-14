@@ -33,6 +33,11 @@ jobs:
       - run: npm ci
       - run: bash -n scripts/deploy.sh
       - run: docker compose --env-file .env.example config --quiet
+      - name: Validate the existing-nginx deployment configuration
+        env:
+          DOOVER_RELEASE_PATH: ${{ github.workspace }}
+          DOOVER_ENV_FILE: ${{ github.workspace }}/.env.example
+        run: docker compose --env-file .env.example -f deploy/compose.nginx.yml config --quiet
       - run: npm run verify
 
   container:

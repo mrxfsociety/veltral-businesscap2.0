@@ -23,10 +23,13 @@ export const EvaluationBlockSchema = z.object({
   date: z.iso.datetime(),
   provider: z.string().min(1),
   model: z.string().min(1),
+  requestTimeoutMs: z.number().int().positive().optional(),
   test: z.object({
     count: z.number().int().positive(),
     microF1: fraction,
     exactSetMatch: fraction,
+    unhelpfulPrecision: fraction,
+    medianLatencyMs: z.number().nonnegative().nullable(),
     perTag: z.record(z.string(), tagMetric),
   }),
 });

@@ -1,13 +1,81 @@
 # Deploy Do-Over
 
-Production is one Linux VPS, one domain, and Docker Compose. A person from the team runs deployment after a stage is reviewed and merged. Deployment is not complete until the public health endpoint reports the intended commit.
+Two deployment paths are maintained. The existing production host uses nginx. The root Compose/Caddy stack is for a new host where ports 80 and 443 are available. Do not start the Caddy stack on the existing nginx host.
 
-The real track A engine, session and feature routes, provider adapters, voice API and dependency lockfile are available for integration. This does not establish that the combined application has passed release checks. At this documentation checkpoint, the combined build, browser suite, Docker runtime, live-provider checks and production HTTPS deployment remain to be verified. See [TRACK-A-REPORT.md](build/TRACK-A-REPORT.md) and [TRACK-B-REPORT.md](build/TRACK-B-REPORT.md) for their separate evidence.
+| Deployment | Configuration | Public ingress | Runtime environment |
+| --- | --- | --- | --- |
+| Existing `veltral.aituconnect.kz` | `deploy/compose.nginx.yml` and `deploy/nginx.https.conf` | Existing host nginx → `127.0.0.1:3310` | `/opt/do-over/shared/.env` |
+| New dedicated VPS | `docker-compose.yml` and `Caddyfile` | Caddy on 80/443 → private `web:3000` | `.env` in the deployment checkout |
 
-## 1. Prepare the server
+Both paths use the same non-root standalone Next.js image and private persistent Redis. Neither publishes Redis. Provider credentials remain outside Git and image build contexts.
 
-1. Create a DNS A record for the chosen hostname pointing to the VPS. If you also create an AAAA record, its IPv6 address must reach this server. Set the DNS record to direct/DNS-only mode so Caddy sees the client connection.
-2. Permit SSH and HTTP/HTTPS in the hosting provider's firewall. With UFW on a new Ubuntu server:
+## Recorded deployment evidence
+
+The review branch reports a working HTTPS release at [veltral.aituconnect.kz](https://veltral.aituconnect.kz). The recorded first deployment is commit `fd172030d2a8c4d08db8691b32dd95050121b1c8`, measured on 14 November 2026 in [production-latency.json](evidence/production-latency.json): 20 successful HTTPS practice turns, 19 model responses and one rules fallback, median 2034.68 ms and p90 2787.47 ms. Daily ranking counters were unchanged. This is evidence for that release; it does not establish which commit is running now or mean that a later unified A/B commit has been deployed.
+
+Before reporting any deployment complete, fetch the live `/api/health`, compare its full commit with the selected source revision and perform the appropriate gameplay checks. [TRACK-A-REPORT.md](build/TRACK-A-REPORT.md) records the separate real-provider and server checks; [TRACK-B-REPORT.md](build/TRACK-B-REPORT.md) records browser and integration evidence. Human label review and a real-device microphone acceptance are not inferred from server tests.
+
+## Shared build and runtime settings
+
+Use the committed `package-lock.json` and `npm ci`. The Docker image uses Node 26 LTS; the VPS needs Docker Engine with the Compose plugin, Git, curl and Python 3, but not a separate Node installation. Next.js must use `output: "standalone"` and trace the runtime content/evaluation JSON files into that output.
+
+`SITE_URL` and `NEXT_PUBLIC_PRO_PREVIEW` are passed at build time and runtime in both Compose configurations. Rebuild after changing them: generated metadata and browser flags can be fixed in the build output. A runtime restart alone is insufficient. Provider keys, reasoning settings and model IDs are runtime-only.
+
+| Variable | Meaning |
+| --- | --- |
+| `DOMAIN` | Caddy hostname without scheme; the existing nginx hostname is declared in its site configuration |
+| `SITE_URL` | Canonical origin, `https://veltral.aituconnect.kz` on the existing host |
+| `REDIS_URL` | `redis://redis:6379`; nginx Compose pins the private service |
+| `OPENAI_API_KEY` | Private OpenAI credential; never prefix with `NEXT_PUBLIC_` |
+| `OPENAI_MODEL` | Selected runtime structured-output model |
+| `OPENAI_REASONING_EFFORT` | Optional model-supported effort; the reviewed OpenAI deployment uses `none` |
+| `OPENAI_TEXT_VERBOSITY` | Optional supported detail level; the reviewed deployment uses `low` |
+| `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL` | Optional adapter settings; leave empty for the owner's OpenAI-only deployment |
+| `LLM_PRIMARY` | `openai` for the selected deployment |
+| `MODEL_DAILY_CALL_CAP` | Maximum daily model calls, initially `20000`; over budget uses rules |
+| `OPENAI_TRANSCRIBE_MODEL`, `OPENAI_TTS_MODEL` | Speech models, configured independently of the text model |
+| `NEXT_PUBLIC_PRO_PREVIEW` | `true` for the hackathon preview; `false` for Free-limit testing |
+| `ADMIN_KEY` | Long random secret protecting team statistics; different from provider keys |
+| `GIT_SHA` | Exact full source revision used for the image and runtime health response |
+
+The reviewed production configuration selected `OPENAI_MODEL=gpt-6-luna`, `OPENAI_REASONING_EFFORT=none`, `OPENAI_TEXT_VERBOSITY=low`, `LLM_PRIMARY=openai`, with Anthropic credentials empty. The recorded voice API checks used `gpt-4o-mini-transcribe` and `gpt-4o-mini-tts`; they were performed with synthetic audio, not a real microphone. Track A records the current TTS model's scheduled retirement on 6 January 2027; consult the [official speech guide](https://developers.openai.com/api/docs/guides/text-to-speech) before the required adapter migration.
+
+Compose parses environment files; do not execute them using shell `source`. Shell variables override file values, so avoid stale exported settings. Expanded Compose configuration includes secrets: use `config --quiet` for validation and do not paste `docker compose config` output into reports.
+
+## Existing nginx host
+
+Preserve the nginx services and certificates for the host's other applications. The installed Do-Over Compose file lives at `/opt/do-over/infra/compose.yml` and follows `deploy/compose.nginx.yml`. Its web binding is loopback-only on port 3310. Redis uses an AOF volume, a 192 MB `noeviction` policy and a 256 MB container memory limit; the web container has a 1 GB limit.
+
+Keep private runtime values in `/opt/do-over/shared/.env`, mode `600`, outside all release directories. `DOOVER_ENV_FILE` can override that default path for isolated configuration checks; it must identify the same private file passed to Compose's `--env-file`. `DOOVER_RELEASE_PATH` must point to the already prepared, reviewed source directory matching the selected full SHA. Do not silently change branches or deploy an unverified checkout.
+
+Synchronize the installed Compose template with a reviewed release before using newly added environment settings. The nginx snippets are specific to `veltral.aituconnect.kz`. `deploy/nginx.http.conf` is the HTTP/ACME bootstrap configuration; the final HTTPS configuration is `deploy/nginx.https.conf`, which redirects regular HTTP requests and preserves the ACME challenge path. The certificate and renewal hook belong to this dedicated site; do not replace the host's other nginx configuration.
+
+After the source directory, installed Compose file and private settings have been prepared and reviewed, the operator runs:
+
+```sh
+export GIT_SHA='<verified-full-commit>'
+export DOOVER_RELEASE_PATH="/opt/do-over/releases/$GIT_SHA"
+export DOOVER_ENV_FILE=/opt/do-over/shared/.env
+docker compose --env-file "$DOOVER_ENV_FILE" -f /opt/do-over/infra/compose.yml config --quiet
+docker compose --env-file "$DOOVER_ENV_FILE" -f /opt/do-over/infra/compose.yml build web
+docker compose --env-file "$DOOVER_ENV_FILE" -f /opt/do-over/infra/compose.yml up -d --no-build
+curl --fail --silent --show-error https://veltral.aituconnect.kz/api/health | python3 -c '
+import json, os, sys
+health = json.load(sys.stdin)
+if health.get("ok") is not True or health.get("commit") != os.environ["GIT_SHA"]:
+    sys.exit("Health did not confirm the selected release")
+print("Healthy commit:", health["commit"])
+'
+```
+
+Also verify Redis is `up`, the configured provider is reported and the existing host sites still respond. Complete an unranked library scene, check model/rules attribution and do-over, then run the relevant browser checks against the real HTTPS origin. A pushed Git commit or a build alone is not a completed deployment.
+
+To roll back, select the previous verified SHA and its matching release path and run `up -d --no-build` against its existing image. Preserve the Redis volume. If that image has been removed, rebuild it from the matching reviewed source before starting it. The root `scripts/deploy.sh` is not used for this nginx path.
+
+## New dedicated VPS with Caddy
+
+1. Create a DNS A record for the hostname pointing to the VPS. If an AAAA record exists, its IPv6 address must reach the same server. Use direct/DNS-only mode for this setup.
+2. Keep SSH access and allow HTTP/HTTPS in the hosting provider's firewall. With UFW on a new Ubuntu server:
 
    ```sh
    sudo ufw allow 22/tcp
@@ -16,21 +84,10 @@ The real track A engine, session and feature routes, provider adapters, voice AP
    sudo ufw allow 443/udp
    ```
 
-   Keep your existing SSH access open if it uses a different port. Only Caddy publishes container ports; neither Redis nor the application port is public.
+   Keep the actual SSH port open if different. Do not bind Caddy's ports over an existing web server.
 
-3. Install Docker Engine and the Compose plugin using the [official Ubuntu instructions](https://docs.docker.com/engine/install/ubuntu/) or [Debian instructions](https://docs.docker.com/engine/install/debian/). The package names from Docker's repository are `docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin`. Install `git`, `curl`, and `python3` using the distribution package manager. Verify:
-
-   ```sh
-   docker version
-   docker compose version
-   git --version
-   curl --version
-   python3 --version
-   ```
-
-   Use a deployment account with Docker access. Node is provided by the container and is not required on the VPS. The image uses Node 26 LTS, checked against [Node's release page](https://nodejs.org/en/blog/release/v26.13.1/) on 14 November 2026.
-
-4. Clone the reviewed repository into a writable directory:
+3. Install Docker Engine and the Compose plugin using the [official Ubuntu](https://docs.docker.com/engine/install/ubuntu/) or [Debian](https://docs.docker.com/engine/install/debian/) instructions. Install `git`, `curl` and `python3`. Confirm `docker version` and `docker compose version` succeed for the deployment account.
+4. Clone the reviewed repository and create the private environment file:
 
    ```sh
    git clone https://github.com/mrxfsociety/veltral-businesscap2.0.git do-over
@@ -39,61 +96,28 @@ The real track A engine, session and feature routes, provider adapters, voice AP
    chmod 600 .env
    ```
 
-## 2. Configure `.env`
+5. Edit `.env` with the actual `DOMAIN`, matching `SITE_URL`, private provider configuration and `ADMIN_KEY`. Never commit it. Run:
 
-Edit `.env` with your editor. Never commit it or paste its contents into reports. Set:
+   ```sh
+   ./scripts/deploy.sh
+   ```
 
-| Variable | Production value |
-| --- | --- |
-| `DOMAIN` | Your hostname, without `https://` or a path |
-| `SITE_URL` | `https://` followed by the same hostname |
-| `REDIS_URL` | `redis://redis:6379` for the included private Redis service |
-| `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` | Provider keys; empty keys enable rules-only operation |
-| `OPENAI_MODEL`, `ANTHROPIC_MODEL` | Actual structured-output model IDs; the live comparison is pending, and no default or measured winner is assumed |
-| `LLM_PRIMARY` | `openai` or `anthropic`; confirm the choice with a dev-set provider comparison |
-| `MODEL_DAILY_CALL_CAP` | Daily model budget, initially `20000` |
-| `ADMIN_KEY` | A long random value, different from the provider keys |
-| `NEXT_PUBLIC_PRO_PREVIEW` | `true` during the hackathon; `false` to test the Free limits |
-| `OPENAI_TRANSCRIBE_MODEL`, `OPENAI_TTS_MODEL` | Actual speech model IDs when testing the prepared A5/B5 voice path; leave empty for text-only deployment |
-| `GIT_SHA` | Leave `local`; the deploy script replaces it with the checked-out commit |
+The script rejects uncommitted tracked changes, fetches `origin/main`, fast-forwards local `main` and refuses a local branch ahead of that reviewed remote. It exports the full commit SHA, rebuilds the image and starts web, Redis and Caddy. It accepts the deployment only when the public health response has `ok: true` and the exact commit, with normal TLS validation. A stale healthy response does not pass. Caddy obtains the certificate automatically; data and certificates survive replacement in named volumes.
 
-`NEXT_PUBLIC_PRO_PREVIEW` is a build-time browser value. The Compose build argument and runtime setting use the same value. Run the deploy script after changing it; restarting an old image does not rebuild its browser bundle. Provider keys are runtime-only and are excluded from the build context by `.dockerignore`.
+The script polls health for up to 180 seconds after startup. Failure leaves containers available for diagnosis and exits nonzero. A deployment lock under the Git directory prevents concurrent runs. After confirming no deployment process is active, a stale lock can be removed with `rmdir "$(git rev-parse --git-path do-over-deploy.lock)"`.
 
-Compose reads the environment file; the deploy script never executes it as a shell script. Shell environment variables override `.env`, as in [Docker's interpolation rules](https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/). Avoid exporting stale overrides in the deployment terminal. Do not paste the output of `docker compose config` into a chat: the expanded configuration includes secrets. Use `docker compose config --quiet` for validation.
-
-The checked-in `package-lock.json` came from track A's clean installation. Docker and CI use `npm ci`; do not regenerate the lock simply to deploy. With no provider key/model pair the game still runs using rules and templates. Custom-scene generation and voice transcription must report unavailability honestly; coach tips and browser speech are fallbacks, not evidence that a provider call succeeded.
-
-Before claiming live model accuracy, run the dev provider comparison, `npm run eval:model` and `npm run latency` with actual credentials in a trusted environment. The current checked-in evaluation has `merged: null`. Keep credentials out of public CI logs and do not commit an environment file.
-
-## 3. First deployment and updates
-
-From the repository directory:
+For rollback on this Caddy path:
 
 ```sh
-./scripts/deploy.sh
+git switch --detach PREVIOUS_ACCEPTED_SHA
+./scripts/deploy.sh --no-pull
 ```
 
-The script rejects uncommitted tracked changes, fetches `origin/main`, fast-forwards local `main`, and rejects a local branch ahead of the reviewed remote. It exports the full commit SHA, builds the standalone Next.js image, and starts web, Redis, and Caddy. Redis data and Caddy certificates use named volumes and survive container replacement.
+`--no-pull` builds and checks the selected current commit without fetching or switching branches. A later normal invocation returns to reviewed remote `main`.
 
-Caddy obtains a certificate and redirects HTTP to HTTPS automatically. The web container runs as a non-root user and has a local `/api/health` check. The script then polls the public endpoint for up to 180 seconds after startup. It succeeds only if the JSON contains `ok: true` and the exact deployed commit. TLS validation remains enabled. A response from an older deployment never counts as success.
+## Local validation
 
-Verify directly using your actual domain:
-
-```sh
-curl --fail --silent --show-error https://YOUR_DOMAIN/api/health
-git rev-parse HEAD
-docker compose ps
-```
-
-The JSON's `commit` must match `git rev-parse HEAD`. `redis: "up"` confirms durable server storage; `redis: "memory"` is the documented fallback and warrants inspecting Redis before a public demo. A successful health check alone does not validate gameplay: follow it with the acceptance checks for the stage being deployed.
-
-The integrated server's Redis fallback is sticky for that process: it does not automatically rejoin an older Redis session state after an outage. Recover Redis, then restart the web service deliberately and check a new session; do not promise that a memory-only session survives a restart.
-
-Deploy after accepted T0, J1, B3, B4, voice (only if approved), and J2. Record the commit and observed health result in the stage report. No public domain or successful production deployment is claimed by this repository until those steps are actually performed.
-
-## Local container smoke test
-
-Use a development checkout without production keys. Ports 80 and 443 must be free:
+For a local Caddy smoke test, use a development checkout without production credentials and free ports 80/443:
 
 ```sh
 cp .env.example .env
@@ -101,44 +125,25 @@ DOMAIN=http://localhost SITE_URL=http://localhost ./scripts/deploy.sh --no-pull
 curl --fail http://localhost/api/health
 ```
 
-The explicit localhost setting serves HTTP without requesting a certificate. Production uses the hostname and HTTPS. CI runs this same local smoke test after `npm run verify` and deletes only its own temporary volumes afterward.
+`http://localhost` is the explicit local-only HTTP option. Production uses HTTPS. CI includes the container smoke test and parses both deployment configurations. The nginx configuration can be checked without touching a VPS or using a private file:
+
+```sh
+DOOVER_RELEASE_PATH="$PWD" DOOVER_ENV_FILE="$PWD/.env.example" GIT_SHA="$(git rev-parse HEAD)" \
+  docker compose --env-file .env.example -f deploy/compose.nginx.yml config --quiet
+```
+
+Parsing a configuration is not a runtime/container test. CI results count only after its jobs actually execute; track A recorded an account billing lock that previously prevented Actions from starting.
+
+## Operational checks
+
+Use the appropriate Compose file and environment path for the chosen deployment when running `ps` or `logs --tail=100`. Check DNS, certificate issuance and the reverse proxy when a request fails. Never bypass TLS validation to make a health check pass. Inspect model IDs and credentials locally without logging them or full parent replies.
+
+`redis: "memory"` is the documented availability fallback, not durable storage. The fallback is sticky for that web process to avoid reconnecting to stale session state. Recover Redis, restart web deliberately and check a new session. Memory-only sessions cannot be promised to survive a restart.
+
+Do not run `docker compose down --volumes` on production: it deletes persistent data. CI removes only its disposable test volumes.
 
 ## Voice acceptance
 
-Voice is an optional prepared path, not a completed live-provider check. Its microphone flow requires HTTPS on real phones and laptops. Configure the speech models and OpenAI key, then verify a calm transcription, a louder reply adding the raised-voice tag, calibration/recalibration, playback and microphone-denied fallback. Re-run the text Playwright suite afterward. Browser capture stops around 11.8 seconds; the server enforces a strict 12-second and 1 MB input limit and supports WebM/Opus, WAV and supported MP4/AAC recordings.
+Voice requires HTTPS on actual phones and laptops. After model configuration, test calibration/recalibration, a calm reply, the same words spoken at least 10 dB above baseline, playback, microphone denial and typing fallback. Re-run the text suite. Browser capture stops around 11.8 seconds to leave encoder-padding room within the server's 12-second and 1 MB input limit.
 
-Input audio is held only during processing and discarded. Generated child speech can be cached by session and text hash for up to one hour. Failure of transcription must leave typing available; a browser playback fallback does not count as a successful provider speech test. Record device/browser and observed results before claiming B5 acceptance.
-
-## Troubleshooting
-
-```sh
-docker compose ps
-docker compose logs --tail=100 web caddy
-docker compose logs --tail=100 redis
-```
-
-- Certificate errors: check DNS A/AAAA, port 80/443 reachability, and Caddy logs. Do not disable TLS verification to make a failed deploy pass.
-- Image build errors: confirm `package-lock.json` is committed and `npm run verify` passes for the commit. Next.js must use `output: "standalone"`.
-- Old commit in health: confirm the image was rebuilt and the public domain routes to this VPS. The script injects `GIT_SHA` at runtime.
-- Provider errors: inspect the configured model IDs and keys locally. Do not log credentials or full parent replies.
-- Actions jobs rejected before any steps: this is not a failed application test. Track A's report identifies an account billing lock; resolve the account-level issue and rerun CI. No passing workflow is inferred from a local stage report.
-- Interrupted deployment: failed containers are left for diagnosis. A lock under the repository's Git directory prevents overlapping deployments. After confirming no other deploy process is running, remove only that lock directory:
-
-  ```sh
-  rmdir "$(git rev-parse --git-path do-over-deploy.lock)"
-  ```
-
-The script does not delete server data, stop the prior deployment before building, or silently claim success on failure.
-
-## Roll back
-
-Pick a previously accepted commit or acceptance tag. With a clean checkout:
-
-```sh
-git switch --detach PREVIOUS_ACCEPTED_SHA
-./scripts/deploy.sh --no-pull
-```
-
-`--no-pull` neither fetches nor switches to `main`, so the selected commit is what gets rebuilt and health-checked. The same persistent volumes are retained. Do not run `docker compose down --volumes` on production: that removes Redis data and certificates.
-
-For the next normal update, run `./scripts/deploy.sh`; it returns to the reviewed remote `main`.
+Input audio is discarded after processing. Generated child speech can be cached by session and text hash for up to one hour. Synthetic WAV transcription, a decoded provider MP3 or a passing loudness unit test does not replace real-device microphone checks. Record device/browser and observed outcomes before declaring that acceptance complete.

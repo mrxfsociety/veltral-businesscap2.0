@@ -125,6 +125,67 @@ for (const { tag, positive, negative } of families) {
   });
 }
 describe("rule tagging details", () => {
+  it.each([
+    "You really wanted to skip the coat, but we need a coat.",
+    "I hear you wish we could go without a coat.",
+    "You were hoping to skip the coat.",
+    "You would like to be allowed to go without a coat.",
+    "You’d like to go without a coat.",
+    "You asked me to let you skip the coat.",
+    "If you want me to let you skip the coat, tell me why.",
+  ])("does not count a reflected wish as a concession: %s", (text) =>
+    expect(tags(text)).not.toContain("GIVE_IN"),
+  );
+  it("also guards reflected wishes when the hint is a noun phrase", () => {
+    const text = "You wanted another puzzle. We need a coat.";
+    const hits = mergeTags(
+      ruleTags(text, { ...scene, giveInHints: ["another puzzle"] }),
+      [],
+      text,
+    ).map((hit) => hit.tag);
+    expect(hits).toContain("NAME_FEELING");
+    expect(hits).toContain("HOLD_LIMIT");
+    expect(hits).not.toContain("GIVE_IN");
+  });
+  it.each([
+    "You wanted to stay warm, but you may skip the coat.",
+    "You wanted warmth and you can skip the coat.",
+    "If you do not want your coat, you can skip the coat.",
+    "If you cannot, skip the coat.",
+    "If you want you can skip the coat.",
+    "If you wish you may go without a coat.",
+    "No. You may skip the coat.",
+    "I said no; skip the coat today.",
+    "You wanted a scarf, so go without a coat.",
+  ])("still counts an actual concession in its own clause: %s", (text) =>
+    expect(tags(text)).toContain("GIVE_IN"),
+  );
+  it.each([
+    "You may not skip the coat.",
+    "You can’t skip the coat.",
+    "Please don't go without a coat.",
+    "We will never skip the coat.",
+    "You cannot yet skip the coat.",
+    "You may not, however, skip the coat.",
+    "You cannot then go without a coat.",
+  ])("does not count a negated hint as a concession: %s", (text) =>
+    expect(tags(text)).not.toContain("GIVE_IN"),
+  );
+  it("keeps negation inside a concession hint meaningful", () => {
+    const text = "Fine, you don't need a coat.";
+    expect(
+      ruleTags(text, {
+        ...scene,
+        giveInHints: ["you don't need a coat"],
+      }).find((hit) => hit.tag === "GIVE_IN")?.quote,
+    ).toBe("you don't need a coat");
+  });
+  it("checks later hint occurrences and preserves their original quote", () => {
+    const text = "You wanted to skip the coat. Today you may SKIP\t THE  COAT.";
+    expect(
+      ruleTags(text, scene).find((hit) => hit.tag === "GIVE_IN")?.quote,
+    ).toBe("SKIP\t THE  COAT");
+  });
   it("keeps exact original quotes across curly apostrophes and whitespace", () => {
     const text = "You’re\t really    upset about that.";
     expect(
@@ -200,3 +261,32 @@ describe("rule tagging details", () => {
     expect(tags(text)).not.toContain("UNSAFE"),
   );
 });
+it.each(["HOLD_LIMIT", "GIVE_IN"] as const)(
+  "matches punctuation-ended %s hints with exact original quotes",
+  (tag) => {
+    const text = "We’re\t keeping  the jacket. Please bring your scarf.";
+    const hints = ["we're keeping the jacket."];
+    const hits = ruleTags(text, {
+      ...scene,
+      ...(tag === "HOLD_LIMIT"
+        ? { limitHints: hints }
+        : { giveInHints: hints }),
+    });
+    expect(hits.find((hit) => hit.tag === tag)?.quote).toBe(
+      "We’re\t keeping  the jacket.",
+    );
+  },
+);
+it("matches quoted hints at sentence boundaries", () => {
+  const text = "“The jacket stays on.”";
+  expect(
+    ruleTags(text, {
+      ...scene,
+      limitHints: ['"the jacket stays on."'],
+    }).find((hit) => hit.tag === "HOLD_LIMIT")?.quote,
+  ).toBe(text);
+});
+it.each(["skipping the coat", "skip the coats", "éskip the coat"])(
+  "does not match hints inside a larger word: %s",
+  (text) => expect(tags(text)).not.toContain("GIVE_IN"),
+);

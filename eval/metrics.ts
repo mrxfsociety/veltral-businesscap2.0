@@ -45,6 +45,8 @@ export interface EvaluationMode {
   date: string;
   provider: string;
   model: string;
+  /** Optional accuracy-evaluation deadline; not a production latency setting. */
+  requestTimeoutMs?: number;
   dev: SplitMetrics;
   test: SplitMetrics;
   gates: Record<string, boolean>;
@@ -61,7 +63,13 @@ export interface EvaluationResults {
   merged: EvaluationMode | null;
   bakeoff: Record<
     string,
-    { date: string; provider: string; model: string; dev: SplitMetrics }
+    {
+      date: string;
+      provider: string;
+      model: string;
+      dev: SplitMetrics;
+      requestTimeoutMs?: number;
+    }
   >;
   latency?: {
     date: string;
@@ -73,6 +81,7 @@ export interface EvaluationResults {
     modelSamples?: number;
     modelFallbacks?: number;
     modelTaggedTurns?: number;
+    modelResponses?: number;
   };
 }
 const ratio = (top: number, bottom: number): number =>

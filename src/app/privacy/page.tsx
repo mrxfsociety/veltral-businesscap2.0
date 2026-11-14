@@ -45,6 +45,10 @@ export default function Privacy() {
             : "No text AI provider and model are configured in this deployment. Rules and written child lines run the simulation. Generated custom scenes and model coaching are unavailable; written coaching tips can still be shown."}
         </p>
         <p>
+          A failed model request may already have sent your text to the provider
+          before rules and written dialogue take over.
+        </p>
+        <p>
           Server sessions include replies and expire six hours after creation;
           further replies do not extend that window. Generated custom scenes
           expire after 24 hours. Daily standings store a random session ID and a

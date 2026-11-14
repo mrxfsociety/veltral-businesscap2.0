@@ -466,6 +466,12 @@ function durationMp4(bytes: Uint8Array): number {
     if (!Number.isSafeInteger(value)) fail();
     return value;
   };
+  const i64 = (offset: number, end = bytes.length): number => {
+    check(offset, 8, end);
+    const value = Number(view.getBigInt64(offset));
+    if (!Number.isSafeInteger(value)) fail();
+    return value;
+  };
   const ascii = (
     offset: number,
     length: number,
@@ -651,6 +657,9 @@ function durationMp4(bytes: Uint8Array): number {
   let totalTicks = 0;
   let firstTick = Infinity;
   let lastTick = -Infinity;
+  let trimCompatibleTiming = timescale === sampleRate;
+  let previousEnd = 0;
+  let previousDuration = frameSamples;
   const addSample = (
     offset: number,
     size: number,
@@ -672,6 +681,16 @@ function durationMp4(bytes: Uint8Array): number {
     )
       fail();
     if (++sampleCount > 10_000) fail();
+    // Only a contiguous native AAC clock, with at most a shortened final
+    // packet, can substantiate an encoder-delay edit below.
+    if (
+      time !== previousEnd ||
+      previousDuration !== frameSamples ||
+      duration > frameSamples
+    )
+      trimCompatibleTiming = false;
+    previousEnd = time + duration;
+    previousDuration = duration;
     used.push({ start: offset, end: offset + size });
     totalTicks += duration;
     if (!Number.isSafeInteger(totalTicks)) fail();
@@ -716,6 +735,7 @@ function durationMp4(bytes: Uint8Array): number {
     if (count !== numberOfSamples) fail();
   }
   let editSeconds = 0;
+  let singleEditStart: number | undefined;
   const edts = one(trackChildren, "edts", false);
   if (edts) {
     const elst = required(children(edts), "elst");
@@ -734,6 +754,13 @@ function durationMp4(bytes: Uint8Array): number {
       const offset = elst.data + 8 + index * entrySize;
       const length =
         editVersion === 0 ? u32(offset, elst.end) : u64(offset, elst.end);
+      const mediaTime =
+        editVersion === 0
+          ? i32(offset + 4, elst.end)
+          : i64(offset + 8, elst.end);
+      if (mediaTime < -1) fail();
+      if (count === 1 && length > 0 && mediaTime >= 0)
+        singleEditStart = mediaTime;
       const rate = offset + (editVersion === 0 ? 8 : 16);
       if (u16(rate, elst.end) !== 1 || u16(rate + 2, elst.end) !== 0) fail();
       editTicks += length;
@@ -887,6 +914,22 @@ function durationMp4(bytes: Uint8Array): number {
   used.sort((left, right) => left.start - right.start);
   for (let index = 1; index < used.length; index += 1)
     if (used[index].start < used[index - 1].end) fail();
+  if (singleEditStart !== undefined && trimCompatibleTiming) {
+    const editedEnd = singleEditStart + editSeconds * sampleRate;
+    const padding = sampleCount * frameSamples - editedEnd;
+    // AAC-LC commonly primes 1024 samples (FFmpeg) or 2112 (Apple).
+    // Honor only a single normal-speed edit within that bounded lead-in and
+    // less than one packet of trailing padding. Sample counts and native
+    // packet timing must agree; arbitrary short duration headers cannot trim
+    // a longer recording into the limit.
+    if (
+      singleEditStart <= 2112 &&
+      padding >= -1e-7 &&
+      padding < frameSamples &&
+      editedEnd <= lastTick + 1e-7
+    )
+      return editSeconds;
+  }
   const seconds = Math.max(
     totalTicks / timescale,
     lastTick / timescale,

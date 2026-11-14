@@ -110,8 +110,9 @@ export function createFeatureHandlers(
         );
       const limitHints = cleanHints(generated.scene.limitHints);
       const giveInHints = cleanHints(generated.scene.giveInHints);
+      const displayedLimit = cleanHints([generated.scene.limit])[0];
       // Insufficient grounded hints cannot be invented safely by the server.
-      if (limitHints.length < 3 || giveInHints.length < 3)
+      if (!displayedLimit || limitHints.length < 3 || giveInHints.length < 3)
         return json(
           {
             ok: false,
@@ -121,6 +122,12 @@ export function createFeatureHandlers(
           },
           CustomSceneResponseSchema,
         );
+      // The boundary shown to the player must also work when the model is down.
+      const groundedLimitHints = limitHints.some((hint) =>
+        displayedLimit.includes(hint),
+      )
+        ? limitHints
+        : cleanHints([displayedLimit, ...limitHints]);
       const scene = SceneSchema.parse({
         ...generated.scene,
         id: `custom-${randomUUID()}`,
@@ -129,7 +136,7 @@ export function createFeatureHandlers(
         startArousal: Math.round(
           Math.max(60, Math.min(90, generated.scene.startArousal)),
         ),
-        limitHints,
+        limitHints: groundedLimitHints,
         giveInHints,
       });
       await sessions().saveCustomScene(scene);

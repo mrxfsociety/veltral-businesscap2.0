@@ -104,9 +104,9 @@ function SaveLine({
   turn: TurnResponse;
   sceneTitle: string;
 }) {
-  const [state, setState] = useState<"idle" | "saved" | "limit" | "error">(
-    "idle",
-  );
+  const [state, setState] = useState<
+    "idle" | "saved" | "limit" | "storage" | "error"
+  >("idle");
   function save() {
     if (state === "saved") return;
     const result = savePlaybook({
@@ -117,7 +117,11 @@ function SaveLine({
       sceneTitle,
     });
     setState(
-      result.ok ? "saved" : result.reason === "limit" ? "limit" : "error",
+      result.ok
+        ? "saved"
+        : result.reason === "invalid"
+          ? "error"
+          : result.reason,
     );
   }
   return (
@@ -136,6 +140,13 @@ function SaveLine({
       )}
       {state === "error" && (
         <p role="alert">This line could not be saved. Please try again.</p>
+      )}
+      {state === "storage" && (
+        <p role="alert">
+          This line could not be saved because browser storage is full or
+          unavailable. Your existing lines are unchanged. Copy this reply or
+          remove a saved line from your playbook before trying again.
+        </p>
       )}
       {state === "saved" && (
         <span className={styles.srOnly} role="status">

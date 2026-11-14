@@ -11,7 +11,9 @@ FROM base AS builder
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
 ARG NEXT_PUBLIC_PRO_PREVIEW=true
+ARG SITE_URL=http://localhost:3000
 ENV NEXT_PUBLIC_PRO_PREVIEW=$NEXT_PUBLIC_PRO_PREVIEW
+ENV SITE_URL=$SITE_URL
 RUN mkdir -p public && npm run build
 
 FROM base AS runner

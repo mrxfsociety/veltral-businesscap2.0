@@ -130,7 +130,14 @@ export default function Home() {
                 ? `Rules-only test micro F1: ${results.rules.test.microF1.toFixed(3)}, measured on ${results.rules.test.count} held-out test replies.`
                 : "Measured tagging accuracy is not available in this build."}
             </p>
-            {!results.merged && (
+            {results.merged ? (
+              <p className="small muted">
+                Combined rules-and-model test micro F1:{" "}
+                {results.merged.test.microF1.toFixed(3)} on{" "}
+                {results.merged.test.count} held-out replies (
+                {results.merged.model}).
+              </p>
+            ) : (
               <p className="small muted">
                 Combined rules-and-model accuracy has not been measured.
               </p>
