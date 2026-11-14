@@ -16,7 +16,7 @@ Updated 14 November 2026. Times are Astana time (UTC+5). Implementation and exec
 | B4 Landing and trust | codex/unified-product | B | implemented; verified in build/HTTP checks | | Nine SSR routes, OG 200 and exact metric tables; desktop/mobile axe checks pass |
 | A5 Voice API | a5-voice-api → unified product | A | implemented; checks pass | | Media validation and attributed prior synthetic live-provider audio |
 | B5 Voice interface | codex/unified-product | B | implemented; unit/build and focused browser checks pass | | Calibration cancel and permission denial checked; real phone/laptop microphone acceptance pending |
-| J2 Release | codex/unified-product | A + B | published in PR #6; not accepted | | Full browser checks pass; team acceptance and unified deployment pending |
+| J2 Release | codex/unified-product | A + B | A/B merged in PR #6; final fixes in PR #7 | | Full browser checks pass; PR #7 review, real-device/human gates and unified deployment pending |
 
 ## Decisions
 
@@ -29,6 +29,8 @@ Updated 14 November 2026. Times are Astana time (UTC+5). Implementation and exec
 - Production health observed at 23:19 Astana still reported `afb43807`. Publishing the unified branch does not deploy it or change the existing nginx service.
 
 - Final application review `2ec6ee4` fixes benign handshake false positives and keyboard access to overflowing metric tables. Full 445-test verification passed in both Pro and Free builds; final browser evidence is in `docs/evidence/final-integration-checks.json`.
+
+- During final verification, PR #6 was merged into `main` as `ac6fa98` at 18:12 UTC. [PR #7](https://github.com/mrxfsociety/veltral-businesscap2.0/pull/7) carries the subsequent review fixes and final browser evidence; no human-label or physical-device acceptance is inferred from the merge.
 
 ## Label disputes
 

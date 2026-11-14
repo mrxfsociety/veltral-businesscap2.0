@@ -73,7 +73,7 @@ The preserved first-release HTTPS timing artifact identifies `fd172030d2a8c4d08d
 
 ## GitHub checks
 
-[Actions run 43622116340](https://github.com/mrxfsociety/veltral-businesscap2.0/actions/runs/43622116340) did not start any verification steps. Its annotation says: "The job was not started because your account is locked due to a billing issue." Container and browser jobs were skipped. This is an account-level blocker, not a passing CI result. The PR is mergeable, but final acceptance and `main` remain unchanged under the repository review protocol.
+[Actions run 43622116340](https://github.com/mrxfsociety/veltral-businesscap2.0/actions/runs/43622116340) did not start any verification steps. Its annotation says: "The job was not started because your account is locked due to a billing issue." Container and browser jobs were skipped. This is an account-level blocker, not a passing CI result. PR #6 was merged into `main` as `ac6fa98f4daf9fae087a2700352a8552572ed39b` at 18:12 UTC while the final review was running. [PR #7](https://github.com/mrxfsociety/veltral-businesscap2.0/pull/7) now contains the later handshake/accessibility fixes and completed browser evidence. The main merge does not establish human label review or physical microphone acceptance.
 
 Tracked-file secret-pattern and generated-artifact checks passed; no environment credentials, dependencies or build output were added.
 

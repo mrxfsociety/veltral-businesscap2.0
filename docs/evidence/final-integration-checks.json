@@ -84,6 +84,11 @@
     "humanLabels": "NOT_REVIEWED",
     "deployment": "Unified revision not deployed in this GitHub publication pass",
     "githubActions": "Account billing lock prevented the previous jobs from starting; local checks are separate",
-    "main": "Independent repository acceptance remains pending"
+    "main": "A/B source merged through PR #6; subsequent fixes and evidence await PR #7 review"
+  },
+  "publication": {
+    "mainMerge": "ac6fa98f4daf9fae087a2700352a8552572ed39b",
+    "mergedPullRequest": 6,
+    "finalReviewPullRequest": 7
   }
 }
