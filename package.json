@@ -1,0 +1,18 @@
+{
+  "name": "do-over", "version": "0.1.0", "private": true,
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "dev": "next dev", "build": "next build", "start": "next start",
+    "lint": "eslint .", "format": "prettier --write .", "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit", "test": "vitest run", "e2e": "playwright test",
+    "shots": "playwright test e2e/screenshots.spec.ts",
+    "par": "node scripts/pending-stage.mjs A1", "eval": "node scripts/pending-stage.mjs A1", "eval:model": "node scripts/pending-stage.mjs A2",
+    "verify": "npm run lint && npm run typecheck && npm test && npm run eval && npm run build"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "latest", "ioredis": "latest", "next": "16.4.6", "openai": "latest", "react": "19.3.0", "react-dom": "19.3.0", "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "latest", "@playwright/test": "latest", "@tailwindcss/postcss": "latest", "@types/node": "latest", "@types/react": "latest", "@types/react-dom": "latest", "eslint": "latest", "eslint-config-next": "16.4.6", "prettier": "latest", "tailwindcss": "latest", "typescript": "latest", "vitest": "latest"
+  }
+}

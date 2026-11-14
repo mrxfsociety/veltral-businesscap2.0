@@ -1,0 +1,2 @@
+import Link from 'next/link';
+export default function Home(){return <section className="hero"><p className="kicker">A practice space for parents</p><h1>You know what to say.<br/><em>Until they scream.</em></h1><p>Do-Over is a 3-minute meltdown simulator for parents of 2–7 year olds. Practise the moment before it happens. No account needed.</p><Link className="button" href="/play">Play today’s meltdown ↗</Link></section>}
