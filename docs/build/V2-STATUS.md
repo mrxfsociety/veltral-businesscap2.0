@@ -55,8 +55,8 @@ Level 1
 - [x] Landing hero with live `PaperStage`
 
 Level 2
-- [ ] History `points`; moves, slips, plan, then-and-now, level (pure, tested)
-- [ ] Demo week (labelled), `/progress` page
+- [x] History `points`; moves, slips, plan, then-and-now, level (pure, tested: `src/lib/progress-v2.test.ts`)
+- [x] Demo week (labelled), `/progress` page
 - [x] Landing sections 2–6 (three live stages, engine-scored sample reply, accuracy, two facts, pass strip)
 
 ## BRAND then SETS (ASTRA-1)

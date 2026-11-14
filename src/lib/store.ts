@@ -42,6 +42,8 @@ export const HistoryEntrySchema = z
     helpful: z.number().int().min(0).max(152),
     unhelpful: z.number().int().min(0).max(152),
     tagCounts: z.partialRecord(TagSchema, z.number().int().min(0).max(8)),
+    /** The engine's Score.points for the run (v2). Older entries have none. */
+    points: z.number().int().min(0).max(1000).optional(),
   })
   .strict();
 

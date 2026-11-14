@@ -400,6 +400,7 @@ export function PlayExperience({
       helpful,
       unhelpful,
       tagCounts,
+      points: response.score.points,
     });
     if (saved) savedRuns.current.add(id);
   }
