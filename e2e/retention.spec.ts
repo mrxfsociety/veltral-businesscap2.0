@@ -136,7 +136,7 @@ test("a blocked deletion keeps the saved line through reload and allows a retry"
   await page
     .getByRole("button", { name: "Delete line: I'm here with you." })
     .click();
-  await expect(page.getByRole("alert")).toContainText(
+  await expect(page.getByRole("main").getByRole("alert")).toContainText(
     "Your saved line is unchanged.",
   );
   await expect(page.getByRole("status")).not.toContainText("Line deleted");

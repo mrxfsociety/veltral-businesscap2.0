@@ -3,8 +3,8 @@ import { normalise, normaliseWithOffsets } from "./text";
 import type { Scene, Tag, TagHit } from "./types";
 
 const unsafePatterns = [
-  /\bi\s*(?:will|'ll|am going to|'m going to|am gonna|'m gonna|might|want to|did)\s+(?:really\s+)?(?:smack|spank|hit|slap|whip|beat|punch|kick|hurt|shake|kill)\s+(?:you|your (?:face|head|body|arms?|legs?|hands?|bottom|butt|cheeks?|eyes?|nose|mouth|stomach|back|chest|neck)|him|her|my (?:child|kid|son|daughter))\b/u,
-  /\bi\s+(?:smacked|spanked|hit|slapped|whipped|beat|punched|kicked|hurt|shook)\s+(?:you|your (?:face|head|body|arms?|legs?|hands?|bottom|butt|cheeks?|eyes?|nose|mouth|stomach|back|chest|neck)|him|her|my (?:child|kid|son|daughter))\b/u,
+  /\bi\s*(?:will|'ll|am going to|'m going to|am gonna|'m gonna|might|want to|did)\s+(?:really\s+)?(?:smack|spank|hit|slap|whip|beat|punch|kick|hurt|shake(?!\s+your hands?\b)|kill)\s+(?:you|your (?:face|head|body|arms?|legs?|hands?|bottom|butt|cheeks?|eyes?|nose|mouth|stomach|back|chest|neck)|him|her|my (?:child|kid|son|daughter))\b/u,
+  /\bi\s+(?:smacked|spanked|hit|slapped|whipped|beat|punched|kicked|hurt|shook(?!\s+your hands?\b))\s+(?:you|your (?:face|head|body|arms?|legs?|hands?|bottom|butt|cheeks?|eyes?|nose|mouth|stomach|back|chest|neck)|him|her|my (?:child|kid|son|daughter))\b/u,
   /\b(?:give|giving|gave)\s+(?:you|him|her|my (?:child|kid|son|daughter))\s+(?:a\s+)?(?:spanking|beating)\b/u,
   /\b(?:something to cry about|i hate you|(?:i )?wish i(?:'d| had)? never had you|wish you (?:were|had) never (?:been )?born)\b/u,
   /\b(?:fuck you|you (?:fucking |little )?(?:idiot|moron|bastard|shit|asshole)|shut (?:the fuck |the hell )up|you(?:'re| are) (?:a )?(?:fucking |worthless|pathetic))\b/u,

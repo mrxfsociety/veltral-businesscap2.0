@@ -239,9 +239,14 @@ export default function HowItWorks() {
                     . Small per-tag samples limit what these scores establish.
                   </p>
                 )}
-                <div className="table-wrap">
+                <div
+                  className="table-wrap"
+                  role="region"
+                  aria-labelledby={`${mode}-metrics-caption`}
+                  tabIndex={0}
+                >
                   <table>
-                    <caption>
+                    <caption id={`${mode}-metrics-caption`}>
                       {mode === "rules" ? "Rules" : "Combined"} test metrics
                     </caption>
                     <thead>
