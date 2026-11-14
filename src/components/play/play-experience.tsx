@@ -31,6 +31,7 @@ import { HeadsUp } from "./heads-up";
 import { Playbill, type Pace } from "./playbill";
 import { tomorrowFrom } from "./takes";
 import { BEAT_DONE, TurnSlip } from "./turn-slip";
+import { paperSound, readSoundPref, writeSoundPref } from "@/lib/sound";
 import { UnsafePause } from "./unsafe-pause";
 import { VoiceCalibration, VoiceLevel } from "./voice-controls";
 import { createRecording, type RecordingHandle } from "@/voice/recorder";
@@ -150,6 +151,9 @@ export function PlayExperience({
   const [cue, setCue] = useState(0);
   const [lineReady, setLineReady] = useState(false);
   const [clockWaiting, setClockWaiting] = useState(false);
+  const [soundOn, setSoundOn] = useState(() =>
+    typeof window === "undefined" ? true : readSoundPref(),
+  );
   const [squeezed, setCompact] = useState(false);
   const compact = squeezed && phase === "playing";
   const beatTimers = useRef<number[]>([]);
@@ -221,6 +225,7 @@ export function PlayExperience({
       deadlineRef.current = null;
       cancelVoice(false);
       clearBeats();
+      paperSound().stop();
     };
   }, [cancelVoice, clearBeats]);
 
@@ -297,6 +302,11 @@ export function PlayExperience({
     if (voice && store.settings.calmBaselineDb === null) {
       setCalibrating(true);
       return;
+    }
+    // Sound may only start from this gesture.
+    if (soundOn) {
+      paperSound().enable();
+      paperSound().rustle();
     }
     cancelVoice();
     requestPending.current = true;
@@ -400,6 +410,7 @@ export function PlayExperience({
       return;
     }
     setBeat(0);
+    paperSound().rustle();
     const stamps =
       response.hits.length + (response.result.effects.length > 0 ? 0 : 1);
     beatTimeline(stamps).forEach((at, index) => {
@@ -409,6 +420,11 @@ export function PlayExperience({
           if (!mounted.current) return;
           if (index === BEAT_DONE) finishSequence();
           else setBeat(index);
+          if (index === 2)
+            for (let i = 0; i < Math.max(1, response.hits.length); i++)
+              window.setTimeout(() => paperSound().stamp(), i * 140);
+          if (index === 4 && response.result.outcome === "calm_limit_held")
+            paperSound().chime();
         }, at),
       );
     });
@@ -720,6 +736,17 @@ export function PlayExperience({
     if (phase === "ended") endingRef.current?.focus({ preventScroll: true });
   }, [phase, waiting, failure, turns.length, voiceStatus, sequencing]);
 
+  // Rain follows the storm number the stage is showing.
+  const rainStorm =
+    phase === "intro" || final?.result.outcome === "stopped_unsafe"
+      ? 0
+      : final && sequencing && beat < 4
+        ? final.result.before.arousal
+        : (childState?.arousal ?? 0);
+  useEffect(() => {
+    paperSound().setRain(soundOn ? rainStorm : 0);
+  }, [rainStorm, soundOn]);
+
   // Phone keyboard: when the visual viewport shrinks, squeeze the stage.
   useEffect(() => {
     const vv = window.visualViewport;
@@ -793,6 +820,7 @@ export function PlayExperience({
       setRemaining(timer || null);
       setPhase("playing");
       setClapper(nextTake);
+      paperSound().rustle();
       window.setTimeout(
         () => {
           if (!mounted.current) return;
@@ -804,6 +832,14 @@ export function PlayExperience({
     },
     [timer, cancelVoice, clearBeats, take, turnTakes, reduce],
   );
+
+  function toggleSound() {
+    const next = !soundOn;
+    setSoundOn(next);
+    writeSoundPref(next);
+    if (next) paperSound().enable();
+    else paperSound().disable();
+  }
 
   function restart() {
     cancelVoice();
@@ -1359,7 +1395,17 @@ export function PlayExperience({
             Scenes
           </Link>
         ) : (
-          <span className={styles.topSpacer} />
+          <button
+            type="button"
+            className={styles.leave}
+            aria-pressed={soundOn}
+            onClick={toggleSound}
+          >
+            <Icon name={soundOn ? "speaker" : "speakerOff"} size={18} />
+            <span className={styles.soundLabel}>
+              {soundOn ? "Sound on" : "Sound off"}
+            </span>
+          </button>
         )}
       </header>
 

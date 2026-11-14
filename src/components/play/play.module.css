@@ -65,8 +65,23 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.topSpacer {
-  width: 60px;
+.leave[aria-pressed] {
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.leave[aria-pressed="false"] {
+  color: var(--ink-2);
+}
+@media (max-width: 520px) {
+  .soundLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
 }
 
 .house {

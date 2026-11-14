@@ -36,7 +36,7 @@ Level 0–1
 - [x] Endings (four), the script (debrief), "Do-over from here" rewind, take comparison
 
 Level 3
-- [ ] Sound (`src/lib/sound.ts`), speaker toggle
+- [x] Sound (`src/lib/sound.ts`), speaker toggle (preference in localStorage `doover:sound`, default on; starts only from Start)
 
 ## MONEY (OPUS-2)
 
