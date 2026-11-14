@@ -1,7 +1,11 @@
 import Redis from "ioredis";
 import { getEnv } from "./env";
 
-type Entry = { value: unknown; expiresAt: number | null };
+type Entry = {
+  value: unknown;
+  expiresAt: number | null;
+  critical: boolean;
+};
 type Ranking = Record<string, number>;
 export type RankingResult = {
   players: number;
@@ -83,6 +87,9 @@ export class Storage {
   private client: RedisConnection | undefined;
   private initialized: Promise<void> | undefined;
   private failed = false;
+  // If Redis accepted a quota that could not fit in the mirror, missing quota
+  // fields are unknown after an outage. Deny them until restart, never reset them.
+  private criticalMirrorIncomplete = false;
   private readonly cleanup: ReturnType<typeof setInterval>;
 
   constructor(
@@ -119,22 +126,62 @@ export class Storage {
     return structuredClone(entry.value) as T;
   }
 
-  private write(key: string, value: unknown, ttlMs: number | null): void {
+  private isCritical(key: string, critical = false): boolean {
+    return (
+      critical ||
+      key.startsWith("rl:") ||
+      key.startsWith("stats:") ||
+      this.memory.get(key)?.critical === true
+    );
+  }
+
+  private write(
+    key: string,
+    value: unknown,
+    ttlMs: number | null,
+    critical = false,
+  ): boolean {
     this.sweep();
-    // Evict the oldest expiring entry, never an email entry with no expiry.
+    critical = this.isCritical(key, critical);
+    // Session churn must not erase active quotas, statistics or persistent email.
     if (
       !this.memory.has(key) &&
       this.memory.size >= (this.options.maxEntries ?? 10_000)
     ) {
       const victim = [...this.memory].find(
-        ([, entry]) => entry.expiresAt !== null,
+        ([, entry]) => entry.expiresAt !== null && !entry.critical,
       )?.[0];
-      if (victim) this.memory.delete(victim);
+      if (!victim) return false;
+      this.memory.delete(victim);
     }
     this.memory.set(key, {
       value: structuredClone(value),
       expiresAt: ttlMs === null ? null : this.now() + ttlMs,
+      critical,
     });
+    return true;
+  }
+
+  private mirror(
+    key: string,
+    value: unknown,
+    ttlMs: number | null,
+    critical = false,
+  ): boolean {
+    critical = this.isCritical(key, critical);
+    const stored = this.write(key, value, ttlMs, critical);
+    if (!stored && critical) this.criticalMirrorIncomplete = true;
+    return stored;
+  }
+
+  private requireWrite(
+    key: string,
+    value: unknown,
+    ttlMs: number | null,
+    critical = false,
+  ): void {
+    if (!this.write(key, value, ttlMs, critical))
+      throw new Error("Memory storage capacity reached");
   }
 
   private fail(): void {
@@ -212,7 +259,11 @@ export class Storage {
       }
       try {
         const parsed: unknown = JSON.parse(remote.value.value);
-        this.write(key, parsed, remote.value.ttl < 0 ? null : remote.value.ttl);
+        this.mirror(
+          key,
+          parsed,
+          remote.value.ttl < 0 ? null : remote.value.ttl,
+        );
         return structuredClone(parsed) as T;
       } catch {
         return null;
@@ -226,10 +277,11 @@ export class Storage {
       await this.delete(key);
       return;
     }
-    await this.attempt((redis) =>
+    const remote = await this.attempt((redis) =>
       redis.set(key, JSON.stringify(value), "PX", Math.ceil(ttlMs)),
     );
-    this.write(key, value, ttlMs);
+    if (remote) this.mirror(key, value, ttlMs);
+    else this.requireWrite(key, value, ttlMs);
   }
 
   async delete(key: string): Promise<void> {
@@ -248,21 +300,33 @@ export class Storage {
       );
       if (remote) {
         const [allowed, value, remaining] = numericTuple(remote.value);
-        this.write(key, value, Math.max(0, remaining));
+        this.mirror(key, value, Math.max(0, remaining), true);
         return {
           allowed: allowed === 1,
           value,
           retryAfter: Math.max(1, Math.ceil(remaining / 1000)),
         };
       }
-      const current = this.read<number>(key) ?? 0;
+      const remembered = this.read<number>(key);
+      if (remembered === null && this.criticalMirrorIncomplete)
+        return {
+          allowed: false,
+          value: 0,
+          retryAfter: Math.ceil(windowMs / 1000),
+        };
+      const current = remembered ?? 0;
       const remaining = Math.max(
         1,
         (this.memory.get(key)?.expiresAt ?? this.now() + windowMs) - this.now(),
       );
       const allowed = current < limit;
       const value = current + (allowed ? 1 : 0);
-      this.write(key, value, remaining);
+      if (!this.write(key, value, remaining, true))
+        return {
+          allowed: false,
+          value: current,
+          retryAfter: Math.ceil(remaining / 1000),
+        };
       return { allowed, value, retryAfter: Math.ceil(remaining / 1000) };
     });
   }
@@ -281,12 +345,19 @@ export class Storage {
       if (remote) {
         const [allowed, value] = numericTuple(remote.value);
         hash[field] = value;
-        this.write(key, hash, ttlMs);
+        this.mirror(key, hash, ttlMs, true);
         return allowed === 1;
       }
+      if (
+        cap !== undefined &&
+        hash[field] === undefined &&
+        this.criticalMirrorIncomplete
+      )
+        return false;
       if (cap !== undefined && (hash[field] ?? 0) >= cap) return false;
       hash[field] = (hash[field] ?? 0) + 1;
-      this.write(key, hash, ttlMs);
+      if (cap === undefined) this.requireWrite(key, hash, ttlMs, true);
+      else if (!this.write(key, hash, ttlMs, true)) return false;
       return true;
     });
   }
@@ -300,7 +371,7 @@ export class Storage {
           Number(value),
         ]),
       );
-      this.write(key, values, ttlMs);
+      this.mirror(key, values, ttlMs, true);
       return values;
     }
     return this.read<Record<string, number>>(key) ?? {};
@@ -314,7 +385,7 @@ export class Storage {
       const ranking: Ranking = {};
       for (let index = 0; index < remote.value.length; index += 2)
         ranking[remote.value[index]] = Number(remote.value[index + 1]);
-      this.write(key, ranking, ttlMs);
+      this.mirror(key, ranking, ttlMs);
       return ranking;
     }
     return this.read<Ranking>(key) ?? {};
@@ -333,7 +404,8 @@ export class Storage {
         redis.eval(RANK_SCRIPT, 1, key, points, id, ttlMs),
       );
       ranking[id] ??= points;
-      this.write(key, ranking, ttlMs);
+      if (remote) this.mirror(key, ranking, ttlMs);
+      else this.requireWrite(key, ranking, ttlMs);
       if (remote) {
         const [players, rank, lower] = numericTuple(remote.value);
         return {
@@ -360,10 +432,13 @@ export class Storage {
 
   async append(key: string, value: unknown): Promise<void> {
     await this.withLock(key, async () => {
-      await this.attempt((redis) => redis.rpush(key, JSON.stringify(value)));
+      const remote = await this.attempt((redis) =>
+        redis.rpush(key, JSON.stringify(value)),
+      );
       const list = this.read<unknown[]>(key) ?? [];
       list.push(value);
-      this.write(key, list, null);
+      if (remote) this.mirror(key, list, null);
+      else this.requireWrite(key, list, null);
     });
   }
 

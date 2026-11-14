@@ -268,16 +268,21 @@ function mp4Fixture(
     fragmented?: boolean;
     count?: number;
     sampleDuration?: number;
+    lastSampleDuration?: number;
+    sampleRate?: 44100 | 48000;
     timescale?: number;
     initialTime?: number;
     editRate?: number;
     editDurationMs?: number;
+    editMediaTime?: number;
+    editVersion?: 0 | 1;
   } = {},
 ): Uint8Array {
   const {
     fragmented = false,
     count = 48,
     sampleDuration = 1024,
+    sampleRate = 48000,
     timescale = 48000,
     initialTime = 0,
   } = options;
@@ -310,8 +315,11 @@ function mp4Fixture(
   sampleView.setUint16(6, 1);
   sampleView.setUint16(16, 1);
   sampleView.setUint16(18, 16);
-  sampleView.setUint32(24, 48000 * 65536);
-  const config = descriptor(5, new Uint8Array([0x11, 0x88]));
+  sampleView.setUint32(24, sampleRate * 65536);
+  const config = descriptor(
+    5,
+    new Uint8Array(sampleRate === 44100 ? [0x12, 0x08] : [0x11, 0x88]),
+  );
   const decoder = descriptor(
     4,
     join(new Uint8Array([0x40, 0x15, 0, 0, 0]), uint(16000, 16000), config),
@@ -328,7 +336,12 @@ function mp4Fixture(
   const ftyp = box("ftyp", text("isom"), uint(0), text("isommp42"));
   const sampleCount = fragmented ? 0 : count;
   const stts = sampleCount
-    ? box("stts", uint(0, 1, count, sampleDuration))
+    ? options.lastSampleDuration === undefined
+      ? box("stts", uint(0, 1, count, sampleDuration))
+      : box(
+          "stts",
+          uint(0, 2, count - 1, sampleDuration, 1, options.lastSampleDuration),
+        )
     : box("stts", uint(0, 0));
   const stsc = sampleCount
     ? box("stsc", uint(0, 1, 1, count, 1))
@@ -363,21 +376,32 @@ function mp4Fixture(
   const mvhdBody = new Uint8Array(100);
   new DataView(mvhdBody.buffer).setUint32(12, 1000);
   let edits: Uint8Array = new Uint8Array();
-  if (options.editRate !== undefined || options.editDurationMs !== undefined) {
+  if (
+    options.editRate !== undefined ||
+    options.editDurationMs !== undefined ||
+    options.editMediaTime !== undefined
+  ) {
     const rate = options.editRate ?? 1;
     const fixedRate = Math.round(rate * 65536);
+    const version = options.editVersion ?? 0;
+    const duration =
+      options.editDurationMs ??
+      Math.ceil(((count * sampleDuration) / timescale) * 1000);
+    const mediaTime = options.editMediaTime ?? 0;
     edits = box(
       "edts",
       box(
         "elst",
-        uint(
-          0,
-          1,
-          options.editDurationMs ??
-            Math.ceil(((count * sampleDuration) / timescale) * 1000),
-          0,
-          fixedRate,
-        ),
+        uint(version << 24, 1),
+        version === 0
+          ? uint(duration, mediaTime, fixedRate)
+          : uint(
+              0,
+              duration,
+              mediaTime < 0 ? 0xffffffff : 0,
+              mediaTime,
+              fixedRate,
+            ),
       ),
     );
   }
@@ -416,6 +440,78 @@ describe("MP4 audio duration validation", () => {
         validateAudio(audioFile(mp4Fixture({ fragmented }), "audio/mp4")),
       ).resolves.toBeUndefined();
     }
+  });
+
+  it("accepts exactly 12 seconds after bounded AAC priming and final padding", async () => {
+    for (const editVersion of [0, 1] as const) {
+      // FFmpeg's 44.1 kHz AAC output: 1024 priming samples, with the last
+      // packet's sample-table duration shortened to the source endpoint.
+      await expect(
+        validateAudio(
+          audioFile(
+            mp4Fixture({
+              sampleRate: 44100,
+              timescale: 44100,
+              count: 518,
+              lastSampleDuration: 816,
+              editDurationMs: 12_000,
+              editMediaTime: 1024,
+              editVersion,
+            }),
+            "audio/mp4",
+          ),
+        ),
+      ).resolves.toBeUndefined();
+      // Apple's common 2112-sample lead-in and 448 trailing padded samples.
+      await expect(
+        validateAudio(
+          audioFile(
+            mp4Fixture({
+              count: 565,
+              editDurationMs: 12_000,
+              editMediaTime: 2112,
+              editVersion,
+            }),
+            "audio/mp4",
+          ),
+        ),
+      ).resolves.toBeUndefined();
+    }
+  });
+
+  it("does not let edit headers or forged sample timing hide excess AAC audio", async () => {
+    for (const editVersion of [0, 1] as const) {
+      for (const options of [
+        { count: 610, editMediaTime: 1024 },
+        { count: 610, editMediaTime: 48_000 },
+        { count: 610, editMediaTime: -1 },
+        { count: 566, editMediaTime: 2112 },
+        { count: 565, editMediaTime: 2112, sampleDuration: 1 },
+        { count: 565, editMediaTime: 2112, timescale: 1_000_000 },
+        { count: 610, editMediaTime: 1024, sampleDuration: 1 },
+        { count: 610, editMediaTime: 1024, timescale: 1_000_000 },
+      ]) {
+        await rejects(
+          mp4Fixture({
+            ...options,
+            editDurationMs: 12_000,
+            editVersion,
+          }),
+          "audio/mp4",
+        );
+      }
+    }
+    await rejects(
+      mp4Fixture({
+        sampleRate: 44100,
+        timescale: 44100,
+        count: 519,
+        lastSampleDuration: 233,
+        editDurationMs: 12_010,
+        editMediaTime: 1024,
+      }),
+      "audio/mp4",
+    );
   });
 
   it("rejects actual AAC sample counts above 12 seconds despite forged timing metadata", async () => {
