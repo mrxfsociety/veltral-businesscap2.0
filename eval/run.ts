@@ -1,6 +1,13 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { resolve } from "node:path";
+import {
+  basename,
+  dirname,
+  isAbsolute,
+  relative,
+  resolve,
+  sep,
+} from "node:path";
 import { getScene } from "../src/engine/scenes";
 import { initialState } from "../src/engine/transition";
 import { ruleTags } from "../src/engine/rules";
@@ -17,6 +24,33 @@ import { modelReport } from "./report";
 import type { ProviderName } from "../src/llm/provider";
 
 const root = resolve(fileURLToPath(new URL(".", import.meta.url)), "..");
+function argument(name: string): string | undefined {
+  const inline = process.argv.find((value) => value.startsWith(`${name}=`));
+  if (inline !== undefined) return inline.slice(name.length + 1);
+  const index = process.argv.indexOf(name);
+  if (index < 0) return undefined;
+  const value = process.argv[index + 1];
+  if (!value || value.startsWith("--"))
+    throw new Error(`${name} requires a value.`);
+  return value;
+}
+function predictionPath(value: string): string {
+  const output = resolve(root, value);
+  const insideWork = relative(resolve(root, "work"), output);
+  const repositoryWork =
+    insideWork !== "" &&
+    insideWork !== ".." &&
+    !insideWork.startsWith(`..${sep}`) &&
+    !isAbsolute(insideWork);
+  const workspaceWork =
+    basename(dirname(root)) === "work" && dirname(output) === dirname(root);
+  if ((!repositoryWork && !workspaceWork) || !output.endsWith(".json"))
+    throw new Error(
+      "Prediction output must be a .json file under repository work/ or directly in the surrounding workspace work directory.",
+    );
+  return output;
+}
+
 async function readResults(rows: LabeledReply[]): Promise<EvaluationResults> {
   try {
     const prior: unknown = JSON.parse(
@@ -60,6 +94,26 @@ async function main(): Promise<void> {
   const modelMode = process.argv.includes("--model");
   const devOnly = process.argv.includes("--dev-only");
   const selected = devOnly ? rows.filter((row) => row.split === "dev") : rows;
+  const timeoutArgument = argument("--timeout-ms");
+  const requestTimeoutMs =
+    timeoutArgument === undefined ? undefined : Number(timeoutArgument);
+  if (
+    requestTimeoutMs !== undefined &&
+    (!Number.isSafeInteger(requestTimeoutMs) ||
+      requestTimeoutMs < 1 ||
+      requestTimeoutMs > 120_000)
+  )
+    throw new Error("--timeout-ms must be an integer from 1 to 120000.");
+  if (requestTimeoutMs !== undefined && !modelMode)
+    throw new Error(
+      "--timeout-ms is for live accuracy evaluation only; add --model.",
+    );
+  const predictionsArgument = argument("--predictions-output");
+  const predictionsOutput =
+    predictionsArgument === undefined
+      ? undefined
+      : predictionPath(predictionsArgument);
+
   const providerArgument = process.argv
     .find((value) => value.startsWith("--provider="))
     ?.slice("--provider=".length);
@@ -72,6 +126,10 @@ async function main(): Promise<void> {
   const providerFlag: ProviderName | undefined = providerArgument;
   if (providerFlag && !devOnly)
     throw new Error("Provider bake-off is restricted to --dev-only.");
+  if (modelMode && requestTimeoutMs !== undefined)
+    process.stdout.write(
+      `Accuracy evaluation deadline: ${requestTimeoutMs} ms per provider attempt. Production deadlines and full-handler latency measurements are unchanged.\n`,
+    );
   const predictions: Prediction[] = [];
   const usedProviders = new Set<string>();
   const usedModels = new Set<string>();
@@ -126,6 +184,9 @@ async function main(): Promise<void> {
       },
       primary: providerFlag ?? LLM_PRIMARY,
       reserveCall: reserveModelCall,
+      ...(requestTimeoutMs === undefined
+        ? {}
+        : { timeouts: [requestTimeoutMs, requestTimeoutMs] as const }),
       onAttempt: (attempt) => {
         if (attempt.success) {
           usedProviders.add(attempt.provider);
@@ -179,6 +240,19 @@ async function main(): Promise<void> {
     ? [...usedModels].sort().join(" + ")
     : "deterministic";
   const date = new Date().toISOString();
+  if (predictionsOutput) {
+    if (predictions.length !== selected.length || !gates.complete)
+      throw new Error("Refusing to save incomplete predictions.");
+    await mkdir(dirname(predictionsOutput), { recursive: true });
+    await writeFile(
+      predictionsOutput,
+      `${JSON.stringify({ schemaVersion: 1, date, mode: modelMode ? "merged" : "rules", split: devOnly ? "dev" : "all", provider, model, ...(requestTimeoutMs === undefined ? {} : { requestTimeoutMs }), predictions }, null, 2)}\n`,
+    );
+    process.stdout.write(
+      `Saved ${predictions.length} completed predictions to the work directory.\n`,
+    );
+  }
+
   const dev = calculateMetrics(
     selected.filter((row) => row.split === "dev"),
     predictions,
@@ -199,7 +273,13 @@ async function main(): Promise<void> {
   }
   const results = await readResults(rows);
   if (devOnly) {
-    results.bakeoff[providerFlag ?? provider] = { date, provider, model, dev };
+    results.bakeoff[providerFlag ?? provider] = {
+      date,
+      provider,
+      model,
+      dev,
+      ...(requestTimeoutMs === undefined ? {} : { requestTimeoutMs }),
+    };
     await writeResults(results);
     process.stdout.write(
       `Dev bake-off ${provider}/${model}: ${dev.count} replies; micro-F1 ${dev.microF1.toFixed(4)}; median ${dev.medianLatencyMs?.toFixed(1) ?? "unmeasured"} ms.\n`,
@@ -215,6 +295,7 @@ async function main(): Promise<void> {
     date,
     provider,
     model,
+    ...(requestTimeoutMs === undefined ? {} : { requestTimeoutMs }),
     dev,
     test,
     gates,
