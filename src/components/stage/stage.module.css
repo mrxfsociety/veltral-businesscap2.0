@@ -491,3 +491,14 @@
     transform: none;
   }
 }
+
+/* Phone keyboard open: the stage shrinks to about 30% of the visual viewport. */
+.stage[data-compact] .viewport {
+  aspect-ratio: auto;
+  height: calc(var(--vvh, 100svh) * 0.3);
+  min-height: 120px;
+}
+.stage[data-compact] .hud {
+  min-height: 0;
+  padding-block: 4px;
+}

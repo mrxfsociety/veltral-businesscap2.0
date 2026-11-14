@@ -31,9 +31,9 @@ Level 0–1
 - [x] `PaperKid`: rig, looks per scene, every pose of REDESIGN 4.3, speech bubble
 - [x] Sets: `playground-leave`, `store-candy`, `generic`
 - [x] `src/components/stage/README.md` (how to add a prop and a set)
-- [ ] Play screen: playbill, pace selector (Rehearsal preselected on first visit), heads-up strip, reply dock, countdown after the bubble
-- [ ] Turn sequence on the stage: slip, underlines, stamps, ledger, storm roll, notes, next line; "Froze"
-- [ ] Endings (four), the script (debrief), "Do-over from here" rewind, take comparison
+- [x] Play screen: playbill, pace selector (Rehearsal preselected on first visit), heads-up strip, reply dock, countdown after the bubble
+- [x] Turn sequence on the stage: slip, underlines, stamps, ledger, storm roll, notes, next line; "Froze"
+- [x] Endings (four), the script (debrief), "Do-over from here" rewind, take comparison
 
 Level 3
 - [ ] Sound (`src/lib/sound.ts`), speaker toggle
@@ -107,3 +107,11 @@ _Format: `[FROM → TO] request` · answer below it._
 
 [STAGE → SETS] The stage, three sets and `src/components/stage/README.md` are on `v2`. Start with the README (worked example: `playground-leave`). Look at every set in storm and calm on `/play/stage-lab` (dev only). Props go in `src/components/stage/props/` and are registered in `props/index.tsx`; sets go one file each in `src/components/stage/sets/` and are registered in `sets/index.ts`. `sets/index.ts` and `props/index.tsx` are shared registries: only add lines, never reorder.
 [STAGE → MONEY, PAGES] Thumbnails: `<PaperStage size="thumb" scene={scene} state={{ arousal: scene.startArousal, connection: 50, lastDelta: 0, turn: 0 }} />` from `@/components/stage/paper-stage`. Landing hero: `size="full"` with `bubble={{ line: scene.openingLine, action: scene.openingAction }}` and the scene's start state.
+
+[STAGE → PAGES] Play screen and script are on `v2` (REDESIGN 5–6). e2e changes you will need in `e2e/**`:
+  1. Pace labels are now "Rehearsal · 20 s", "Real time · 8 s", "No timer" (radio inputs named `pace`). `begin(page, "Timer off")` → `"No timer"`. On a first visit (no history, never picked) Rehearsal is preselected.
+  2. After Send a turn plays a ~2.4 s sequence on the stage; the textarea is disabled until it ends (any key or tap skips). `toBeEditable()` waits for it. On the final turn the scene ends **after** the sequence, so `finish()` must wait for `getByTestId("debrief").or(page.getByLabel("What do you say?"))` instead of asserting editable first.
+  3. The countdown starts when the child's line has finished appearing (about 0.8–1.4 s after Start or after a turn), so an 8 s timeout fires ~1.5 s later than before.
+  4. `data-testid="arousal-value"` is a visually hidden span holding the engine's current value as "57 · settling" immediately after the response (the visible number rolls). `reply-N` is on the slip during play and on each script card; `review-turn-N` and "Do-over from here" are kept.
+  5. Unchanged names: "What do you say?", "Send reply", "Listening…", "Start", "Share result", "Try this turn again", "Restart scene", "Retry this turn".
+[STAGE → MONEY] When `usePro()` lands I will switch `play-experience.tsx` and `debrief.tsx` from `isPro()`; the paywall should open from the voice toggle and "What could I have said?" (both currently `ProGate`). Tell me the component name and props here.

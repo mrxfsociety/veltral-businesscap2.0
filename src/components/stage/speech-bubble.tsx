@@ -52,6 +52,8 @@ export function SpeechBubble({
   headTop,
   compact,
   onRevealed,
+  cue = 0,
+  lean,
 }: {
   line: string;
   action?: string;
@@ -63,6 +65,10 @@ export function SpeechBubble({
   compact?: boolean;
   /** Called once the last letter has appeared. */
   onRevealed?: () => void;
+  /** Changing the cue replays the reveal of the same line. */
+  cue?: number;
+  /** Lean the bubble to the right of the child (something occupies stage left). */
+  lean?: "right";
 }) {
   const reduce = useReducedMotion();
   const letters = useMemo(() => Array.from(line), [line]);
@@ -74,9 +80,12 @@ export function SpeechBubble({
     return () => window.clearTimeout(id);
     // the reveal restarts only when the line changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [line, total]);
+  }, [line, total, cue]);
   const size = 28 + 28 * Math.min(1, Math.max(0, (arousal - 25) / 60));
-  const left = Math.min(74, Math.max(26, anchorX / 4));
+  const left =
+    lean === "right"
+      ? Math.min(74, Math.max(60, anchorX / 4 + 12))
+      : Math.min(74, Math.max(26, anchorX / 4));
   const tail = anchorX / 4 - left;
   return (
     <div
@@ -93,7 +102,7 @@ export function SpeechBubble({
         } as CSSProperties
       }
     >
-      <div className={styles.bubbleSheet} key={line}>
+      <div className={styles.bubbleSheet} key={`${cue}:${line}`}>
         <svg
           className={styles.bubbleShape}
           viewBox="0 0 100 60"

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useReducedMotion } from "motion/react";
 import type { PublicScene, Tag } from "@/engine/types";
 import type {
   DailyResponse,
@@ -15,8 +16,21 @@ import { useStore } from "@/lib/use-store";
 import { isHelpfulTag } from "@/lib/presentation";
 import { isPro } from "@/lib/pro";
 import { ProBadge, ProGate } from "@/components/pro-gate";
-import { Debrief } from "./debrief";
-import { TurnCard } from "./turn-card";
+import { Icon } from "@/components/paper/icons";
+import {
+  Button,
+  ButtonLink,
+  Kicker,
+  Sheet,
+} from "@/components/paper/primitives";
+import { PaperStage, type CurtainState } from "@/components/stage/paper-stage";
+import { trendOf } from "@/components/stage/mood";
+import { Debrief, type ReplacedTake } from "./debrief";
+import { EndingCard } from "./ending-card";
+import { HeadsUp } from "./heads-up";
+import { Playbill, type Pace } from "./playbill";
+import { tomorrowFrom } from "./takes";
+import { BEAT_DONE, TurnSlip } from "./turn-slip";
 import { UnsafePause } from "./unsafe-pause";
 import { VoiceCalibration, VoiceLevel } from "./voice-controls";
 import { createRecording, type RecordingHandle } from "@/voice/recorder";
@@ -27,8 +41,9 @@ import styles from "./play.module.css";
 
 type Phase = "intro" | "playing" | "ended";
 type Failure = { message: string; code: string; retry?: TurnRequest };
-const DISCLAIMER =
-  "Do-Over is a practice tool. It is not therapy, medical advice or a diagnosis. The child is simulated and the scoring is a simplified model.";
+
+/** Set once the visitor has picked a pace themselves (REDESIGN 5.2). */
+const PACE_FLAG = "doover:pace-chosen";
 
 function failureFrom(cause: unknown, retry?: TurnRequest): Failure {
   if (cause instanceof ApiError)
@@ -49,17 +64,57 @@ function failureFrom(cause: unknown, retry?: TurnRequest): Failure {
   };
 }
 
+function useMedia(query: string) {
+  const [matches, setMatches] = useState(false);
+  useEffect(() => {
+    const list = window.matchMedia(query);
+    const update = () => setMatches(list.matches);
+    update();
+    list.addEventListener("change", update);
+    return () => list.removeEventListener("change", update);
+  }, [query]);
+  return matches;
+}
+
+function paceWasChosen() {
+  try {
+    return window.localStorage.getItem(PACE_FLAG) === "1";
+  } catch {
+    return false;
+  }
+}
+
+/** Beat timings for one turn (ms from the response): 2.4 s in total, skippable. */
+function beatTimeline(stamps: number) {
+  const b1 = 220;
+  const b2 = 520;
+  const b3 = b2 + Math.max(1, stamps) * 140 + 220;
+  const b4 = b3 + 240;
+  const b5 = b4 + 520;
+  const b6 = b5 + 360;
+  return [0, b1, b2, b3, b4, b5, b6];
+}
+
 export function PlayExperience({
   sceneId,
   scenes,
   scenePars = {},
+  rotation = [],
 }: {
   sceneId?: string;
   scenes: PublicScene[];
   scenePars?: Record<string, number>;
+  /** Titles of the daily rotation, in order, for "Tomorrow: …". */
+  rotation?: string[];
 }) {
   const store = useStore();
-  const timer = store.settings.timer;
+  const reduce = useReducedMotion();
+  const wide = useMedia("(min-width: 1024px)");
+  const [paceChosen, setPaceChosen] = useState(() =>
+    typeof window === "undefined" ? true : paceWasChosen(),
+  );
+  const firstVisit = !paceChosen && store.history.length === 0;
+  const timer: Pace = firstVisit ? 20 : store.settings.timer;
   const voice = store.settings.voice && isPro();
   const [voiceStatus, setVoiceStatus] = useState<
     "idle" | "requesting" | "recording" | "transcribing"
@@ -86,8 +141,22 @@ export function PlayExperience({
   const [failure, setFailure] = useState<Failure | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
   const [retryNotice, setRetryNotice] = useState(false);
+  // presentation state (REDESIGN 5–6)
+  const [beat, setBeat] = useState(BEAT_DONE);
+  const [take, setTake] = useState(1);
+  const [turnTakes, setTurnTakes] = useState<number[]>([]);
+  const [replaced, setReplaced] = useState<Record<number, ReplacedTake>>({});
+  const [clapper, setClapper] = useState<number | null>(null);
+  const [cue, setCue] = useState(0);
+  const [lineReady, setLineReady] = useState(false);
+  const [clockWaiting, setClockWaiting] = useState(false);
+  const [squeezed, setCompact] = useState(false);
+  const compact = squeezed && phase === "playing";
+  const beatTimers = useRef<number[]>([]);
+  const pendingEnd = useRef(false);
+  const armPending = useRef(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const endingRef = useRef<HTMLDivElement>(null);
+  const endingRef = useRef<HTMLHeadingElement>(null);
   const deadlineRef = useRef<number | null>(null);
   const typedRef = useRef(false);
   const replyRef = useRef("");
@@ -109,8 +178,14 @@ export function PlayExperience({
     scenes.find((scene) => scene.id === (sceneId ?? daily?.sceneId));
   const final = turns[turns.length - 1];
   const childState = final?.result.after ?? session?.state;
+  const sequencing = beat < BEAT_DONE && Boolean(final);
   const child =
     final?.child ??
+    (session
+      ? { line: session.scene.openingLine, action: session.scene.openingAction }
+      : null);
+  const previousChild =
+    turns[turns.length - 2]?.child ??
     (session
       ? { line: session.scene.openingLine, action: session.scene.openingAction }
       : null);
@@ -134,14 +209,20 @@ export function PlayExperience({
     }
   }, []);
 
+  const clearBeats = useCallback(() => {
+    beatTimers.current.forEach((id) => window.clearTimeout(id));
+    beatTimers.current = [];
+  }, []);
+
   useEffect(() => {
     mounted.current = true;
     return () => {
       mounted.current = false;
       deadlineRef.current = null;
       cancelVoice(false);
+      clearBeats();
     };
-  }, [cancelVoice]);
+  }, [cancelVoice, clearBeats]);
 
   useEffect(() => {
     let current = true;
@@ -176,18 +257,39 @@ export function PlayExperience({
     };
   }, [custom, sceneId, reloadKey]);
 
+  /** Show the full clock now; it starts when the child's line has finished appearing. */
   function armClock() {
     typedRef.current = false;
     setTypingStarted(false);
-    deadlineRef.current = timer ? Date.now() + timer * 1000 : null;
+    deadlineRef.current = null;
+    armPending.current = Boolean(timer);
+    setClockWaiting(Boolean(timer));
     setClockTotal(timer || 8);
     setRemaining(timer || null);
+  }
+
+  /** Start a clock that was waiting for the line (or start it at once if the line is already up). */
+  function releaseClock() {
+    if (!armPending.current || typedRef.current) return;
+    armPending.current = false;
+    setClockWaiting(false);
+    deadlineRef.current = timer ? Date.now() + timer * 1000 : null;
   }
 
   function resetReply() {
     replyRef.current = "";
     setReply("");
     setTranscript("");
+  }
+
+  function choosePace(value: Pace) {
+    saveSettings({ timer: value });
+    try {
+      window.localStorage.setItem(PACE_FLAG, "1");
+    } catch {
+      // storage can be unavailable; the choice still applies to this run
+    }
+    setPaceChosen(true);
   }
 
   async function start() {
@@ -200,6 +302,7 @@ export function PlayExperience({
     requestPending.current = true;
     setWaiting(true);
     setFailure(null);
+    if (firstVisit) saveSettings({ timer });
     try {
       const freshDaily = !sceneId ? await api.daily() : daily;
       if (freshDaily && !sceneId) setDaily(freshDaily);
@@ -224,10 +327,25 @@ export function PlayExperience({
       setSession(next);
       turnsRef.current = [];
       setTurns([]);
+      setTurnTakes([]);
+      setReplaced({});
+      setTake(1);
+      setBeat(BEAT_DONE);
       resetReply();
       setRetryNotice(false);
+      setLineReady(false);
       setPhase("playing");
       armClock();
+      // the line appears once the curtains have parted
+      window.setTimeout(
+        () => {
+          if (mounted.current) {
+            setLineReady(true);
+            setCue((value) => value + 1);
+          }
+        },
+        reduce ? 0 : 820,
+      );
     } catch (cause) {
       if (mounted.current) setFailure(failureFrom(cause));
     } finally {
@@ -274,6 +392,38 @@ export function PlayExperience({
     if (saved) savedRuns.current.add(id);
   }
 
+  /** Run the turn sequence on the stage. Any tap or key skips to the end state. */
+  function playSequence(response: TurnResponse) {
+    clearBeats();
+    if (reduce) {
+      finishSequence();
+      return;
+    }
+    setBeat(0);
+    const stamps =
+      response.hits.length + (response.result.effects.length > 0 ? 0 : 1);
+    beatTimeline(stamps).forEach((at, index) => {
+      if (index === 0) return;
+      beatTimers.current.push(
+        window.setTimeout(() => {
+          if (!mounted.current) return;
+          if (index === BEAT_DONE) finishSequence();
+          else setBeat(index);
+        }, at),
+      );
+    });
+  }
+
+  function finishSequence() {
+    clearBeats();
+    setBeat(BEAT_DONE);
+    setCue((value) => value + 1);
+    if (pendingEnd.current) {
+      pendingEnd.current = false;
+      setPhase("ended");
+    }
+  }
+
   async function submit(
     text: string,
     timedOut = false,
@@ -286,6 +436,7 @@ export function PlayExperience({
     setWaiting(true);
     setFailure(null);
     deadlineRef.current = null;
+    armPending.current = false;
     setRemaining(null);
     const request: TurnRequest = retry ?? {
       sessionId: session.sessionId,
@@ -308,12 +459,21 @@ export function PlayExperience({
       ];
       turnsRef.current = nextTurns;
       setTurns(nextTurns);
+      setTurnTakes((takes) => [...takes.slice(0, request.turnIndex), take]);
       resetReply();
       setRetryNotice(Boolean(retry));
-      if (response.result.outcome === "ongoing") armClock();
-      else {
-        rememberRun(nextTurns, response);
+      if (response.result.outcome === "ongoing") {
+        armClock();
+        playSequence(response);
+      } else if (response.result.outcome === "stopped_unsafe") {
+        // Everything stops: no sequence, no flourish.
+        clearBeats();
+        setBeat(BEAT_DONE);
         setPhase("ended");
+      } else {
+        rememberRun(nextTurns, response);
+        pendingEnd.current = true;
+        playSequence(response);
       }
     } catch (cause) {
       if (mounted.current) setFailure(failureFrom(cause, request));
@@ -323,11 +483,27 @@ export function PlayExperience({
     }
   }
 
+  useEffect(() => {
+    if (!sequencing) return;
+    const skip = () => finishSequence();
+    window.addEventListener("pointerdown", skip);
+    window.addEventListener("keydown", skip);
+    return () => {
+      window.removeEventListener("pointerdown", skip);
+      window.removeEventListener("keydown", skip);
+    };
+    // finishSequence only reads refs and setters
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sequencing]);
+
   function switchToTyping(message = "Voice is off. You can keep typing.") {
     cancelVoice();
     saveSettings({ voice: false });
     setVoiceNotice(message);
-    if (phase === "playing" && !waiting && !failure) armClock();
+    if (phase === "playing" && !waiting && !failure) {
+      armClock();
+      releaseClock();
+    }
   }
 
   function toggleVoice(enabled: boolean) {
@@ -382,6 +558,7 @@ export function PlayExperience({
           typedRef.current = true;
           setTypingStarted(true);
           deadlineRef.current = null;
+          armPending.current = false;
           setRemaining(null);
         },
       });
@@ -460,6 +637,7 @@ export function PlayExperience({
       !session ||
       phase === "intro" ||
       failure ||
+      sequencing ||
       final?.result.outcome === "stopped_unsafe" ||
       !child?.line
     )
@@ -485,6 +663,7 @@ export function PlayExperience({
     session,
     phase,
     failure,
+    sequencing,
     final?.turnIndex,
     final?.result.outcome,
     child?.line,
@@ -530,16 +709,48 @@ export function PlayExperience({
   }, [phase, waiting, failure]);
 
   useEffect(() => {
-    if (phase === "playing" && !waiting && !failure && voiceStatus === "idle")
-      inputRef.current?.focus();
-    if (phase === "ended") endingRef.current?.focus();
-  }, [phase, waiting, failure, turns.length, voiceStatus]);
+    if (
+      phase === "playing" &&
+      !waiting &&
+      !failure &&
+      !sequencing &&
+      voiceStatus === "idle"
+    )
+      inputRef.current?.focus({ preventScroll: true });
+    if (phase === "ended") endingRef.current?.focus({ preventScroll: true });
+  }, [phase, waiting, failure, turns.length, voiceStatus, sequencing]);
+
+  // Phone keyboard: when the visual viewport shrinks, squeeze the stage.
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv || phase !== "playing") return;
+    const update = () => {
+      const squeezed =
+        window.innerWidth < 1024 &&
+        vv.height < window.innerHeight * 0.78 &&
+        document.activeElement === inputRef.current;
+      setCompact(squeezed);
+      document.documentElement.style.setProperty("--vvh", `${vv.height}px`);
+    };
+    update();
+    vv.addEventListener("resize", update);
+    const input = inputRef.current;
+    input?.addEventListener("focus", update);
+    input?.addEventListener("blur", update);
+    return () => {
+      vv.removeEventListener("resize", update);
+      input?.removeEventListener("focus", update);
+      input?.removeEventListener("blur", update);
+    };
+  }, [phase]);
 
   function changeReply(value: string) {
     replyRef.current = value.slice(0, 300);
     setReply(replyRef.current);
     if (!typedRef.current) {
       typedRef.current = true;
+      armPending.current = false;
+      setClockWaiting(false);
       setTypingStarted(true);
       if (timer) {
         deadlineRef.current = Date.now() + 25000;
@@ -552,10 +763,22 @@ export function PlayExperience({
   const redo = useCallback(
     (index: number) => {
       cancelVoice();
+      clearBeats();
+      pendingEnd.current = false;
       setTranscript("");
+      const old = turnsRef.current[index];
+      const nextTake = take + 1;
+      if (old)
+        setReplaced((current) => ({
+          ...current,
+          [index]: { turn: old, take: turnTakes[index] ?? take },
+        }));
       const earlier = turnsRef.current.slice(0, index);
       turnsRef.current = earlier;
       setTurns(earlier);
+      setTurnTakes((takes) => takes.slice(0, index));
+      setTake(nextTake);
+      setBeat(BEAT_DONE);
       runId.current = crypto.randomUUID();
       replyRef.current = "";
       setReply("");
@@ -563,21 +786,40 @@ export function PlayExperience({
       setRetryNotice(false);
       typedRef.current = false;
       setTypingStarted(false);
-      deadlineRef.current = timer ? Date.now() + timer * 1000 : null;
+      deadlineRef.current = null;
+      armPending.current = Boolean(timer);
+      setClockWaiting(Boolean(timer));
       setClockTotal(timer || 8);
       setRemaining(timer || null);
       setPhase("playing");
+      setClapper(nextTake);
+      window.setTimeout(
+        () => {
+          if (!mounted.current) return;
+          setClapper(null);
+          setCue((value) => value + 1);
+        },
+        reduce ? 0 : 900,
+      );
     },
-    [timer, cancelVoice],
+    [timer, cancelVoice, clearBeats, take, turnTakes, reduce],
   );
 
   function restart() {
     cancelVoice();
+    clearBeats();
+    pendingEnd.current = false;
     deadlineRef.current = null;
+    armPending.current = false;
     turnsRef.current = [];
     setTurns([]);
+    setTurnTakes([]);
+    setReplaced({});
+    setTake(1);
+    setBeat(BEAT_DONE);
     setSession(null);
     setFailure(null);
+    setLineReady(false);
     setPhase("intro");
     resetReply();
     if (custom) {
@@ -586,29 +828,40 @@ export function PlayExperience({
     }
   }
 
+  function playInRealTime() {
+    choosePace(8);
+    restart();
+  }
+
   function retryIntro() {
     setFailure(null);
     setLoading(true);
     setReloadKey((key) => key + 1);
   }
 
+  /* ─── early states ─────────────────────────────────────────── */
+
   if (loading)
     return (
-      <section className="card stack" role="status">
-        <p className="kicker">Take a breath</p>
-        <h1>Getting your scene ready…</h1>
-      </section>
+      <div className={styles.theatre} data-stage-mode="">
+        <section className={styles.notice} role="status">
+          <Kicker>Take a breath</Kicker>
+          <h1>Setting the stage…</h1>
+        </section>
+      </div>
     );
   if (!daily && failure)
     return (
-      <section className="card stack">
+      <Sheet className={styles.plainSheet}>
         <h1>We couldn&apos;t load this scene.</h1>
         <p role="alert">{failure.message}</p>
-        <button className="button" onClick={retryIntro}>
-          Try again
-        </button>
-        <Link href="/scenes">Back to scenes</Link>
-      </section>
+        <div className="actions">
+          <Button onClick={retryIntro}>Try again</Button>
+          <ButtonLink href="/scenes" variant="secondary">
+            Back to scenes
+          </ButtonLink>
+        </div>
+      </Sheet>
     );
   if (needsGate && !isPro())
     return (
@@ -618,28 +871,40 @@ export function PlayExperience({
     );
   if (!activeScene && !failure)
     return (
-      <section className="card stack">
+      <Sheet className={styles.plainSheet}>
         <h1>This scene is no longer here.</h1>
         <p>
           Custom scenes expire after 24 hours. You can start with today&apos;s
           scene or choose another.
         </p>
-        <Link className="button" href="/play">
-          Play today&apos;s meltdown
-        </Link>
-        <Link href="/scenes">Back to scenes</Link>
-      </section>
+        <div className="actions">
+          <ButtonLink href="/play">Play today&apos;s meltdown</ButtonLink>
+          <ButtonLink href="/scenes" variant="secondary">
+            Back to scenes
+          </ButtonLink>
+        </div>
+      </Sheet>
     );
   if (!activeScene)
     return (
-      <section className="card stack">
+      <Sheet className={styles.plainSheet}>
         <h1>We couldn&apos;t load this scene.</h1>
         <p role="alert">{failure?.message}</p>
-        <button className="button" onClick={retryIntro}>
-          Try again
-        </button>
-        <Link href="/scenes">Back to scenes</Link>
-      </section>
+        <div className="actions">
+          <Button onClick={retryIntro}>Try again</Button>
+          <ButtonLink href="/scenes" variant="secondary">
+            Back to scenes
+          </ButtonLink>
+        </div>
+      </Sheet>
+    );
+
+  // Stopped as unsafe: house lights up, a plain sheet, no score, no flourish.
+  if (phase === "ended" && final?.result.outcome === "stopped_unsafe")
+    return (
+      <div className={styles.houseLights}>
+        <UnsafePause onRetry={() => redo(turns.length - 1)} />
+      </div>
     );
 
   const errorPanel = failure && (
@@ -651,28 +916,29 @@ export function PlayExperience({
             ? "You've reached the request limit for now. Give it a little time, then try again."
             : failure.message}
       </p>
-      <div className={styles.actions}>
+      <div className="actions">
         {failure.retry &&
           !["session_expired", "session_ended", "turn_out_of_order"].includes(
             failure.code,
           ) && (
-            <button
-              className="button-secondary"
+            <Button
+              variant="secondary"
+              size="small"
               onClick={() =>
                 void submit(failure.retry?.text ?? "", false, failure.retry)
               }
             >
               Retry this turn
-            </button>
+            </Button>
           )}
         {phase === "intro" && (
-          <button className="button-secondary" onClick={() => void start()}>
+          <Button variant="secondary" size="small" onClick={() => void start()}>
             Try again
-          </button>
+          </Button>
         )}
-        <button className="button-secondary" onClick={restart}>
+        <Button variant="secondary" size="small" onClick={restart}>
           Restart scene
-        </button>
+        </Button>
       </div>
       {failure.retry && failure.code === "network" && (
         <p className={styles.small}>
@@ -683,226 +949,230 @@ export function PlayExperience({
     </div>
   );
 
-  if (phase === "intro")
-    return (
-      <div className={styles.playShell}>
-        <header className={styles.playHeader}>
-          <p className="kicker">
-            {isDaily
-              ? `Do-Over #${daily?.dayNumber ?? ""} · Today's meltdown`
-              : custom
-                ? "Your own do-over"
-                : "A little room to rehearse"}
-          </p>
-          <Link href="/scenes">Browse scenes ↗</Link>
-        </header>
-        <section className={styles.intro} aria-labelledby="scene-title">
-          <div className={styles.introTop}>
-            <span className={styles.place}>{activeScene.place}</span>
-            {par !== undefined && <span className={styles.par}>Par {par}</span>}
-          </div>
-          <h1 id="scene-title">{activeScene.title}</h1>
-          {needsGate && <ProBadge />}
-          <p className={styles.childMeta}>
-            {activeScene.childName} · ages{" "}
-            {activeScene.ageBand.replace("-", "–")} · {activeScene.temperament}
-          </p>
-          <p className={styles.setup}>{activeScene.setup}</p>
-          <div className={styles.limit}>
-            <span>Your limit</span>
-            <strong>{activeScene.limit}</strong>
-          </div>
-          <fieldset className={styles.timerSettings}>
-            <legend>Time to begin your reply</legend>
-            <div className={styles.timerOptions}>
-              {([8, 20, 0] as const).map((value) => (
-                <label key={value} data-selected={timer === value}>
-                  <input
-                    type="radio"
-                    name="timer"
-                    value={value}
-                    checked={timer === value}
-                    onChange={() => saveSettings({ timer: value })}
-                  />
-                  {value ? `${value} seconds` : "Timer off"}
-                </label>
-              ))}
-            </div>
-            <p className={styles.small}>
-              Once you start typing, you have 25 seconds to finish. Turn the
-              timer off to go at your own pace.
-            </p>
-          </fieldset>
-          <div className={styles.voiceIntro}>
-            <ProGate feature="Voice mode" compact>
-              <label className={styles.voiceToggle}>
-                <input
-                  type="checkbox"
-                  checked={voice}
-                  onChange={(event) => toggleVoice(event.target.checked)}
-                />
-                Speak your replies
-              </label>
-              <p className={styles.small}>
-                Tap to talk for up to 12 seconds. Audio is sent for
-                transcription and is not saved. You can switch back to typing at
-                any time.
-              </p>
-              {store.settings.calmBaselineDb !== null && (
-                <button
-                  className="button-secondary"
-                  type="button"
-                  onClick={() => setCalibrating(true)}
-                >
-                  Recalibrate normal voice
-                </button>
-              )}
-            </ProGate>
-            {voiceNotice && (
-              <p className={styles.small} role="status">
-                {voiceNotice}
-              </p>
-            )}
-          </div>
-          {isDaily && daily && store.dailyDone[daily.dayKey] && (
-            <p className={styles.small}>
-              You&apos;ve played today. This run is practice and won&apos;t join
-              today&apos;s ranking.
-            </p>
-          )}
-          {errorPanel}
-          <button
-            className={`button ${styles.startButton}`}
-            disabled={waiting}
-            onClick={() => void start()}
-          >
-            {waiting ? "Starting…" : "Start"}
-            <span aria-hidden="true"> →</span>
-          </button>
+  /* ─── the stage ─────────────────────────────────────────────── */
+
+  const startState = {
+    arousal: activeScene.startArousal,
+    connection: 50,
+    lastDelta: 0,
+    turn: 0,
+  };
+  const engineState = childState ?? {
+    ...startState,
+    limitIntact: true,
+    bribed: false,
+    lastHelpfulTags: [],
+  };
+  // During a turn the stage holds the moment before, until the storm moves (beat 4).
+  const shownState =
+    final && sequencing && beat < 4 ? final.result.before : engineState;
+  const outcome =
+    phase === "intro" ? "intro" : (final?.result.outcome ?? "ongoing");
+  const shownOutcome = sequencing && beat < 4 ? "ongoing" : outcome;
+  const curtain: CurtainState =
+    phase === "intro"
+      ? "closed"
+      : phase === "ended" && outcome === "out_of_turns"
+        ? "falling"
+        : "open";
+  const line = sequencing ? previousChild : child;
+  const showBubble =
+    phase !== "intro" && lineReady && clapper === null && line?.line;
+  const trend = trendOf(shownState.lastDelta);
+  const maxTurns = session?.maxTurns ?? 8;
+  const turnNumber = Math.min(turns.length + 1, maxTurns);
+  const tomorrow =
+    isDaily && session && rotation.length
+      ? tomorrowFrom(rotation, session.dayNumber)
+      : null;
+
+  const hud =
+    phase === "intro" ? (
+      <div className={styles.hudIntro}>
+        <span>{activeScene.place}</span>
+        {par !== undefined && <span>Par {par}</span>}
+      </div>
+    ) : (
+      <HeadsUp
+        take={take}
+        turn={phase === "ended" ? turns.length : turnNumber}
+        maxTurns={maxTurns}
+        shownStorm={shownState.arousal}
+        storm={engineState.arousal}
+        trend={trend}
+        delta={final && (!sequencing || beat >= 4) ? final.result.delta : null}
+        connection={engineState.connection}
+        shownConnection={shownState.connection}
+      />
+    );
+
+  const slip =
+    phase === "playing" && final ? (
+      <div className={styles.slipArea} aria-live="polite" aria-atomic="false">
+        <TurnSlip
+          key={`${final.turnIndex}-${take}`}
+          turn={final}
+          scene={activeScene}
+          beat={sequencing ? beat : BEAT_DONE}
+          live={sequencing}
+          take={turnTakes[turns.length - 1]}
+        />
+      </div>
+    ) : phase === "ended" && final ? (
+      <div className={styles.slipArea}>
+        <EndingCard
+          final={final}
+          turns={turns.length}
+          par={session?.par ?? par ?? 0}
+          titleRef={endingRef}
+        />
+      </div>
+    ) : null;
+
+  const stage = (
+    <PaperStage
+      scene={activeScene}
+      state={shownState}
+      outcome={shownOutcome}
+      curtain={curtain}
+      seed={`${session?.sessionId ?? activeScene.id}:${turns.length}`}
+      bubble={
+        showBubble && line
+          ? {
+              line: line.line,
+              action: line.action,
+              cue,
+              lean: wide && final ? "right" : undefined,
+            }
+          : null
+      }
+      onBubbleRevealed={() => {
+        if (!sequencing && phase === "playing") releaseClock();
+      }}
+      hud={hud}
+      compact={compact}
+      className={styles.stage}
+    >
+      {wide && slip}
+      {phase === "intro" && waiting && (
+        <p className={styles.stageNotice} role="status">
+          Setting the stage…
+        </p>
+      )}
+      {clapper !== null && (
+        <div className={styles.clapper} role="status">
+          <span className={styles.clapperTop} aria-hidden="true" />
+          <span className={styles.clapperBoard}>Take {clapper}</span>
+        </div>
+      )}
+    </PaperStage>
+  );
+
+  const scriptSoFar =
+    wide && phase === "playing" ? (
+      <aside className={styles.soFar} aria-label="The script so far">
+        <Kicker>The script so far</Kicker>
+        {turns.length <= 1 ? (
           <p className={styles.small}>
-            Your replies are sent to an AI model to tag them. Don&apos;t include
-            real names.
+            Your lines collect here, with what each one did to the storm.
           </p>
-        </section>
-        <p className={styles.disclaimer}>{DISCLAIMER}</p>
-        {calibrating && (
-          <VoiceCalibration
-            onComplete={(baseline) => {
-              saveSettings({ calmBaselineDb: baseline, voice: true });
-              setCalibrating(false);
-              setVoiceNotice("");
-            }}
-            onCancel={() => {
-              saveSettings({ voice: false });
-              setCalibrating(false);
-            }}
-            onUnavailable={(message) => {
-              setCalibrating(false);
-              switchToTyping(message);
-            }}
-          />
-        )}
-      </div>
-    );
-
-  if (phase === "ended" && session)
-    return (
-      <div className={styles.playShell} ref={endingRef} tabIndex={-1}>
-        {final?.result.outcome === "stopped_unsafe" ? (
-          <UnsafePause onRetry={() => redo(turns.length - 1)} />
         ) : (
-          <Debrief
-            session={session}
-            turns={turns}
-            onRedo={redo}
-            onRestart={restart}
-          />
+          <ol>
+            {turns.slice(0, -1).map((turn) => (
+              <li key={turn.turnIndex}>
+                <span className={styles.soFarHead}>
+                  <span>Turn {turn.turnIndex + 1}</span>
+                  <Icon
+                    name={
+                      turn.result.delta > 0
+                        ? "cloud"
+                        : turn.result.delta < 0
+                          ? "sun"
+                          : "script"
+                    }
+                    size={14}
+                  />
+                  <span
+                    className="tabular"
+                    data-direction={
+                      turn.result.delta < 0
+                        ? "down"
+                        : turn.result.delta > 0
+                          ? "up"
+                          : "same"
+                    }
+                  >
+                    {turn.result.delta > 0
+                      ? "+"
+                      : turn.result.delta < 0
+                        ? "−"
+                        : ""}
+                    {Math.abs(turn.result.delta)}
+                  </span>
+                </span>
+                <span className={styles.soFarText}>
+                  {turn.text ? `“${turn.text}”` : "(froze)"}
+                </span>
+              </li>
+            ))}
+          </ol>
         )}
-      </div>
-    );
+      </aside>
+    ) : null;
 
-  if (!session || !childState) return null;
-  const direction =
-    childState.lastDelta < 0
-      ? "settling"
-      : childState.lastDelta > 0
-        ? "rising"
-        : "steady";
-  const clockFraction = remaining === null ? 0 : remaining / clockTotal;
-  return (
-    <div className={styles.playShell}>
-      <header className={styles.playHeader}>
-        <p className="kicker">
-          {session.kind === "daily"
-            ? `Do-Over #${session.dayNumber}`
-            : "Practice scene"}{" "}
-          · {session.scene.title}
+  const voiceIntro = (
+    <div className={styles.voiceIntro}>
+      <ProGate feature="Voice mode" compact>
+        <label className={styles.voiceToggle}>
+          <input
+            type="checkbox"
+            checked={voice}
+            onChange={(event) => toggleVoice(event.target.checked)}
+          />
+          Speak your replies
+        </label>
+        <p className={styles.small}>
+          Tap to talk for up to 12 seconds. Audio is sent for transcription and
+          is not saved. You can switch back to typing at any time.
         </p>
-        <span>
-          Turn {Math.min(turns.length + 1, session.maxTurns)} of{" "}
-          {session.maxTurns}
-        </span>
-      </header>
-      <section className={styles.meterCard} aria-label="The child's state">
-        <div className={styles.meterHeading}>
-          <span>Arousal</span>
-          <span className={styles.meterNumber} data-testid="arousal-value">
-            {childState.arousal}
-            <small> · {direction}</small>
-          </span>
-        </div>
-        <div
-          className={styles.meterTrack}
-          role="progressbar"
-          aria-label="Arousal"
-          aria-valuenow={childState.arousal}
-          aria-valuemin={0}
-          aria-valuemax={100}
-        >
-          <div style={{ width: `${childState.arousal}%` }} />
-        </div>
-        <div className={styles.connection}>
-          <span>
-            Connection <strong>{childState.connection}</strong>
-          </span>
-          <div
-            role="progressbar"
-            aria-label="Connection"
-            aria-valuenow={childState.connection}
-            aria-valuemin={0}
-            aria-valuemax={100}
+        {store.settings.calmBaselineDb !== null && (
+          <Button
+            variant="secondary"
+            size="small"
+            onClick={() => setCalibrating(true)}
           >
-            <span style={{ width: `${childState.connection}%` }} />
-          </div>
-        </div>
-        <p className={styles.limitReminder}>
-          Your limit: {session.scene.limit}
+            Recalibrate normal voice
+          </Button>
+        )}
+      </ProGate>
+      {voiceNotice && (
+        <p className={styles.small} role="status">
+          {voiceNotice}
         </p>
-      </section>
-      <section
-        className={styles.childMoment}
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        <p className="kicker">{session.scene.childName}</p>
-        <p className={styles.childLine}>{child?.line}</p>
-        {child?.action && <p className={styles.childAction}>{child.action}</p>}
-      </section>
+      )}
+    </div>
+  );
+
+  const clockFraction = remaining === null ? 0 : remaining / clockTotal;
+  const locked =
+    waiting || Boolean(failure) || voiceStatus !== "idle" || sequencing;
+
+  const dock = (
+    <div className={styles.dock} data-compact={compact || undefined}>
       {voice && (
         <section className={styles.voiceControls} aria-label="Voice reply">
-          <p className="kicker">Speak, then see your words</p>
           {(voiceStatus === "recording" || voiceStatus === "requesting") && (
             <VoiceLevel
               level={liveLevel}
               baseline={store.settings.calmBaselineDb}
             />
           )}
-          <div className={styles.actions}>
-            <button
-              className="button"
-              type="button"
+          <div className="actions">
+            <Button
+              icon="microphone"
               disabled={
                 waiting ||
+                sequencing ||
                 Boolean(failure) ||
                 voiceStatus === "requesting" ||
                 voiceStatus === "transcribing"
@@ -920,22 +1190,23 @@ export function PlayExperience({
                   : voiceStatus === "transcribing"
                     ? "Transcribing…"
                     : "Tap to talk"}
-            </button>
-            <button
-              className="button-secondary"
-              type="button"
+            </Button>
+            <Button
+              variant="secondary"
+              size="small"
               onClick={() => switchToTyping()}
             >
               Use typing
-            </button>
-            <button
-              className="button-secondary"
-              type="button"
+            </Button>
+            <Button
+              variant="secondary"
+              size="small"
+              icon="speaker"
               disabled={voiceStatus !== "idle"}
               onClick={hearChild}
             >
               Hear child again
-            </button>
+            </Button>
           </div>
           <p className={styles.small} role="status">
             {voiceStatus === "recording"
@@ -946,20 +1217,20 @@ export function PlayExperience({
           </p>
           {playbackUnavailable && (
             <p className={styles.small}>
-              Audio playback was blocked. The child&apos;s words are above; tap
-              “Hear child again” to retry.
+              Audio playback was blocked. The child&apos;s words are on the
+              stage; tap “Hear child again” to retry.
             </p>
           )}
         </section>
       )}
-      {voiceNotice && (
+      {voiceNotice && phase === "playing" && (
         <p className={styles.small} role="status">
           {voiceNotice}
         </p>
       )}
       {transcript && (
         <div className={styles.voiceTranscript} aria-live="polite">
-          <p className="kicker">Your transcript</p>
+          <Kicker>Your transcript</Kicker>
           <p>{transcript}</p>
         </div>
       )}
@@ -972,36 +1243,42 @@ export function PlayExperience({
       >
         <div className={styles.replyLabel}>
           <label htmlFor="parent-reply">What do you say?</label>
-          <span className={styles.small}>{reply.length}/300</span>
+          <span className={`${styles.small} tabular`}>{reply.length}/300</span>
         </div>
-        <textarea
-          id="parent-reply"
-          ref={inputRef}
-          value={reply}
-          maxLength={300}
-          disabled={waiting || Boolean(failure) || voiceStatus !== "idle"}
-          rows={3}
-          onChange={(event) => changeReply(event.target.value)}
-          onKeyDown={(event) => {
-            if (
-              event.key === "Enter" &&
-              !event.shiftKey &&
-              !event.nativeEvent.isComposing
-            ) {
-              event.preventDefault();
-              void submit(replyRef.current);
+        <div className={styles.replyRow}>
+          <textarea
+            id="parent-reply"
+            ref={inputRef}
+            value={reply}
+            maxLength={300}
+            disabled={locked}
+            rows={2}
+            onChange={(event) => changeReply(event.target.value)}
+            onKeyDown={(event) => {
+              if (
+                event.key === "Enter" &&
+                !event.shiftKey &&
+                !event.nativeEvent.isComposing
+              ) {
+                event.preventDefault();
+                void submit(replyRef.current);
+              }
+            }}
+            placeholder={
+              sequencing
+                ? "Watch what your words did…"
+                : "There is room to try again."
             }
-          }}
-          placeholder="There is room to try again."
-          aria-describedby="reply-help"
-        />
-        <div className={styles.sendRow}>
-          <p id="reply-help" className={styles.small}>
-            Enter to send · Shift + Enter for a new line
-          </p>
-          <div className={styles.sendControls}>
+            aria-describedby="reply-help"
+          />
+          <div className={styles.sendGroup}>
             <div
               className={styles.countdown}
+              data-low={
+                remaining !== null && remaining <= 3 && !waiting
+                  ? ""
+                  : undefined
+              }
               aria-label={
                 timer === 0
                   ? "Timer off"
@@ -1009,6 +1286,7 @@ export function PlayExperience({
                     ? "Waiting for the reply"
                     : `${remaining ?? 0} seconds remaining`
               }
+              role="timer"
             >
               <svg viewBox="0 0 48 48" aria-hidden="true">
                 <circle cx="24" cy="24" r="20" />
@@ -1020,26 +1298,33 @@ export function PlayExperience({
                   strokeDashoffset={126 * (1 - clockFraction)}
                 />
               </svg>
-              <span>
+              <span className="tabular">
                 {timer === 0 ? "∞" : waiting ? "…" : (remaining ?? "–")}
               </span>
             </div>
-            <button
-              className="button"
+            <Button
               type="submit"
-              disabled={waiting || Boolean(failure) || voiceStatus !== "idle"}
+              icon="arrow"
+              iconAfter
+              disabled={locked}
+              className={styles.sendButton}
             >
               {waiting ? "Listening…" : "Send reply"}
-            </button>
+            </Button>
           </div>
         </div>
-        {timer !== 0 && (
-          <p className={styles.timerCaption}>
-            {typingStarted
-              ? "Take a moment to finish your thought."
-              : "Begin typing before the timer ends."}
-          </p>
-        )}
+        <p id="reply-help" className={styles.replyHelp}>
+          <span>Enter to send · Shift + Enter for a new line</span>
+          {timer !== 0 && (
+            <span>
+              {typingStarted
+                ? "Take a moment to finish your thought."
+                : clockWaiting
+                  ? "The clock starts when they finish speaking."
+                  : "Begin typing before the timer ends."}
+            </span>
+          )}
+        </p>
       </form>
       {errorPanel}
       {retryNotice && (
@@ -1048,18 +1333,118 @@ export function PlayExperience({
           recorded as a do-over.
         </p>
       )}
-      {final && (
-        <section aria-live="polite" aria-atomic="true">
-          <TurnCard turn={final} scene={session.scene} />
-        </section>
+    </div>
+  );
+
+  return (
+    <div
+      className={styles.theatre}
+      data-stage-mode=""
+      data-phase={phase}
+      data-compact={compact || undefined}
+    >
+      <header className={styles.topBar}>
+        <Link href="/" className={styles.leave}>
+          <Icon name="back" size={18} /> Leave
+        </Link>
+        <p className={styles.topTitle}>
+          {isDaily
+            ? `Do-Over #${session?.dayNumber ?? daily?.dayNumber ?? ""} · ${activeScene.title}`
+            : custom
+              ? `Your own do-over · ${activeScene.title}`
+              : activeScene.title}
+        </p>
+        {phase === "intro" ? (
+          <Link href="/scenes" className={styles.leave}>
+            Scenes
+          </Link>
+        ) : (
+          <span className={styles.topSpacer} />
+        )}
+      </header>
+
+      <div
+        className={styles.house}
+        data-wide={wide || undefined}
+        data-columns={(wide && phase === "playing") || undefined}
+      >
+        <div className={styles.centre}>
+          {stage}
+          {!wide && slip}
+          {phase === "intro" && (
+            <Playbill
+              scene={activeScene}
+              par={par}
+              kicker={
+                isDaily
+                  ? `Do-Over #${daily?.dayNumber ?? ""} · Today's meltdown`
+                  : custom
+                    ? "Your own do-over"
+                    : "A little room to rehearse"
+              }
+              pace={timer}
+              onPace={choosePace}
+              voiceSlot={voiceIntro}
+              notice={
+                <>
+                  {needsGate && <ProBadge />}
+                  {isDaily && daily && store.dailyDone[daily.dayKey] && (
+                    <p className={styles.small}>
+                      You&apos;ve played today. This run is practice and
+                      won&apos;t join today&apos;s ranking.
+                    </p>
+                  )}
+                </>
+              }
+              errorSlot={errorPanel}
+              waiting={waiting}
+              onStart={() => void start()}
+            />
+          )}
+          {phase === "playing" && dock}
+          {phase === "ended" && session && (
+            <Debrief
+              session={session}
+              turns={turns}
+              turnTakes={turnTakes}
+              replaced={replaced}
+              onRedo={redo}
+              onRestart={restart}
+              tomorrow={tomorrow}
+              realTimeInvite={
+                timer === 20 && final?.result.outcome === "calm_limit_held"
+              }
+              onRealTime={playInRealTime}
+            />
+          )}
+        </div>
+        {scriptSoFar}
+      </div>
+
+      {phase === "playing" && (
+        <p className="sr-only" aria-live="polite" aria-atomic="true">
+          {sequencing
+            ? ""
+            : `${activeScene.childName}: ${child?.line ?? ""}${child?.action ? ` (${child.action})` : ""}`}
+        </p>
       )}
-      {turns.length > 1 && (
-        <details className={styles.previousTurns}>
-          <summary>Earlier replies ({turns.length - 1})</summary>
-          {turns.slice(0, -1).map((turn) => (
-            <TurnCard turn={turn} scene={session.scene} key={turn.turnIndex} />
-          ))}
-        </details>
+
+      {calibrating && (
+        <VoiceCalibration
+          onComplete={(baseline) => {
+            saveSettings({ calmBaselineDb: baseline, voice: true });
+            setCalibrating(false);
+            setVoiceNotice("");
+          }}
+          onCancel={() => {
+            saveSettings({ voice: false });
+            setCalibrating(false);
+          }}
+          onUnavailable={(message) => {
+            setCalibrating(false);
+            switchToTyping(message);
+          }}
+        />
       )}
     </div>
   );

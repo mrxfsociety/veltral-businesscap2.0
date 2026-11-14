@@ -273,7 +273,12 @@ export type PaperStageProps = {
   /** Seeds anything that looks random (session id + turn index). */
   seed?: string;
   /** The child's current line, shown in a paper bubble. */
-  bubble?: { line: string; action?: string } | null;
+  bubble?: {
+    line: string;
+    action?: string;
+    cue?: number;
+    lean?: "right";
+  } | null;
   onBubbleRevealed?: () => void;
   /** Content for the proscenium's top band (the heads-up strip). */
   hud?: ReactNode;
@@ -425,6 +430,8 @@ export function PaperStage({
             <SpeechBubble
               line={bubble.line}
               action={bubble.action}
+              cue={bubble.cue}
+              lean={bubble.lean}
               arousal={state.arousal}
               anchorX={kidPlacement(kid).x}
               headTop={headTopFor(scene, kid)}
