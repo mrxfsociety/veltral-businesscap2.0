@@ -12,6 +12,7 @@ import {
   Stamp,
 } from "@/components/paper/primitives";
 import { TicketBooth } from "@/components/paywall/paywall";
+import styles from "./pricing.module.css";
 
 const ROWS: { feature: string; free: string; pass: string }[] = [
   {
@@ -97,7 +98,7 @@ export function Pricing({
                 ? `on this device, ${SOURCE_LABEL[entitlement.source]}${entitlement.source === "stripe_test" ? " (test mode)" : ""}.`
                 : "on this device."}
             </p>
-            <div className="actions">
+            <div className={styles.buttons}>
               <ButtonLink href="/scenes" icon="stage">
                 Open the scene library
               </ButtonLink>

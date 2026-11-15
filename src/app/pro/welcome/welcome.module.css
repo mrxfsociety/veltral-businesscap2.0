@@ -1,0 +1,30 @@
+/* What the pass opens: a check beside each line (same look as the paywall list). */
+.list {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.list li {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.list svg {
+  flex: none;
+  margin-top: 4px;
+  color: var(--teal-ink);
+}
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+/* On phones each button takes its own row instead of squeezing side by side. */
+@media (max-width: 520px) {
+  .buttons > * {
+    flex: 1 1 100%;
+  }
+}

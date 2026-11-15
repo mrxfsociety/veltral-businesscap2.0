@@ -13,6 +13,8 @@ export const RATE_LIMITS = {
   // Test checkout and demo code: 10 attempts an hour per address.
   checkout: { limit: 10, windowMs: HOUR },
   redeem: { limit: 10, windowMs: HOUR },
+  // Returning from Stripe: each call retrieves a session from Stripe.
+  confirm: { limit: 20, windowMs: HOUR },
 } as const;
 export type RateLimitBucket = keyof typeof RATE_LIMITS;
 

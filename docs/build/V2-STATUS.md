@@ -8,7 +8,57 @@ Rules: own paths only (REDESIGN section 10). `npm run verify` before every push.
 
 ## Operator notes (production)
 
-_PAGES writes the production findings here (step 1)._
+### DEPLOY — 15 November 2026, 04:22 Astana (UTC+05:00)
+
+Production: https://veltral.aituconnect.kz. Deployed commit: `16407b2c0e645c0719413c677478cd4e9c641b1b`. Previous production commit: `ac6fa98f4daf9fae087a2700352a8552572ed39b`.
+
+- GitHub check: fetched `origin`; both `origin/main` and `origin/v2` resolved to the requested `16407b2c0e645c0719413c677478cd4e9c641b1b`. No push to `main` was needed.
+- Environment backed up to `/opt/do-over/shared/.env.bak.040657` before editing. Set `NEXT_PUBLIC_PRO_PREVIEW=false` and `DEMO_CODE=ENCORE`; generated the previously missing `ENTITLEMENT_SECRET` on the server with `openssl rand -hex 32`. No secret values are recorded here. No Stripe key was supplied, so `STRIPE_SECRET_KEY` remains absent and checkout is code-only. All other existing lines, including `OPENAI_*`, `SITE_URL`, and `ADMIN_KEY`, were verified unchanged.
+- Copied the operator's existing `do-over-v2/deploy-main.sh` to `/opt/do-over/deploy-main.sh` unchanged. The script backed up compose to `/opt/do-over/infra/compose.yml.bak.040740`, built the requested release, and printed `Healthy commit: 16407b2c0e645c0719413c677478cd4e9c641b1b` at 04:12:35 Astana. One transient 502 during container replacement cleared on the next health retry. Web and Redis containers are healthy; the existing Redis container was preserved. No rollback was performed.
+- Runtime checks confirmed the requested commit and environment settings, the new entitlement secret reaching the web container, and the existing OpenAI key preserved. Application code was not edited.
+
+**External API checks — PASS**, run from the operator's Mac, outside the server, at 04:13:44 Astana:
+
+`GET /api/health`:
+
+```json
+{"ok":true,"commit":"16407b2c0e645c0719413c677478cd4e9c641b1b","time":"2026-11-14T23:13:44.368Z","redis":"up","providers":{"openai":true,"anthropic":false},"proPreview":false}
+```
+
+`GET /api/entitlement` in a fresh session:
+
+```json
+{"pro":false,"source":null,"checkout":"code_only","demoCode":"ENCORE"}
+```
+
+`POST /api/session` with `{"kind":"library","sceneId":"car-seat"}` returned **402**. `/api/daily` returned `sceneId: "store-candy"` and `dayKey: "2026-11-14"`, so car-seat was correctly locked.
+
+**Real-browser checks**, Chromium in two fresh isolated private contexts, 1280×900 and 375×812:
+
+| Check | 1280 px | 375 px | Evidence |
+| --- | --- | --- | --- |
+| `/` live paper stage | PASS | PASS | Stage visible; page HTTP 200. |
+| `/play` starts and plays a real turn | PASS | PASS | Rehearsal selected initially; tested with No timer. Turn HTTP 200, storm 75 → 57, three helpful tags, reply enabled afterward. |
+| Turn stamps inside the stage | PASS | FAIL | Desktop shows all three stamps inside the stage. Mobile renders the feedback slip below the stage; its lower provenance line is partly overlapped by the reply dock in the checked viewport. |
+| `/scenes` → locked car-seat → paywall → ENCORE | PASS | PASS | Paywall opens, code grants `pro: true`, and car-seat can start. Stripe trial controls absent as expected with code-only checkout. |
+| `/pricing` → Return to Free | PASS | PASS | Entitlement becomes `pro: false`; car-seat is locked again and cannot start. |
+| `/progress` → Show a sample week | PASS | PASS | Seven sample labels shown; stored user history unchanged; sample mode off after reload. |
+| `/jury` | PASS | PASS | HTTP 200, walkthrough heading visible, `noindex, nofollow`. |
+| Horizontal overflow / browser errors | PASS | PASS | No horizontal overflow on checked pages; no page errors or console errors captured. |
+
+**Model versus rules:** both tested turns displayed **"Tagged by rules only"** and returned `tagging: "rules"`, with `NAME_FEELING`, `HOLD_LIMIT`, and `CONNECT` tags. No "Tagged with the model" result was observed. Health reports OpenAI configured, but successful model tagging is **not confirmed**. Web logs contained startup messages and did not establish the fallback cause. OpenAI settings were left unchanged.
+
+The 375 px stamp placement is existing application behavior (`wide && slip` inside the stage, `!wide && slip` below it). It is recorded as a failed layout requirement for the code owner; no application change was made during deployment. Stripe payment processing was not tested because no test key was supplied.
+
+**Repository verification:** `git pull --rebase origin v2`, `npm ci`, and `npm run verify` passed in an isolated worktree: lint, typecheck, 494 tests passed, four opt-in Redis integration tests skipped, evaluation all five gates passed (micro-F1 0.9859, exact match 0.9683, unhelpful precision 1.0), and production build passed. Generated verification files were backed up and restored; this report is the only committed change. This documentation update goes to `v2` only and does not trigger a redeploy.
+
+**Rollback command** (not executed):
+
+```sh
+cd /opt/do-over && ./deploy-main.sh ac6fa98f4daf9fae087a2700352a8552572ed39b
+```
+
+This switches back to the previous release using the current shared environment. The environment and compose backups are listed above.
 
 ## Clock (Astana)
 
@@ -58,6 +108,24 @@ Level 2
 - [x] History `points`; moves, slips, plan, then-and-now, level (pure, tested: `src/lib/progress-v2.test.ts`)
 - [x] Demo week (labelled), `/progress` page
 - [x] Landing sections 2–6 (three live stages, engine-scored sample reply, accuracy, two facts, pass strip)
+
+### MONEY (OPUS-2) audit — 06:31–07:35, after feature freeze (fixes only)
+
+OPUS-2 started at 06:31, found every MONEY item above already delivered by STAGE, and did not rebuild anything. It audited the work against REDESIGN 7–9 and the MONEY brief, fixed three defects, and ran the first real Stripe test-mode checkout.
+
+- [x] Audit: HMAC-SHA256 pass with `timingSafeEqual`; demo code compared through SHA-256 digests with `timingSafeEqual`; cookie `HttpOnly; SameSite=Lax`, `Secure` in production; 402 `pro_required` on session (non-daily library and custom), custom-scene, coach, transcribe, speak; only `sk_test_` keys accepted; no secret in any response (new test), in `.next` (scanned after a build with a test key in the environment: zero hits), in logs (`route()` logs nothing) or in git history (`git log -S sk_test_51`: none). "Planned price" / "Payments are not connected yet": no occurrences left.
+- [x] Fix `dc671e1`: a malformed `doover_pro` cookie (`%E0%A4%A`) made `decodeURIComponent` throw → 500 on every Pro-checked endpoint and on `/api/entitlement`. Now it is no pass (Free). Test added.
+- [x] Fix `dc671e1`: `GET /api/checkout/confirm` had no rate limit although each call retrieves a session from Stripe. New bucket `confirm`, 20 per hour per address. Test: malformed session ids redirect to `/pricing?checkout=incomplete` without a cookie and without calling Stripe.
+- [x] Fix `dc671e1` + `7da492e`: `/pro/welcome` list had no styles (check above each line); at 375 px the global `.actions > * { flex: 1; min-width: 120px }` made "Play today's meltdown" / "Open the scene library" (and on `/pricing` "Open the scene library" / "Return to Free") overlap. Own wrapping rows, one button per row under 520 px.
+- [x] **Real Stripe test checkout, local production build** (`NEXT_PUBLIC_PRO_PREVIEW=false`, operator-supplied `sk_test_` key from the session scratchpad, never in the repository): `/pricing` → "Start 7-day trial" (monthly) → `checkout.stripe.com` sandbox, "7 days free" → card 4242 4242 4242 4242, 12/34, 123 → `/api/checkout/confirm` → `/pro/welcome` "Season pass active (test mode)". `/api/entitlement` → `{"pro":true,"source":"stripe_test","checkout":"stripe_test"}`; `document.cookie` does not show `doover_pro`; `POST /api/session` car-seat 200. "Return to Free" → `pro:false`, car-seat 402 again.
+- [x] Browser at 1280 and 375: `/`, `/pricing` (Free and pass), `/pro/welcome`, `/progress`, locked `/play/car-seat` booth: no horizontal overflow, no clipped button label, no console error from the pages.
+- `npm run verify` before each push: lint, typecheck, 497 passed / 4 skipped (opt-in Redis), eval gates all PASS (micro-F1 0.9859, exact 0.9683, unhelpful precision 1.0), build PASS. Regenerated `eval/results.json` and `docs/MODEL.md` restored, not committed.
+
+Not done / for the operator:
+- Production still runs `16407b2`; the three fixes above are on `v2` only.
+- `STRIPE_SECRET_KEY` is still absent on the server, so production offers the demo code only. See "[MONEY → OPERATOR]" below.
+- Stripe shows the account name "Sandagrip sandbox" at the top of checkout and prices in KZT first (adaptive pricing; a USD toggle is shown). Renaming the public business name to Do-Over in the Stripe dashboard is optional; nothing in code depends on it.
+- Known, accepted: a completed `cs_test_…` id can be confirmed again to mint a fresh 30-day pass on another browser. Test mode only; no money moves.
 
 ## BRAND then SETS (ASTRA-1)
 
@@ -153,3 +221,5 @@ _Format: `[FROM → TO] request` · answer below it._
 [STAGE → PAGES, OPERATOR] PAGES had not pushed by 05:30, so STAGE updated `e2e/**` for the deliberate v2 changes (pace labels, the turn sequence via `e2e/helpers.ts` `turnOrDebrief`, stamps `[data-kind]`, the season-pass gate, the new /progress) and removed two tests whose UI was removed on purpose (the pricing waitlist form, the landing live demo). Run e2e against a production build, not `next dev`: with two workers the dev server pushes HMR rebuilds into open pages and they reload in a loop. Recipe: `NEXT_PUBLIC_PRO_PREVIEW=true npm run build`, `NEXT_PUBLIC_PRO_PREVIEW=true npx next start -p 3000 -H 127.0.0.1`, then `NEXT_PUBLIC_PRO_PREVIEW=true E2E_BASE_URL=http://127.0.0.1:3000 npx playwright test --project=desktop`. Result 05:45: desktop project passes (paywall specs skip with preview on).
 
 [STAGE → OPERATOR, ALL] e2e at ~03:50 against production builds, desktop and mobile projects: preview on 56 passed / 6 skipped / 0 failed; Free mode 60 passed / 2 skipped / 0 failed (includes `e2e/paywall.spec.ts`: locked scene → ENCORE → play → Return to Free, and a wrong code refused). Free-mode recipe: `NEXT_PUBLIC_PRO_PREVIEW=false npm run build`, then `NEXT_PUBLIC_PRO_PREVIEW=false ENTITLEMENT_SECRET=<any long value> DEMO_CODE=ENCORE npx next start -p 3000 -H 127.0.0.1`, then `NEXT_PUBLIC_PRO_PREVIEW=false E2E_BASE_URL=http://127.0.0.1:3000 npx playwright test`. Restart the server between full runs: two runs from one address exceed the 120 turns/hour rate limit and later tests get 429.
+
+[MONEY → OPERATOR] Test checkout verified locally against Stripe test mode (07:15). To turn it on in production, add one line to `/opt/do-over/shared/.env`: `STRIPE_SECRET_KEY=<the sk_test_… key the owner supplied in the MONEY session; not recorded here>`. Keep `NEXT_PUBLIC_PRO_PREVIEW=false`, `DEMO_CODE=ENCORE`, `ENTITLEMENT_SECRET` (already set) and `SITE_URL=https://veltral.aituconnect.kz` (Stripe returns to `${SITE_URL}/api/checkout/confirm`). The key is read at runtime and the compose file loads the whole env file, so no rebuild is needed for the key alone: `docker compose --env-file /opt/do-over/shared/.env -f /opt/do-over/infra/compose.yml up -d --force-recreate --no-build web`. To ship the three MONEY fixes as well, deploy the `v2` head instead (`./deploy-main.sh <sha>`), which also picks up the key. Check afterwards: `curl -s https://veltral.aituconnect.kz/api/entitlement` → `"checkout":"stripe_test"`; `/pricing` shows two "Start 7-day trial" buttons. Never use an `sk_live_` key: the server refuses it and falls back to code-only.

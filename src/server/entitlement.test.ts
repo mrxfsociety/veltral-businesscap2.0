@@ -157,6 +157,54 @@ describe("server enforcement", () => {
     expect(reset.headers.get("set-cookie")).toContain("Max-Age=0");
   });
 
+  it("treats a malformed cookie as no pass, not a server error", async () => {
+    vi.stubEnv("ENTITLEMENT_SECRET", SECRET);
+    vi.stubEnv("NEXT_PUBLIC_PRO_PREVIEW", "false");
+    const broken = request(`other=1; ${COOKIE_NAME}=%E0%A4%A`);
+    expect(hasPro(broken)).toBe(false);
+    const response = await createEntitlementHandlers().entitlement(broken);
+    expect(response.status).toBe(200);
+    expect((await response.json()).pro).toBe(false);
+  });
+
+  it("never puts a secret in a response", async () => {
+    const stripeKey = "sk_test_never_in_a_response_0123456789";
+    vi.stubEnv("ENTITLEMENT_SECRET", SECRET);
+    vi.stubEnv("STRIPE_SECRET_KEY", stripeKey);
+    vi.stubEnv("DEMO_CODE", "ENCORE");
+    const handlers = createEntitlementHandlers();
+    const responses = [
+      await handlers.entitlement(request()),
+      await handlers.redeem(request(undefined, { code: "ENCORE" })),
+      await handlers.redeem(request(undefined, { code: "wrong" })),
+      await handlers.reset(request(undefined, {})),
+    ];
+    for (const response of responses) {
+      const text = `${[...response.headers].join("\n")}\n${await response.text()}`;
+      expect(text).not.toContain(SECRET);
+      expect(text).not.toContain(stripeKey);
+    }
+    expect(entitlementFor(request()).checkout).toBe("stripe_test");
+  });
+
+  it("confirm refuses a malformed session id without calling Stripe", async () => {
+    vi.stubEnv("ENTITLEMENT_SECRET", SECRET);
+    vi.stubEnv("STRIPE_SECRET_KEY", "sk_test_abc");
+    const confirm = createEntitlementHandlers().confirm;
+    for (const id of ["", "cs_live_abcdefghij", "cs_test_<script>", "x"]) {
+      const response = await confirm(
+        new Request(
+          `http://localhost/api/checkout/confirm?session_id=${encodeURIComponent(id)}`,
+        ),
+      );
+      expect(response.status).toBe(303);
+      expect(response.headers.get("location")).toContain(
+        "/pricing?checkout=incomplete",
+      );
+      expect(response.headers.get("set-cookie")).toBeNull();
+    }
+  });
+
   it("refuses checkout without a test key", async () => {
     vi.stubEnv("STRIPE_SECRET_KEY", "sk_live_should_never_be_used");
     const response = await createEntitlementHandlers().checkout(
