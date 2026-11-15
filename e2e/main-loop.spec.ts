@@ -118,6 +118,26 @@ test("eight-second countdown sends one empty timed-out turn", async ({
   });
 });
 
+test("a second silence in a row holds the clock instead of freezing again", async ({
+  page,
+}) => {
+  test.setTimeout(45000);
+  const requests: TurnRequest[] = [];
+  page.on("request", (request) => {
+    if (request.url().endsWith("/api/turn") && request.method() === "POST")
+      requests.push(request.postDataJSON() as TurnRequest);
+  });
+  await begin(page, "Real time · 8 s");
+  await expect.poll(() => requests.length, { timeout: 12000 }).toBe(1);
+  await expect(page.getByText("Still there? Take your time.")).toBeVisible({
+    timeout: 20000,
+  });
+  await page.waitForTimeout(1500);
+  expect(requests).toHaveLength(1);
+  await page.getByLabel("What do you say?").fill("I'm here.");
+  await expect(page.getByText("Still there? Take your time.")).toHaveCount(0);
+});
+
 test("timer off never sends a turn automatically", async ({ page }) => {
   let requests = 0;
   page.on("request", (request) => {

@@ -8,6 +8,7 @@ import {
   prioritizeNotes,
   tagLabel,
 } from "@/lib/presentation";
+import { isFrozen } from "./clock";
 import { quoteSegments } from "./quotes";
 import { formatDelta, ledgerFor } from "./takes";
 import styles from "./play.module.css";
@@ -21,9 +22,7 @@ export const BEAT_DONE = 6;
 
 export const FROZE_LINE = "You froze. It happens. That is why we rehearse.";
 
-export function isFrozen(turn: TurnResponse) {
-  return !turn.text && turn.hits.some((hit) => hit.tag === "NO_RESPONSE");
-}
+export { isFrozen };
 
 export function TurnSlip({
   turn,
@@ -120,7 +119,9 @@ export function TurnSlip({
                 data-kind={row.kind}
                 style={{ "--i": i } as CSSProperties}
               >
-                <span>{row.kind === "tag" ? tagLabel(row.tag) : row.label}</span>
+                <span>
+                  {row.kind === "tag" ? tagLabel(row.tag) : row.label}
+                </span>
                 <span
                   className="tabular"
                   data-sign={Math.sign(row.value)}

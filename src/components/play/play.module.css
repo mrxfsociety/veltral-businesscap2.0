@@ -1534,3 +1534,12 @@ abbr.par {
   font-size: 1.15rem;
   line-height: 1.35;
 }
+
+/* The clock is held after two silences in a row */
+.stillThere {
+  margin: 0 0 6px;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--ink);
+}

@@ -102,6 +102,7 @@ Owns for this pass: `src/components/play/{turn-slip,takes,debrief,free-tip,play-
 - [x] 3. No raw placeholders: `/progress` fills tip slots from the most recent catalogue scene in local history (or the sample week's), else plain words ("your child", "the limit", "that") with the vocative dropped (`src/lib/tip-slots.ts`, tested over every tip)
 - [x] 4. Your own scene reads like a scene: the model now receives the name the scene will use (default "Sam") and is asked for a second-person, named setup and a sentence-case title; a tested tidy-up names a generic "a (fictional) child" and sentence-cases Title Case; `/replay` preselects the age band from "4 year old", "4yo", "four-year-old", "aged six" until the parent picks one (`src/app/replay/age.ts`, tested). Not checked against the live model locally (no key here)
 - [x] 5. `/scenes` is three shelves of miniature stages (`PaperStage size="thumb"` at each scene's starting storm), a Today flag, star icons; the full-width "Play today's meltdown" bar is gone; a click anywhere on a locked card opens the paywall; checked at 375, 768, 1280 with no horizontal scroll; Lighthouse desktop performance on `/scenes` (production build) 99 and 99 over two runs; also ticks PAGES' `/scenes` item
+- [x] 6. Two silences in a row pause the clock: after a "froze" turn, a second expiry with nothing typed sends nothing, holds the clock and shows "Still there? Take your time." in the dock; typing (25 s window) or Send resumes (`clock.ts`, unit-tested; new e2e in `main-loop.spec.ts`, passing on desktop and mobile)
 
 ---
 
