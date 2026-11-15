@@ -160,7 +160,7 @@ export function TicketBooth({
       {demo && (
         <form className={styles.code} onSubmit={(event) => void redeem(event)}>
           <p>
-            <strong>Reviewing Do-Over?</strong> Enter <code>{demo}</code> to
+            <strong>Reviewing Veltral?</strong> Enter <code>{demo}</code> to
             open the season pass on this device. Demo access, no payment.
           </p>
           <div className={styles.codeRow}>

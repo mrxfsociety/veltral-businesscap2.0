@@ -48,7 +48,7 @@ describe("share result", () => {
 
   it("matches the real engine grid and calm score", () => {
     expect(text({})).toBe(
-      "Do-Over #2 · Leaving the playground\n🟩🟨🟩🟩 Calm in 4 (par 3) ★★★\nhttps://doover.example/play",
+      "Veltral #2 · Leaving the playground\n🟩🟨🟩🟩 Calm in 4 (par 3) ★★★\nhttps://doover.example/play",
     );
   });
 

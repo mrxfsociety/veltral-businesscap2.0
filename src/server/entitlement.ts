@@ -247,7 +247,7 @@ const PRICES = {
  * like the site, and the test card is named right above Stripe's button.
  */
 export const CHECKOUT_BRANDING = {
-  display_name: "Do-Over",
+  display_name: "Veltral",
   background_color: "#fffdf9",
   button_color: "#b84b25",
   border_style: "pill",
@@ -274,7 +274,7 @@ export function checkoutSessionParams(
           unit_amount: price.cents,
           recurring: { interval: price.interval },
           product_data: {
-            name: `Do-Over season pass (${plan})`,
+            name: `Veltral season pass (${plan})`,
             description: "Test mode. No real charge.",
           },
         },

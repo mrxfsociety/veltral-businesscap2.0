@@ -41,7 +41,7 @@ const AGE_BANDS: AgeBand[] = ["2-3", "4-5", "6-7"];
 
 const FAQ: { q: string; a: string }[] = [
   {
-    q: "Is Do-Over therapy or advice?",
+    q: "Is Veltral therapy or advice?",
     a: "No. It is a practice tool, not therapy, medical advice or a diagnosis. The child is simulated and the scoring is a simplified model.",
   },
   {
@@ -142,14 +142,14 @@ export default function Home() {
         <div className={styles.heroCopy}>
           <Link href="/play" className={styles.heroPill}>
             <span className={styles.heroPillTag}>Today</span>
-            Do-Over #{number}: {today.title}
+            Veltral #{number}: {today.title}
           </Link>
           <h1 id="hero-title">
             You know what to say.{" "}
             <span className={styles.muted}>Until they scream.</span>
           </h1>
           <p className={styles.lede}>
-            Do-Over is a 3-minute meltdown simulator for parents of 2–7 year
+            Veltral is a 3-minute meltdown simulator for parents of 2–7 year
             olds. Practise the moment before it happens. No account needed.
           </p>
           <div className={styles.actions}>
@@ -175,7 +175,7 @@ export default function Home() {
             </li>
           </ul>
           <p className={styles.daily}>
-            Do-Over #{number} · {today.title} · par {par}
+            Veltral #{number} · {today.title} · par {par}
           </p>
         </div>
 
@@ -247,7 +247,7 @@ export default function Home() {
       {/* ─── why ───────────────────────────────────────────────── */}
       <section className={styles.section} aria-labelledby="why-title">
         <Head
-          pill="Why Do-Over"
+          pill="Why Veltral"
           id="why-title"
           title="Built for the hardest minute of parenting"
           sub="Three things make it a rehearsal, not a quiz."
@@ -636,7 +636,7 @@ export default function Home() {
           </article>
         </div>
         <p className={styles.honest}>
-          Do-Over is rehearsal against a simulated child; we have not measured
+          Veltral is rehearsal against a simulated child; we have not measured
           whether practice here changes what happens at home.
         </p>
       </section>

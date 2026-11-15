@@ -95,7 +95,7 @@ describe("checkout session", () => {
     );
     expect(params.cancel_url).toBe("https://example.test/pricing");
     expect(params.branding_settings).toEqual(CHECKOUT_BRANDING);
-    expect(params.branding_settings?.display_name).toBe("Do-Over");
+    expect(params.branding_settings?.display_name).toBe("Veltral");
     expect(params.locale).toBe("en");
     const submit = params.custom_text?.submit;
     expect(submit && typeof submit === "object" ? submit.message : null).toBe(

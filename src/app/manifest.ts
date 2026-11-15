@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Do-Over — rehearse the hard minute",
-    short_name: "Do-Over",
+    name: "Veltral — rehearse the hard minute",
+    short_name: "Veltral",
     description:
       "A paper stage to practise a hard parenting moment and try another take.",
     start_url: "/play",

@@ -19,7 +19,7 @@ export function DailyTeaser() {
   return (
     <p className="daily-line" aria-live="polite">
       {daily
-        ? `Do-Over #${daily.dayNumber} · ${daily.title} · par ${daily.par}`
+        ? `Veltral #${daily.dayNumber} · ${daily.title} · par ${daily.par}`
         : failed
           ? "Today’s scene will load when you open play."
           : "Finding today’s scene…"}

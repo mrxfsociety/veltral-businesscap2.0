@@ -19,7 +19,7 @@ test("the demo code opens a locked scene and Return to Free locks it again", asy
 
   await page.goto(`/play/${locked}`);
   await expect(page.getByText("is part of the season pass.")).toBeVisible();
-  await expect(page.getByText("Reviewing Do-Over?")).toBeVisible();
+  await expect(page.getByText("Reviewing Veltral?")).toBeVisible();
   await page.getByLabel("Demo code").fill("encore");
   await page.getByRole("button", { name: "Open the pass" }).click();
 

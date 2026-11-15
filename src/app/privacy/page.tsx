@@ -3,7 +3,7 @@ import { ClearData } from "./clear-data";
 export const metadata: Metadata = {
   title: "Privacy",
   description:
-    "What Do-Over stores, where it goes, and how to clear your browser data.",
+    "What Veltral stores, where it goes, and how to clear your browser data.",
 };
 export const dynamic = "force-dynamic";
 export default function Privacy() {

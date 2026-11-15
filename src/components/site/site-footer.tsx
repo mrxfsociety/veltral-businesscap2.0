@@ -8,11 +8,7 @@ export function SiteFooter() {
     <footer className={`site-footer ${styles.footer}`}>
       <div className={styles.top}>
         <div className={styles.brand}>
-          <Link
-            href="/"
-            className={styles.logo}
-            aria-label="Do-Over by Veltral, home"
-          >
+          <Link href="/" className={styles.logo} aria-label="Veltral, home">
             <VeltralLogo />
           </Link>
           <p>Rehearse the hardest minute of parenting before it happens.</p>
@@ -34,7 +30,7 @@ export function SiteFooter() {
       </div>
       <div className={styles.bottom}>
         <p className="disclaimer">
-          Do-Over is a practice tool. It is not therapy, medical advice or a
+          Veltral is a practice tool. It is not therapy, medical advice or a
           diagnosis. The child is simulated and the scoring is a simplified
           model.
         </p>

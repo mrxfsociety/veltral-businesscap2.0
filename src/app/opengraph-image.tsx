@@ -1,13 +1,13 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
-export const alt = "Do-Over — You know what to say. Until they scream.";
+export const alt = "Veltral — You know what to say. Until they scream.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export default async function OpenGraph() {
   const directory = join(process.cwd(), "public/brand");
   const [lockup, regular, italic] = await Promise.all([
-    readFile(join(directory, "lockup-horizontal.svg")),
+    readFile(join(directory, "veltral/veltral-logo.svg")),
     readFile(join(directory, "fonts/Fraunces-Display640.ttf")),
     readFile(join(directory, "fonts/Fraunces-Display640Italic.ttf")),
   ]);
@@ -37,15 +37,16 @@ export default async function OpenGraph() {
         {/* SVG contains outlined lettering; no fallback font in the logo. */}
         <img
           src={`data:image/svg+xml;base64,${lockup.toString("base64")}`}
-          width={315}
-          height={56}
-          alt="Do-Over"
+          width={289}
+          height={112}
+          alt="Veltral"
+          style={{ marginLeft: -44, marginTop: -26 }}
         />
         <div
           style={{
             display: "flex",
             flexDirection: "column",
-            marginTop: 62,
+            marginTop: 32,
             fontSize: 83,
             fontWeight: 600,
             letterSpacing: "-0.02em",
