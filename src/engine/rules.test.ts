@@ -300,3 +300,38 @@ it.each(["skipping the coat", "skip the coats", "éskip the coat"])(
   "does not match hints inside a larger word: %s",
   (text) => expect(tags(text)).not.toContain("GIVE_IN"),
 );
+
+describe("negation, permission and idioms", () => {
+  const coatScene: Scene = {
+    ...scene,
+    giveInHints: ["keep it", "skip the coat"],
+  };
+  const coatTags = (text: string): Tag[] =>
+    mergeTags(ruleTags(text, coatScene), [], text).map((hit) => hit.tag);
+
+  it.each([
+    ["You are not selfish. I'm here.", "SHAME"],
+    ["You aren't being rude, you're upset.", "SHAME"],
+    ["You don't have to stop crying. I'm right here.", "DISMISS"],
+    ["No need to calm down yet, I'll wait.", "DISMISS"],
+    ["I would never say I hate you.", "UNSAFE"],
+    ["Fine, you can hold my hand. The coat goes on.", "GIVE_IN"],
+    ["Okay, you can be mad about it.", "GIVE_IN"],
+    ["Keep it gentle, the coat goes on.", "GIVE_IN"],
+  ] as const)("does not tag %s as %s", (text, tag) =>
+    expect(coatTags(text)).not.toContain(tag),
+  );
+
+  it.each([
+    ["Don't be selfish.", "SHAME"],
+    ["Stop crying now, Sam.", "DISMISS"],
+    ["Sometimes I think I hate you.", "UNSAFE"],
+    ["You deserve a slap.", "UNSAFE"],
+    ["I could slap you right now.", "UNSAFE"],
+    ["Fine, you can skip it.", "GIVE_IN"],
+    ["Okay, you can stay out a little longer.", "GIVE_IN"],
+    ["Fine, keep it.", "GIVE_IN"],
+  ] as const)("still tags %s as %s", (text, tag) =>
+    expect(coatTags(text)).toContain(tag),
+  );
+});
