@@ -13,7 +13,7 @@ import { ruleTags } from "../engine/rules";
 import { tipFor } from "../engine/lines";
 import { HELPFUL, TAGS } from "../engine/tags";
 import type { Scene, PublicScene, TagHit } from "../engine/types";
-import { proposeCustomScene } from "../llm/customScene";
+import { DEFAULT_CHILD_NAME, proposeCustomScene } from "../llm/customScene";
 import { proposeCoach } from "../llm/coach";
 import type { JsonCompleter } from "../llm/provider";
 import {
@@ -132,7 +132,7 @@ export function createFeatureHandlers(
         ...generated.scene,
         id: `custom-${randomUUID()}`,
         ageBand: input.ageBand,
-        childName: input.childName || "Sam",
+        childName: input.childName || DEFAULT_CHILD_NAME,
         startArousal: Math.round(
           Math.max(60, Math.min(90, generated.scene.startArousal)),
         ),

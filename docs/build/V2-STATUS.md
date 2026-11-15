@@ -100,6 +100,7 @@ Owns for this pass: `src/components/play/{turn-slip,takes,debrief,free-tip,play-
 - [x] 1. Ledger adds up: whole-number rows, rule rows from the engine's notes (empathy and the limit −6/−3, the limit alone +3, nothing helpful +3, the earlier bribe +5), a labelled cap row; rows sum to `result.delta` on all 37 golden vectors (`takes.test.ts`)
 - [x] 2. Free "try instead" on the turning point: for a Free player, the fixed tip (`content/tips.json`) for the turning point's worst unhelpful move, filled with the scene, and "Do-over from here with this" that rewinds and pre-fills the reply (`free-tip.ts`, tested); the coach stays in the season pass
 - [x] 3. No raw placeholders: `/progress` fills tip slots from the most recent catalogue scene in local history (or the sample week's), else plain words ("your child", "the limit", "that") with the vocative dropped (`src/lib/tip-slots.ts`, tested over every tip)
+- [x] 4. Your own scene reads like a scene: the model now receives the name the scene will use (default "Sam") and is asked for a second-person, named setup and a sentence-case title; a tested tidy-up names a generic "a (fictional) child" and sentence-cases Title Case; `/replay` preselects the age band from "4 year old", "4yo", "four-year-old", "aged six" until the parent picks one (`src/app/replay/age.ts`, tested). Not checked against the live model locally (no key here)
 
 ---
 

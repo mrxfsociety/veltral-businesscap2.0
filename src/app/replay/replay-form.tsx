@@ -8,11 +8,15 @@ import type { CustomSceneResponse } from "@/shared/api";
 import { api, ApiError } from "@/lib/api";
 import { isPro } from "@/lib/pro";
 import { UnsafePause } from "@/components/play/unsafe-pause";
+import { ageBandFromText } from "./age";
 
 export function ReplayForm() {
   const router = useRouter();
   const [description, setDescription] = useState("");
   const [ageBand, setAgeBand] = useState<AgeBand>("2-3");
+  // The age follows the description ("my 4 year old") until the parent picks one.
+  const [agePicked, setAgePicked] = useState(false);
+  const [ageFromText, setAgeFromText] = useState(false);
   const [childName, setChildName] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
@@ -62,7 +66,14 @@ export function ReplayForm() {
         required
         rows={5}
         value={description}
-        onChange={(event) => setDescription(event.target.value)}
+        onChange={(event) => {
+          const value = event.target.value;
+          setDescription(value);
+          if (agePicked) return;
+          const detected = ageBandFromText(value);
+          setAgeFromText(detected !== null);
+          if (detected) setAgeBand(detected);
+        }}
         aria-describedby="description-help"
         disabled={pending}
       />
@@ -75,13 +86,23 @@ export function ReplayForm() {
         id="age-band"
         name="ageBand"
         value={ageBand}
-        onChange={(event) => setAgeBand(event.target.value as AgeBand)}
+        onChange={(event) => {
+          setAgeBand(event.target.value as AgeBand);
+          setAgePicked(true);
+          setAgeFromText(false);
+        }}
         disabled={pending}
+        aria-describedby={ageFromText ? "age-help" : undefined}
       >
         <option value="2-3">2–3 years</option>
         <option value="4-5">4–5 years</option>
         <option value="6-7">6–7 years</option>
       </select>
+      {ageFromText && (
+        <p id="age-help" className="muted small">
+          Set from your description. Change it if it is wrong.
+        </p>
+      )}
       <label htmlFor="child-nickname">
         Nickname <span className="muted">(optional)</span>
       </label>
