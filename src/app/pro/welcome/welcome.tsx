@@ -30,7 +30,7 @@ export function Welcome() {
               </li>
             ))}
           </ul>
-          <div className="actions">
+          <div className={styles.buttons}>
             <ButtonLink href="/play" icon="play" size="large">
               Play today&apos;s meltdown
             </ButtonLink>
