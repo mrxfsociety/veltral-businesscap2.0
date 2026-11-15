@@ -1030,14 +1030,15 @@ table svg {
 }
 
 /* ───────────────────────────────────────────────────────────────
-   Site skin. Every page except the play screen wears the Veltral
-   theme: the paper tokens are re-pointed at the --lp-* theme, and the
-   shared primitives are restyled below. Element and class rules sit
-   inside :where() so they weigh the same as the base rules above and
-   page modules still win.
-   The paper stage keeps its own look wherever it appears ([data-paper]).
+   Site skin. Every page wears the Veltral theme: the paper tokens are
+   re-pointed at the --lp-* theme, and the shared primitives are
+   restyled below. Element and class rules sit inside :where() so they
+   weigh the same as the base rules above and page modules still win.
+   The paper stage, and everything shown on it, keeps its own look
+   ([data-paper] restores the paper tokens, and every skin rule skips
+   its subtree).
    ─────────────────────────────────────────────────────────────── */
-body:not(:has([data-stage-mode])) {
+body {
   --cream: var(--lp-bg);
   --sheet: var(--lp-card);
   --ink: var(--lp-ink);
@@ -1068,11 +1069,11 @@ body:not(:has([data-stage-mode])) {
     background-color 320ms var(--lp-ease),
     color 320ms var(--lp-ease);
 }
-html[data-theme="dark"] body:not(:has([data-stage-mode])) {
+html[data-theme="dark"] body {
   color-scheme: dark;
 }
 @media (prefers-color-scheme: dark) {
-  html:not([data-theme="light"]) body:not(:has([data-stage-mode])) {
+  html:not([data-theme="light"]) body {
     color-scheme: dark;
   }
 }
@@ -1110,7 +1111,7 @@ html[data-theme="dark"] body:not(:has([data-stage-mode])) {
 }
 
 /* ─── skin: elements ───────────────────────────────────────────── */
-:where(body:not(:has([data-stage-mode]))) :is(h1, h2, h3) {
+:where(body) :is(h1, h2, h3):where(:not([data-paper] *)) {
   font-family: var(--lp-sans);
   font-weight: 600;
   font-variation-settings: normal;
@@ -1118,51 +1119,51 @@ html[data-theme="dark"] body:not(:has([data-stage-mode])) {
   line-height: 1.12;
   color: var(--lp-ink);
 }
-:where(body:not(:has([data-stage-mode]))) h1 {
+:where(body) h1:where(:not([data-paper] *)) {
   font-size: clamp(2.35rem, 1.45rem + 3.2vw, 3.8rem);
   font-weight: 500;
   line-height: 1.04;
   letter-spacing: -0.045em;
 }
-:where(body:not(:has([data-stage-mode]))) h2 {
+:where(body) h2:where(:not([data-paper] *)) {
   font-size: clamp(1.55rem, 1.2rem + 1.3vw, 2.2rem);
   letter-spacing: -0.035em;
 }
-:where(body:not(:has([data-stage-mode]))) h3 {
+:where(body) h3:where(:not([data-paper] *)) {
   font-size: 1.15rem;
   line-height: 1.3;
   letter-spacing: -0.02em;
 }
 /* A heading's second line steps back in grey, as on the home page. */
-:where(body:not(:has([data-stage-mode]))) :is(h1, h2, h3) em {
+:where(body) :is(h1, h2, h3) em:where(:not([data-paper] *)) {
   font-style: normal;
   font-weight: inherit;
   color: inherit;
 }
-:where(body:not(:has([data-stage-mode]))) h1 em {
+:where(body) h1 em:where(:not([data-paper] *)) {
   color: var(--lp-ink-3);
 }
-:where(body:not(:has([data-stage-mode]))) p {
+:where(body) p:where(:not([data-paper] *)) {
   text-wrap: pretty;
 }
-:where(body:not(:has([data-stage-mode]))) a {
+:where(body) a:where(:not([data-paper] *)) {
   color: inherit;
   text-decoration-color: var(--lp-line-strong);
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
-:where(body:not(:has([data-stage-mode]))) a:hover {
+:where(body) a:hover:where(:not([data-paper] *)) {
   text-decoration-color: currentColor;
 }
-:where(body:not(:has([data-stage-mode]))) :focus-visible {
+:where(body) :focus-visible:where(:not([data-paper] *)) {
   outline: 2px solid var(--lp-accent);
   outline-offset: 3px;
 }
-:where(body:not(:has([data-stage-mode]))) ::selection {
+:where(body) :where(:not([data-paper] *))::selection {
   background: var(--lp-accent-soft);
   color: var(--lp-ink);
 }
-:where(body:not(:has([data-stage-mode]))) :is(input, textarea, select) {
+:where(body) :is(input, textarea, select):where(:not([data-paper] *)) {
   border: 1px solid var(--lp-line-strong);
   border-radius: 12px;
   background: var(--lp-widget);
@@ -1172,46 +1173,46 @@ html[data-theme="dark"] body:not(:has([data-stage-mode])) {
     border-color 160ms var(--lp-ease),
     box-shadow 160ms var(--lp-ease);
 }
-:where(body:not(:has([data-stage-mode]))) :is(input, textarea, select):focus {
+:where(body) :is(input, textarea, select):focus:where(:not([data-paper] *)) {
   border-color: var(--lp-accent);
   box-shadow: 0 0 0 4px var(--lp-accent-soft);
 }
-:where(body:not(:has([data-stage-mode])))
-  :is(input, textarea, select):focus-visible {
+:where(body)
+  :is(input, textarea, select):focus-visible:where(:not([data-paper] *)) {
   outline: none;
 }
-:where(body:not(:has([data-stage-mode])))
-  :is(input[type="radio"], input[type="checkbox"]) {
+:where(body)
+  :is(input[type="radio"], input[type="checkbox"]):where(:not([data-paper] *)) {
   box-shadow: none;
   accent-color: var(--lp-btn);
 }
-:where(body:not(:has([data-stage-mode]))) label {
+:where(body) label:where(:not([data-paper] *)) {
   font-weight: 500;
 }
-:where(body:not(:has([data-stage-mode]))) fieldset {
+:where(body) fieldset:where(:not([data-paper] *)) {
   border: 1px solid var(--lp-line);
   border-radius: 16px;
 }
-:where(body:not(:has([data-stage-mode]))) legend {
+:where(body) legend:where(:not([data-paper] *)) {
   font-weight: 500;
 }
-:where(body:not(:has([data-stage-mode]))) :is(th, td) {
+:where(body) :is(th, td):where(:not([data-paper] *)) {
   border-bottom: 1px solid var(--lp-line);
 }
-:where(body:not(:has([data-stage-mode]))) th {
+:where(body) th:where(:not([data-paper] *)) {
   font-size: 0.82rem;
   font-weight: 500;
   letter-spacing: 0;
   text-transform: none;
   color: var(--lp-ink-2);
 }
-:where(body:not(:has([data-stage-mode]))) caption {
+:where(body) caption:where(:not([data-paper] *)) {
   font-weight: 600;
 }
-:where(body:not(:has([data-stage-mode]))) hr {
+:where(body) hr:where(:not([data-paper] *)) {
   border-top: 1px solid var(--lp-line);
 }
-:where(body:not(:has([data-stage-mode]))) code {
+:where(body) code:where(:not([data-paper] *)) {
   padding: 2px 6px;
   border-radius: 6px;
   background: var(--lp-hover);
@@ -1219,36 +1220,35 @@ html[data-theme="dark"] body:not(:has([data-stage-mode])) {
 }
 
 /* ─── skin: primitives ─────────────────────────────────────────── */
-:where(body:not(:has([data-stage-mode]))) :is(.sheet, .card) {
+:where(body) :is(.sheet, .card):where(:not([data-paper] *)) {
   border: 1px solid var(--lp-line);
   border-radius: 24px;
   background: var(--lp-card);
   box-shadow: none;
   color: var(--lp-ink);
 }
-:where(body:not(:has([data-stage-mode]))) .sheet[data-lift="2"],
-:where(body:not(:has([data-stage-mode]))) .sheet[data-lift="3"] {
+:where(body) .sheet[data-lift="2"]:where(:not([data-paper] *)),
+:where(body) .sheet[data-lift="3"]:where(:not([data-paper] *)) {
   background: var(--lp-widget);
   box-shadow: var(--lp-shadow-sm);
 }
-:where(body:not(:has([data-stage-mode]))) .sheet[data-lift="3"] {
+:where(body) .sheet[data-lift="3"]:where(:not([data-paper] *)) {
   box-shadow: var(--lp-shadow);
 }
-:where(body:not(:has([data-stage-mode]))) .sheet[data-tone="cream"] {
+:where(body) .sheet[data-tone="cream"]:where(:not([data-paper] *)) {
   background: var(--lp-bg);
 }
-:where(body:not(:has([data-stage-mode]))) .sheet[data-tone="kraft"] {
+:where(body) .sheet[data-tone="kraft"]:where(:not([data-paper] *)) {
   background: var(--lp-card);
 }
-:where(body:not(:has([data-stage-mode]))) .sheet[data-tilt] {
+:where(body) .sheet[data-tilt]:where(:not([data-paper] *)) {
   transform: none;
 }
-:where(body:not(:has([data-stage-mode]))) .sheet[data-tape]::before {
+:where(body) .sheet[data-tape]:where(:not([data-paper] *))::before {
   display: none;
 }
 
-:where(body:not(:has([data-stage-mode])))
-  :is(.btn, .button, .button-secondary) {
+:where(body) :is(.btn, .button, .button-secondary):where(:not([data-paper] *)) {
   min-height: 48px;
   padding: 0 22px;
   border: 1px solid transparent;
@@ -1265,40 +1265,44 @@ html[data-theme="dark"] body:not(:has([data-stage-mode])) {
     border-color 200ms var(--lp-ease),
     transform 200ms var(--lp-ease);
 }
-:where(body:not(:has([data-stage-mode]))) :is(.btn, .button):hover {
+:where(body) :is(.btn, .button):hover:where(:not([data-paper] *)) {
   background: var(--lp-btn-hover);
   box-shadow: var(--lp-btn-shadow);
   transform: translateY(-1px);
 }
-:where(body:not(:has([data-stage-mode])))
-  :is(.btn, .button, .button-secondary):active {
+:where(body)
+  :is(.btn, .button, .button-secondary):active:where(:not([data-paper] *)) {
   transform: scale(0.98);
   box-shadow: var(--lp-shadow-sm);
 }
-:where(body:not(:has([data-stage-mode])))
-  :is(.button-secondary, .btn[data-variant="secondary"]) {
+:where(body)
+  :is(.button-secondary, .btn[data-variant="secondary"]):where(
+    :not([data-paper] *)
+  ) {
   border-color: var(--lp-line-strong);
   background: var(--lp-widget);
   color: var(--lp-ink);
   box-shadow: var(--lp-shadow-sm);
 }
-:where(body:not(:has([data-stage-mode])))
-  :is(.button-secondary, .btn[data-variant="secondary"]):hover {
+:where(body)
+  :is(.button-secondary, .btn[data-variant="secondary"]):hover:where(
+    :not([data-paper] *)
+  ) {
   border-color: var(--lp-ink-3);
   background: var(--lp-widget);
   box-shadow: var(--lp-shadow-sm);
   transform: translateY(-1px);
 }
-:where(body:not(:has([data-stage-mode]))) .btn[data-variant="ink"] {
+:where(body) .btn[data-variant="ink"]:where(:not([data-paper] *)) {
   background: var(--lp-ink);
   color: var(--lp-bg);
   box-shadow: var(--lp-shadow-sm);
 }
-:where(body:not(:has([data-stage-mode]))) .btn[data-variant="ink"]:hover {
+:where(body) .btn[data-variant="ink"]:hover:where(:not([data-paper] *)) {
   background: var(--lp-ink);
   opacity: 0.9;
 }
-:where(body:not(:has([data-stage-mode]))) .btn[data-variant="ghost"] {
+:where(body) .btn[data-variant="ghost"]:where(:not([data-paper] *)) {
   border-color: transparent;
   background: transparent;
   color: var(--lp-ink);
@@ -1306,30 +1310,30 @@ html[data-theme="dark"] body:not(:has([data-stage-mode])) {
   padding-inline: 12px;
   text-decoration-color: var(--lp-line-strong);
 }
-:where(body:not(:has([data-stage-mode]))) .btn[data-variant="ghost"]:hover {
+:where(body) .btn[data-variant="ghost"]:hover:where(:not([data-paper] *)) {
   background: var(--lp-hover);
   box-shadow: none;
   transform: none;
 }
-:where(body:not(:has([data-stage-mode]))) .btn[data-size="small"] {
+:where(body) .btn[data-size="small"]:where(:not([data-paper] *)) {
   min-height: 38px;
   padding: 0 15px;
   font-size: 0.88rem;
 }
-:where(body:not(:has([data-stage-mode]))) .btn[data-size="large"] {
+:where(body) .btn[data-size="large"]:where(:not([data-paper] *)) {
   min-height: 54px;
   padding: 0 28px;
   font-size: 1.02rem;
 }
-:where(body:not(:has([data-stage-mode]))) .button-link {
+:where(body) .button-link:where(:not([data-paper] *)) {
   color: var(--lp-ink);
   text-decoration-color: var(--lp-line-strong);
 }
-:where(body:not(:has([data-stage-mode]))) .button-link:hover {
+:where(body) .button-link:hover:where(:not([data-paper] *)) {
   text-decoration-color: currentColor;
 }
 
-:where(body:not(:has([data-stage-mode]))) .kicker {
+:where(body) .kicker:where(:not([data-paper] *)) {
   font-family: var(--lp-sans);
   font-size: 0.875rem;
   font-weight: 500;
@@ -1337,16 +1341,16 @@ html[data-theme="dark"] body:not(:has([data-stage-mode])) {
   text-transform: none;
   color: var(--lp-ink-2);
 }
-:where(body:not(:has([data-stage-mode]))) .kicker[data-accent] {
+:where(body) .kicker[data-accent]:where(:not([data-paper] *)) {
   color: var(--lp-accent-text);
 }
 /* The kicker that opens a page reads as a pill, as on the home page. */
-:where(body:not(:has([data-stage-mode])))
+:where(body)
   :is(.page-heading, .hero)
-  > .kicker:first-child,
-:where(body:not(:has([data-stage-mode])))
+  > .kicker:first-child:where(:not([data-paper] *)),
+:where(body)
   [data-page-head]
-  > .kicker:first-child {
+  > .kicker:first-child:where(:not([data-paper] *)) {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1357,12 +1361,12 @@ html[data-theme="dark"] body:not(:has([data-stage-mode])) {
   background: var(--lp-card);
   color: var(--lp-ink);
 }
-:where(body:not(:has([data-stage-mode])))
+:where(body)
   :is(.page-heading, .hero)
-  > .kicker:first-child::before,
-:where(body:not(:has([data-stage-mode])))
+  > .kicker:first-child:where(:not([data-paper] *))::before,
+:where(body)
   [data-page-head]
-  > .kicker:first-child::before {
+  > .kicker:first-child:where(:not([data-paper] *))::before {
   content: "";
   width: 6px;
   height: 6px;
@@ -1371,21 +1375,21 @@ html[data-theme="dark"] body:not(:has([data-stage-mode])) {
   box-shadow: 0 0 0 3px var(--lp-accent-soft);
 }
 
-:where(body:not(:has([data-stage-mode]))) :is(.stamp, .chip) {
+:where(body) :is(.stamp, .chip):where(:not([data-paper] *)) {
   padding: 4px 11px 4px 9px;
   border: 0;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--stamp) 13%, transparent);
+  background: color-mix(in srgb, var(--stamp) 10%, transparent);
   color: var(--stamp);
   font-size: 0.8rem;
   font-weight: 500;
   letter-spacing: 0;
 }
-:where(body:not(:has([data-stage-mode]))) .stamp[data-solid] {
+:where(body) .stamp[data-solid]:where(:not([data-paper] *)) {
   background: var(--stamp);
   color: var(--lp-bg);
 }
-:where(body:not(:has([data-stage-mode]))) .badge {
+:where(body) .badge:where(:not([data-paper] *)) {
   padding: 4px 10px;
   border: 0;
   border-radius: 999px;
@@ -1398,47 +1402,49 @@ html[data-theme="dark"] body:not(:has([data-stage-mode])) {
 }
 
 /* ─── skin: page patterns ──────────────────────────────────────── */
-:where(body:not(:has([data-stage-mode]))) .page-heading {
+:where(body) .page-heading:where(:not([data-paper] *)) {
   max-width: 780px;
   margin: 16px 0 56px;
 }
-:where(body:not(:has([data-stage-mode]))) .page-heading h1 {
+:where(body) .page-heading h1:where(:not([data-paper] *)) {
   margin-bottom: 18px;
 }
-:where(body:not(:has([data-stage-mode]))) .page-heading > p:not(.kicker) {
+:where(body) .page-heading > p:not(.kicker):where(:not([data-paper] *)) {
   max-width: 58ch;
   font-size: 1.1rem;
   line-height: 1.6;
   color: var(--lp-ink-2);
 }
-:where(body:not(:has([data-stage-mode]))) .notice {
+:where(body) .notice:where(:not([data-paper] *)) {
   padding: 16px 18px;
   border: 1px solid color-mix(in srgb, var(--lp-warn) 28%, transparent);
   border-radius: 16px;
   background: var(--lp-warn-soft);
   color: var(--lp-ink);
 }
-:where(body:not(:has([data-stage-mode]))) :is(.notice[role="alert"], .error) {
+:where(body) :is(.notice[role="alert"], .error):where(:not([data-paper] *)) {
   border-color: color-mix(in srgb, var(--lp-accent) 30%, transparent);
   background: var(--lp-accent-soft);
 }
-:where(body:not(:has([data-stage-mode]))) .empty-state {
+:where(body) .empty-state:where(:not([data-paper] *)) {
   padding: 48px 24px;
   border: 1.5px dashed var(--lp-line-strong);
   border-radius: 24px;
   background: transparent;
 }
-:where(body:not(:has([data-stage-mode]))) .history-list li {
+:where(body) .history-list li:where(:not([data-paper] *)) {
   border-bottom: 1px solid var(--lp-line);
 }
-:where(body:not(:has([data-stage-mode])))
-  :is(.step-card, .truth-panel, .live-demo, .pro-gate) {
+:where(body)
+  :is(.step-card, .truth-panel, .live-demo, .pro-gate):where(
+    :not([data-paper] *)
+  ) {
   border: 1px solid var(--lp-line);
   border-radius: 24px;
   background: var(--lp-card);
   box-shadow: none;
 }
-:where(body:not(:has([data-stage-mode]))) .step-number {
+:where(body) .step-number:where(:not([data-paper] *)) {
   border-radius: 12px;
   background: var(--lp-btn);
   color: var(--lp-on-btn);
@@ -1447,100 +1453,97 @@ html[data-theme="dark"] body:not(:has([data-stage-mode])) {
   rotate: none;
   box-shadow: var(--lp-btn-shadow);
 }
-:where(body:not(:has([data-stage-mode])))
-  :is(.price, .metric-number, .truth-panel .stat) {
+:where(body)
+  :is(.price, .metric-number, .truth-panel .stat):where(:not([data-paper] *)) {
   font-family: var(--lp-sans);
   font-weight: 600;
   letter-spacing: -0.05em;
 }
-:where(body:not(:has([data-stage-mode]))) .turn-square {
+:where(body) .turn-square:where(:not([data-paper] *)) {
   border-radius: 6px;
   box-shadow: none;
 }
-:where(body:not(:has([data-stage-mode]))) .progress-bar {
+:where(body) .progress-bar:where(:not([data-paper] *)) {
   border-radius: 6px 6px 2px 2px;
 }
-:where(body:not(:has([data-stage-mode]))) .copy-status {
+:where(body) .copy-status:where(:not([data-paper] *)) {
   color: var(--lp-good);
 }
-:where(body:not(:has([data-stage-mode]))) .field-hint {
+:where(body) .field-hint:where(:not([data-paper] *)) {
   color: var(--lp-ink-2);
 }
-:where(body:not(:has([data-stage-mode]))) .skip-link {
+:where(body) .skip-link:where(:not([data-paper] *)) {
   border-radius: 999px;
   background: var(--lp-ink);
   color: var(--lp-bg);
 }
 
 /* ─── skin: tables, prose and simple pages ─────────────────────── */
-:where(body:not(:has([data-stage-mode]))) tbody th {
+:where(body) tbody th:where(:not([data-paper] *)) {
   font-size: 0.95rem;
   font-weight: 500;
   color: var(--lp-ink);
 }
-:where(body:not(:has([data-stage-mode]))) td svg {
+:where(body) td svg:where(:not([data-paper] *)) {
   display: inline-block;
   margin-right: 4px;
   vertical-align: -2px;
   color: var(--lp-good);
 }
-:where(body:not(:has([data-stage-mode]))) .table-wrap {
+:where(body) .table-wrap:where(:not([data-paper] *)) {
   border: 1px solid var(--lp-line);
   border-radius: 18px;
   background: var(--lp-widget);
 }
-:where(body:not(:has([data-stage-mode]))) .table-wrap :is(th, td) {
+:where(body) .table-wrap :is(th, td):where(:not([data-paper] *)) {
   padding: 12px 16px;
 }
-:where(body:not(:has([data-stage-mode])))
-  .table-wrap
-  tr:last-child
-  :is(th, td) {
+:where(body) .table-wrap tr:last-child :is(th, td):where(:not([data-paper] *)) {
   border-bottom: 0;
 }
-:where(body:not(:has([data-stage-mode]))) .sheet .table-wrap,
-:where(body:not(:has([data-stage-mode]))) .card .table-wrap {
+:where(body) .sheet .table-wrap:where(:not([data-paper] *)),
+:where(body) .card .table-wrap:where(:not([data-paper] *)) {
   background: var(--lp-widget);
 }
-:where(body:not(:has([data-stage-mode]))) .prose {
+:where(body) .prose:where(:not([data-paper] *)) {
   max-width: 760px;
   margin-inline: auto;
 }
-:where(body:not(:has([data-stage-mode]))) .prose .page-heading {
+:where(body) .prose .page-heading:where(:not([data-paper] *)) {
   margin-top: 8px;
 }
-:where(body:not(:has([data-stage-mode]))) .prose :is(h2, section > h2) {
+:where(body) .prose :is(h2, section > h2):where(:not([data-paper] *)) {
   margin-top: 72px;
   margin-bottom: 14px;
   padding-top: 40px;
   border-top: 1px solid var(--lp-line);
   font-size: clamp(1.45rem, 1.2rem + 0.9vw, 1.9rem);
 }
-:where(body:not(:has([data-stage-mode]))) .prose .page-heading + h2,
-:where(body:not(:has([data-stage-mode]))) .prose .page-heading + section > h2 {
+:where(body) .prose .page-heading + h2:where(:not([data-paper] *)),
+:where(body) .prose .page-heading + section > h2:where(:not([data-paper] *)) {
   margin-top: 0;
 }
-:where(body:not(:has([data-stage-mode]))) .prose h3 {
+:where(body) .prose h3:where(:not([data-paper] *)) {
   margin-top: 32px;
 }
-:where(body:not(:has([data-stage-mode]))) .prose > p,
-:where(body:not(:has([data-stage-mode]))) .prose section > p {
+:where(body) .prose > p:where(:not([data-paper] *)),
+:where(body) .prose section > p:where(:not([data-paper] *)) {
   color: var(--lp-ink-2);
   line-height: 1.7;
 }
-:where(body:not(:has([data-stage-mode]))) .prose :is(ul, ol) {
+:where(body) .prose :is(ul, ol):where(:not([data-paper] *)) {
   padding-left: 1.2rem;
   color: var(--lp-ink-2);
 }
-:where(body:not(:has([data-stage-mode]))) .prose .notice,
-:where(body:not(:has([data-stage-mode]))) .prose .table-wrap {
+:where(body) .prose .notice:where(:not([data-paper] *)),
+:where(body) .prose .table-wrap:where(:not([data-paper] *)) {
   margin-block: 20px;
 }
-:where(body:not(:has([data-stage-mode]))) .narrow {
+:where(body) .narrow:where(:not([data-paper] *)) {
   max-width: 820px;
   margin-inline: auto;
 }
-:where(body:not(:has([data-stage-mode]))) .error-page {
+:where(body) .error-page:where(:not([data-paper] *)) {
   display: grid;
   justify-items: center;
   gap: 4px;
@@ -1548,7 +1551,7 @@ html[data-theme="dark"] body:not(:has([data-stage-mode])) {
   margin: 72px auto 40px;
   text-align: center;
 }
-:where(body:not(:has([data-stage-mode]))) .error-page > .kicker:first-child {
+:where(body) .error-page > .kicker:first-child:where(:not([data-paper] *)) {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1559,23 +1562,23 @@ html[data-theme="dark"] body:not(:has([data-stage-mode])) {
   background: var(--lp-card);
   color: var(--lp-ink);
 }
-:where(body:not(:has([data-stage-mode])))
+:where(body)
   .error-page
-  > .kicker:first-child::before {
+  > .kicker:first-child:where(:not([data-paper] *))::before {
   content: "";
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: var(--lp-accent);
 }
-:where(body:not(:has([data-stage-mode]))) .error-page h1 {
+:where(body) .error-page h1:where(:not([data-paper] *)) {
   margin-bottom: 12px;
 }
-:where(body:not(:has([data-stage-mode]))) .error-page > p:not(.kicker) {
+:where(body) .error-page > p:not(.kicker):where(:not([data-paper] *)) {
   margin-bottom: 24px;
   color: var(--lp-ink-2);
 }
-:where(body:not(:has([data-stage-mode]))) .welcome-sheet {
+:where(body) .welcome-sheet:where(:not([data-paper] *)) {
   max-width: 620px;
   padding: 40px 36px;
   border: 1px solid var(--lp-line);
@@ -1583,30 +1586,30 @@ html[data-theme="dark"] body:not(:has([data-stage-mode])) {
   background: var(--lp-widget);
   box-shadow: var(--lp-shadow);
 }
-:where(body:not(:has([data-stage-mode]))) .pricing-booth {
+:where(body) .pricing-booth:where(:not([data-paper] *)) {
   overflow: hidden;
   padding: 0;
   background: var(--lp-widget);
   box-shadow: var(--lp-shadow);
 }
 @media (max-width: 767px) {
-  :where(body:not(:has([data-stage-mode]))) :is(.sheet, .card) {
+  :where(body) :is(.sheet, .card):where(:not([data-paper] *)) {
     padding: 24px 20px;
     border-radius: 20px;
   }
-  :where(body:not(:has([data-stage-mode]))) .pricing-booth {
+  :where(body) .pricing-booth:where(:not([data-paper] *)) {
     padding: 0;
   }
-  :where(body:not(:has([data-stage-mode]))) .welcome-sheet {
+  :where(body) .welcome-sheet:where(:not([data-paper] *)) {
     padding: 28px 22px;
   }
-  :where(body:not(:has([data-stage-mode]))) .prose :is(h2, section > h2) {
+  :where(body) .prose :is(h2, section > h2):where(:not([data-paper] *)) {
     margin-top: 56px;
     padding-top: 32px;
   }
 }
 
-:where(body:not(:has([data-stage-mode]))) .loading-line {
+:where(body) .loading-line:where(:not([data-paper] *)) {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1614,7 +1617,7 @@ html[data-theme="dark"] body:not(:has([data-stage-mode])) {
   min-height: 40vh;
   color: var(--lp-ink-2);
 }
-:where(body:not(:has([data-stage-mode]))) .loading-line::before {
+:where(body) .loading-line:where(:not([data-paper] *))::before {
   content: "";
   width: 16px;
   height: 16px;

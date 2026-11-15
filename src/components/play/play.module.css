@@ -1543,3 +1543,381 @@ abbr.par {
   font-size: 1.05rem;
   color: var(--ink);
 }
+
+/* ───────────────────────────────────────────────────────────────
+   Veltral cards. The playbill, the reply dock, the script so far and
+   the debrief follow the site theme. Anything shown on the stage
+   itself keeps its paper: every rule below skips [data-paper].
+   ─────────────────────────────────────────────────────────────── */
+.topBar:where(:not([data-paper] *)) .leave {
+  font-weight: 500;
+}
+.topTitle:where(:not([data-paper] *)) {
+  font-size: 0.88rem;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  text-transform: none;
+}
+
+/* the playbill */
+.playbill:where(:not([data-paper] *)) {
+  gap: 16px;
+  padding: 30px 28px 24px;
+  border: 1px solid var(--lp-line);
+  border-radius: 28px;
+  background: var(--lp-widget);
+  box-shadow: var(--lp-shadow);
+  rotate: none;
+  animation-name: cardIn;
+  animation-duration: 600ms;
+  animation-timing-function: var(--lp-ease);
+}
+.playbill:where(:not([data-paper] *))::before,
+.playbill:where(:not([data-paper] *))::after {
+  display: none;
+}
+.playbillHead:where(:not([data-paper] *)) h1 {
+  margin: 4px 0 8px;
+  font-size: clamp(2rem, 5.5vw, 2.8rem);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+}
+.playbillPlace:where(:not([data-paper] *)) {
+  font-style: normal;
+  font-weight: 500;
+}
+.playbillLimit:where(:not([data-paper] *)) {
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid var(--lp-line-strong);
+  border-radius: 16px;
+  background: var(--lp-card);
+  box-shadow: none;
+  rotate: none;
+}
+.playbillLimit:where(:not([data-paper] *)) span {
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.playbillLimit:where(:not([data-paper] *)) strong {
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.pace:where(:not([data-paper] *)) legend {
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.paceOptions:where(:not([data-paper] *)) label {
+  border-radius: 999px;
+  background: var(--lp-widget);
+  box-shadow: inset 0 0 0 1px var(--lp-line-strong);
+  font-weight: 500;
+}
+.paceOptions:where(:not([data-paper] *)) label[data-selected="true"] {
+  background: var(--lp-ink);
+  color: var(--lp-bg);
+  box-shadow: none;
+}
+.paceOptions:where(:not([data-paper] *)) label:has(input:focus-visible) {
+  outline: 2px solid var(--lp-accent);
+}
+.startRow:where(:not([data-paper] *)) .paceOptions label {
+  padding: 6px 14px;
+}
+.disclaimer:where(:not([data-paper] *)),
+.voiceIntro:where(:not([data-paper] *)) {
+  border-top: 1px solid var(--lp-line);
+}
+.voiceToggle:where(:not([data-paper] *)) {
+  font-weight: 500;
+}
+@media (min-width: 1024px) {
+  .theatre[data-phase="intro"] .playbill:where(:not([data-paper] *)) {
+    margin: 40px 0 0 24px;
+    rotate: none;
+  }
+}
+
+/* the reply dock */
+.dock:where(:not([data-paper] *)) {
+  border-top: 1px solid var(--lp-line);
+  background: color-mix(in srgb, var(--lp-widget) 92%, transparent);
+  backdrop-filter: saturate(1.4) blur(14px);
+  -webkit-backdrop-filter: saturate(1.4) blur(14px);
+  box-shadow: 0 -12px 24px -18px rgb(13 18 34 / 0.45);
+}
+.dock[data-compact]:where(:not([data-paper] *)) {
+  border: 0;
+  background: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+@media (min-width: 1024px) {
+  .dock:where(:not([data-paper] *)) {
+    padding: 16px 18px;
+    border: 1px solid var(--lp-line);
+    border-radius: 24px;
+    background: var(--lp-widget);
+    box-shadow: var(--lp-shadow-sm);
+    rotate: none;
+  }
+}
+.replyLabel:where(:not([data-paper] *)) label {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.voiceLevelTrack:where(:not([data-paper] *)) {
+  border-radius: 999px;
+}
+.voiceTranscript:where(:not([data-paper] *)) {
+  border-left-color: var(--lp-good);
+  border-radius: 0 12px 12px 0;
+  background: var(--lp-good-soft);
+}
+.calibrationDialog:where(:not([data-paper] *)) {
+  margin: auto;
+  border: 1px solid var(--lp-line);
+  border-radius: 24px;
+  background: var(--lp-widget);
+  box-shadow: var(--lp-shadow);
+}
+.calibrationDialog:where(:not([data-paper] *))::backdrop {
+  background: rgb(13 18 34 / 0.5);
+}
+.error:where(:not([data-paper] *)) {
+  border: 0;
+  border-radius: 16px;
+  background: var(--lp-accent-soft);
+}
+
+/* the turn's slip and the script so far, beside or under the stage */
+.slip:where(:not([data-paper] *)) {
+  padding: 16px 18px 14px;
+  border: 1px solid var(--lp-line);
+  border-radius: 20px;
+  background: var(--lp-widget);
+  box-shadow: var(--lp-shadow-sm);
+  rotate: none;
+}
+.slipKicker:where(:not([data-paper] *)) {
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.slipReply:where(:not([data-paper] *)) u {
+  background-image: linear-gradient(var(--lp-accent), var(--lp-accent));
+}
+.ledger:where(:not([data-paper] *)) {
+  border-top: 1px solid var(--lp-line);
+}
+.ledgerTotal:where(:not([data-paper] *)) {
+  border-top: 1px solid var(--lp-line-strong);
+}
+.ledgerTotal:where(:not([data-paper] *)) > span:last-child {
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+.notes:where(:not([data-paper] *)) li {
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--lp-warn-soft);
+  clip-path: none;
+  rotate: none;
+}
+.soFar:where(:not([data-paper] *)) {
+  padding: 18px;
+  border: 1px solid var(--lp-line);
+  border-radius: 20px;
+  background: var(--lp-card);
+  box-shadow: none;
+  rotate: none;
+}
+.soFar:where(:not([data-paper] *)) li {
+  border-bottom: 1px solid var(--lp-line);
+}
+.soFarHead:where(:not([data-paper] *)) {
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* the ending card, under the stage on phones */
+.ending:where(:not([data-paper] *)) {
+  padding: 20px 22px 18px;
+  border: 1px solid var(--lp-line);
+  border-radius: 22px;
+  background: var(--lp-widget);
+  box-shadow: var(--lp-shadow);
+  rotate: none;
+}
+.ending:where(:not([data-paper] *)) h1 {
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+.points:where(:not([data-paper] *)) span {
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
+/* the debrief */
+.sharePreview:where(:not([data-paper] *)) pre {
+  border-radius: 14px;
+  background: var(--lp-widget);
+  box-shadow: inset 0 0 0 1px var(--lp-line);
+}
+.grid:where(:not([data-paper] *)) span {
+  border-radius: 8px;
+  color: var(--lp-bg);
+  box-shadow: none;
+}
+.grid:where(:not([data-paper] *)) span[data-cell="mixed"] {
+  color: #1b2440;
+}
+.standing:where(:not([data-paper] *)),
+.invite:where(:not([data-paper] *)),
+.replayCard:where(:not([data-paper] *)) {
+  padding: 16px 20px;
+  border: 1px solid var(--lp-line);
+  border-radius: 18px;
+  background: var(--lp-card);
+}
+.compare:where(:not([data-paper] *)) {
+  padding: 24px;
+  border: 1px solid var(--lp-line);
+  border-radius: 24px;
+  background: var(--lp-widget);
+  box-shadow: var(--lp-shadow);
+  rotate: none;
+}
+.compare:where(:not([data-paper] *))::before {
+  display: none;
+}
+.compareTake:where(:not([data-paper] *)) {
+  border-radius: 16px;
+  background: var(--lp-card);
+  box-shadow: inset 0 0 0 1px var(--lp-line);
+}
+.compareTake:where(:not([data-paper] *)):last-child {
+  box-shadow:
+    inset 0 0 0 1.5px var(--lp-accent),
+    0 0 0 3px var(--lp-accent-soft);
+}
+.compareLabel:where(:not([data-paper] *)) {
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.compareTake:where(:not([data-paper] *)) blockquote {
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+.compareDelta:where(:not([data-paper] *)),
+.compare:where(:not([data-paper] *)) figcaption {
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+.line:where(:not([data-paper] *)) {
+  padding-top: 8px;
+  background: none;
+}
+.peg:where(:not([data-paper] *)) {
+  rotate: none;
+}
+.peg:where(:not([data-paper] *))::before {
+  display: none;
+}
+.peg:where(:not([data-paper] *)) a {
+  min-width: 64px;
+  padding: 10px 10px 8px;
+  border: 1px solid var(--lp-line);
+  border-radius: 14px;
+  background: var(--lp-widget);
+  box-shadow: var(--lp-shadow-sm);
+  font-weight: 500;
+}
+.pegNumber:where(:not([data-paper] *)) {
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+.flag:where(:not([data-paper] *)) {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--lp-accent-soft);
+  color: var(--lp-accent-text);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  clip-path: none;
+}
+.card:where(:not([data-paper] *)) {
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid var(--lp-line);
+  border-radius: 22px;
+  background: var(--lp-card);
+  box-shadow: none;
+}
+.card[data-turning]:where(:not([data-paper] *)) {
+  border-color: color-mix(in srgb, var(--lp-accent) 55%, transparent);
+  box-shadow: 0 0 0 3px var(--lp-accent-soft);
+}
+.card:where(:not([data-paper] *)) .slip {
+  border: 0;
+}
+.turningPoint:where(:not([data-paper] *)) {
+  padding: 3px 11px 3px 8px;
+  border-radius: 999px;
+  background: var(--lp-accent-soft);
+  color: var(--lp-accent-text);
+  font-size: 0.8rem;
+  letter-spacing: 0;
+  text-transform: none;
+  clip-path: none;
+}
+.childReply:where(:not([data-paper] *)) {
+  border-left-color: var(--lp-ink-3);
+  border-radius: 0 12px 12px 0;
+  background: var(--lp-widget);
+}
+.suggestion:where(:not([data-paper] *)) {
+  border-left-color: var(--lp-good);
+  border-radius: 0 12px 12px 0;
+  background: var(--lp-good-soft);
+}
+.tryInstead:where(:not([data-paper] *)) {
+  border-left-color: var(--lp-good);
+  border-radius: 0 14px 14px 0;
+  background: var(--lp-good-soft);
+}
+.tryInsteadKicker:where(:not([data-paper] *)) {
+  font-size: 0.82rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--lp-good);
+}
+.stillThere:where(:not([data-paper] *)) {
+  font-style: normal;
+  font-weight: 500;
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

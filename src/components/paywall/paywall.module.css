@@ -182,44 +182,44 @@
 }
 
 /* ─── Veltral skin: every page except the play screen ─────────── */
-:global(body:not(:has([data-stage-mode]))) .dialog {
+:global(body) .dialog {
   border: 1px solid var(--lp-line);
   border-radius: 28px;
   background: var(--lp-widget);
   box-shadow: var(--lp-shadow);
 }
-:global(body:not(:has([data-stage-mode]))) .dialog::backdrop {
+:global(body) .dialog::backdrop {
   background: rgb(13 18 34 / 0.5);
   backdrop-filter: blur(4px);
 }
-:global(body:not(:has([data-stage-mode]))) .dialog[open] {
+:global(body) .dialog[open] {
   animation-name: rise;
   animation-duration: 420ms;
   animation-timing-function: var(--lp-ease);
 }
-:global(body:not(:has([data-stage-mode]))) .awning {
+:global(body) .awning {
   height: 6px;
   background: linear-gradient(90deg, #1b2440, #3a3567 48%, #c2522b);
 }
-:global(body:not(:has([data-stage-mode]))) .close {
+:global(body) .close {
   top: 18px;
   right: 16px;
   border-radius: 50%;
 }
-:global(body:not(:has([data-stage-mode]))) .close:hover {
+:global(body) .close:hover {
   background: var(--lp-hover);
 }
-:global(body:not(:has([data-stage-mode]))) .booth {
+:global(body) .booth {
   gap: 16px;
   padding: 28px;
 }
-:global(body:not(:has([data-stage-mode]))) .includes {
+:global(body) .includes {
   gap: 9px;
 }
-:global(body:not(:has([data-stage-mode]))) .includes svg {
+:global(body) .includes svg {
   color: var(--lp-accent);
 }
-:global(body:not(:has([data-stage-mode]))) .price {
+:global(body) .price {
   gap: 4px;
   padding: 14px 16px 16px;
   border: 1px solid var(--lp-line-strong);
@@ -227,45 +227,45 @@
   background: var(--lp-bg);
   box-shadow: none;
 }
-:global(body:not(:has([data-stage-mode]))) .price[data-best] {
+:global(body) .price[data-best] {
   border-color: var(--lp-accent);
   box-shadow: 0 0 0 3px var(--lp-accent-soft);
   rotate: none;
 }
-:global(body:not(:has([data-stage-mode]))) .priceLabel {
+:global(body) .priceLabel {
   font-size: 0.82rem;
   font-weight: 500;
   letter-spacing: 0;
   text-transform: none;
   color: var(--lp-ink-2);
 }
-:global(body:not(:has([data-stage-mode]))) .amount {
+:global(body) .amount {
   font-size: 2rem;
   font-weight: 600;
   letter-spacing: -0.05em;
 }
-:global(body:not(:has([data-stage-mode]))) .testNotice {
+:global(body) .testNotice {
   padding: 10px 14px;
   border: 0;
   border-radius: 12px;
   background: var(--lp-warn-soft);
 }
-:global(body:not(:has([data-stage-mode]))) .code {
+:global(body) .code {
   padding-top: 16px;
   border-top: 1px solid var(--lp-line);
 }
-:global(body:not(:has([data-stage-mode]))) .codeRow input::placeholder {
+:global(body) .codeRow input::placeholder {
   letter-spacing: 0;
   text-transform: none;
 }
-:global(body:not(:has([data-stage-mode]))) .error {
+:global(body) .error {
   color: var(--lp-accent-text);
 }
-:global(body:not(:has([data-stage-mode]))) .booth[data-open] h2 {
+:global(body) .booth[data-open] h2 {
   color: var(--lp-good);
 }
 @media (max-width: 480px) {
-  :global(body:not(:has([data-stage-mode]))) .booth {
+  :global(body) .booth {
     padding: 22px 20px;
   }
 }
