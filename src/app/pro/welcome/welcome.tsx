@@ -4,6 +4,7 @@ import { usePro } from "@/lib/pro";
 import { Icon } from "@/components/paper/icons";
 import { ButtonLink, Kicker, Sheet } from "@/components/paper/primitives";
 import { PASS_INCLUDES } from "@/components/paywall/paywall";
+import styles from "./welcome.module.css";
 
 export function Welcome() {
   const { pro, loading, entitlement } = usePro();
@@ -21,10 +22,11 @@ export function Welcome() {
             </em>
           </h1>
           <p>Here is what is open now on this device:</p>
-          <ul className="welcome-list">
+          <ul className={styles.list}>
             {PASS_INCLUDES.map((item) => (
               <li key={item}>
-                <Icon name="check" size={16} /> {item}
+                <Icon name="check" size={16} />
+                <span>{item}</span>
               </li>
             ))}
           </ul>

@@ -129,8 +129,12 @@ export function readCookie(request: Request, name = COOKIE_NAME) {
   for (const part of header.split(";")) {
     const index = part.indexOf("=");
     if (index === -1) continue;
-    if (part.slice(0, index).trim() === name)
+    if (part.slice(0, index).trim() !== name) continue;
+    try {
       return decodeURIComponent(part.slice(index + 1).trim());
+    } catch {
+      return null; // a malformed cookie is no pass, not a server error
+    }
   }
   return null;
 }
@@ -319,6 +323,8 @@ export function createEntitlementHandlers() {
       const key = stripeTestKey();
       if (!key || !/^cs_test_[A-Za-z0-9]{8,200}$/.test(id)) return fail();
       try {
+        // Each confirm costs a Stripe API call; bound it like checkout itself.
+        await enforceRateLimit(request, "confirm");
         const session = await new Stripe(key).checkout.sessions.retrieve(id);
         if (session.status !== "complete" || session.livemode) return fail();
         const response = new Response(null, {
