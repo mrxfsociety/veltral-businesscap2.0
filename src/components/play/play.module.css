@@ -90,7 +90,7 @@
 }
 .house[data-columns] {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 248px;
+  grid-template-columns: minmax(0, 1fr) 320px;
   gap: 24px;
   align-items: start;
 }
@@ -641,9 +641,31 @@
   outline: 2.5px solid var(--tomato);
   outline-offset: 3px;
 }
+/* Start sits right under the limit; pace is a quieter choice beside it */
+.startRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 18px;
+}
+.startRow .pace legend {
+  margin-bottom: 4px;
+}
+.startRow .paceOptions {
+  gap: 6px;
+}
+.startRow .paceOptions label {
+  padding: 6px 10px;
+  font-size: 0.82rem;
+}
 .startButton {
   align-self: flex-start;
-  min-width: 220px;
+  min-width: 200px;
+}
+abbr.par {
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: help;
 }
 .disclaimer {
   margin: 0;
@@ -668,10 +690,34 @@
 @media (max-width: 600px) {
   .playbill {
     padding: 22px 18px 18px;
-    margin-top: calc(-1 * min(30vw, 150px));
+    margin-top: calc(-1 * min(44vw, 180px));
+  }
+  .startRow {
+    flex-direction: column;
+    align-items: stretch;
   }
   .startButton {
     align-self: stretch;
+  }
+}
+/* Laptop: closed curtains on the left, the playbill pinned beside them,
+   so Start is on the first screen even on a 1366 × 768 display. */
+@media (min-width: 1024px) {
+  .theatre[data-phase="intro"] .centre {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(400px, 480px);
+    align-items: start;
+    gap: 0;
+  }
+  .theatre[data-phase="intro"] .centre > .stage {
+    justify-self: end;
+    margin-inline: auto 0;
+  }
+  .theatre[data-phase="intro"] .playbill {
+    width: auto;
+    max-width: none;
+    margin: 64px 0 0 -28px;
+    rotate: 0.8deg;
   }
 }
 
@@ -890,17 +936,33 @@
 }
 
 /* ─── the script so far (laptop) ───────────────────────────────── */
-.soFar {
+/* laptop: the live slip on top, the script so far under it */
+.side {
   position: sticky;
   top: 16px;
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  max-height: calc(100svh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding: 2px 6px 12px 2px;
+}
+.house[data-wide] .side .slipArea {
+  position: static;
+  width: auto;
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+}
+.soFar {
   padding: 16px 16px 14px;
   border-radius: var(--radius-2);
   background-color: var(--sheet);
   background-image: var(--grain);
   box-shadow: var(--shadow-1);
   rotate: 0.4deg;
-  max-height: calc(100svh - 80px);
-  overflow-y: auto;
 }
 .soFar ol {
   list-style: none;

@@ -3,9 +3,10 @@ import { normalise, normaliseWithOffsets } from "./text";
 import type { Scene, Tag, TagHit } from "./types";
 
 const unsafePatterns = [
-  /\bi\s*(?:will|'ll|am going to|'m going to|am gonna|'m gonna|might|want to|did)\s+(?:really\s+)?(?:smack|spank|hit|slap|whip|beat|punch|kick|hurt|shake(?!\s+your hands?\b)|kill)\s+(?:you|your (?:face|head|body|arms?|legs?|hands?|bottom|butt|cheeks?|eyes?|nose|mouth|stomach|back|chest|neck)|him|her|my (?:child|kid|son|daughter))\b/u,
+  /\bi\s*(?:will|'ll|am going to|'m going to|am gonna|'m gonna|might|want to|did|should|could|would|'d)\s+(?:really\s+|just\s+)?(?:smack|spank|hit|slap|whip|beat|punch|kick|hurt|shake(?!\s+your hands?\b)|kill)\s+(?:you|your (?:face|head|body|arms?|legs?|hands?|bottom|butt|cheeks?|eyes?|nose|mouth|stomach|back|chest|neck)|him|her|my (?:child|kid|son|daughter))\b/u,
   /\bi\s+(?:smacked|spanked|hit|slapped|whipped|beat|punched|kicked|hurt|shook(?!\s+your hands?\b))\s+(?:you|your (?:face|head|body|arms?|legs?|hands?|bottom|butt|cheeks?|eyes?|nose|mouth|stomach|back|chest|neck)|him|her|my (?:child|kid|son|daughter))\b/u,
   /\b(?:give|giving|gave)\s+(?:you|him|her|my (?:child|kid|son|daughter))\s+(?:a\s+)?(?:spanking|beating)\b/u,
+  /\b(?:you|he|she)\s+(?:deserves?|needs?)\s+(?:a\s+)?(?:good\s+)?(?:slap|smack|spanking|beating|whipping|whooping|hiding)\b/u,
   /\b(?:something to cry about|i hate you|(?:i )?wish i(?:'d| had)? never had you|wish you (?:were|had) never (?:been )?born)\b/u,
   /\b(?:fuck you|you (?:fucking |little )?(?:idiot|moron|bastard|shit|asshole)|shut (?:the fuck |the hell )up|you(?:'re| are) (?:a )?(?:fucking |worthless|pathetic))\b/u,
 ];
@@ -62,6 +63,24 @@ function isReflectedOrNegatedHint(value: string, index: number): boolean {
   );
 }
 
+const GENERIC_GRANTS = new Set(["fine, you can", "okay, you can"]);
+// What a parent may grant without giving up the scene's limit.
+const CONCESSION_VERB =
+  /^\s*(?:have|keep|get|take|watch|play|stay|eat|finish|use|buy|bring|wear|skip|do|leave|turn|go back|ride|sit in the front)\b/u;
+// Short hints that are also everyday idioms: "take it slow", "keep it gentle".
+const IDIOM_AFTER =
+  /^\s*(?:slow|slowly|easy|gentle|gently|steady|calm|down|in turns|one step|back to)\b/u;
+
+function isHarmlessGrant(
+  needle: string,
+  value: string,
+  index: number,
+): boolean {
+  const after = value.slice(index + needle.length);
+  if (GENERIC_GRANTS.has(needle)) return !CONCESSION_VERB.test(after);
+  return needle.split(" ").length <= 2 && IDIOM_AFTER.test(after);
+}
+
 export function ruleTags(
   text: string,
   scene: Scene,
@@ -83,7 +102,20 @@ export function ruleTags(
     if (match) addAt(tag, match.index, match[0].length);
     return match;
   };
-  for (const pattern of unsafePatterns) find("UNSAFE", pattern);
+  for (const pattern of unsafePatterns) {
+    for (const match of value.matchAll(new RegExp(pattern.source, "gu"))) {
+      // "I would never say I hate you" reports a sentence; it does not say it.
+      if (
+        /^i hate you$/u.test(match[0]) &&
+        /\b(?:never|not|n't)\s+(?:ever\s+)?(?:say|said|tell|told|mean|meant)\s+(?:that\s+)?$/u.test(
+          value.slice(0, match.index),
+        )
+      )
+        continue;
+      addAt("UNSAFE", match.index, match[0].length);
+      break;
+    }
+  }
   const unsafe = hits.get("UNSAFE");
   if (unsafe) return [unsafe];
 
@@ -108,13 +140,28 @@ export function ruleTags(
     "BRIBE",
     /\bwe can get ice cream\b[^.!?]*\b(?:if|when|once|after) you\b/u,
   );
-  find("SHAME", shamePattern);
+  for (const match of value.matchAll(new RegExp(shamePattern.source, "gu"))) {
+    if (
+      /\b(?:not|never|\w+n't)\s+(?:being\s+|a\s+|so\s+|that\s+)?$/u.test(
+        value.slice(0, match.index),
+      )
+    )
+      continue;
+    addAt("SHAME", match.index, match[0].length);
+    break;
+  }
   for (const match of value.matchAll(new RegExp(dismissPattern.source, "gu"))) {
     const prefix = value.slice(Math.max(0, match.index - 8), match.index);
     if (
       match[0] === "stop crying" &&
       /if you $/u.test(prefix) &&
       hits.has("BRIBE")
+    )
+      continue;
+    if (
+      /\b(?:not|never|\w+n't|no need to)\s+(?:(?:have|need|got)\s+to\s+)?$/u.test(
+        value.slice(0, match.index),
+      )
     )
       continue;
     addAt("DISMISS", match.index, match[0].length);
@@ -208,6 +255,8 @@ export function ruleTags(
       for (const match of value.matchAll(pattern)) {
         const index = match.index ?? 0;
         if (tag === "GIVE_IN" && isReflectedOrNegatedHint(value, index))
+          continue;
+        if (tag === "GIVE_IN" && isHarmlessGrant(needle, value, index))
           continue;
         addAt(tag, index, match[0].length);
       }
