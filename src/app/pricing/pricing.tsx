@@ -131,48 +131,53 @@ export function Pricing({
         )}
       </Sheet>
 
-      {!pro && !loading && (
-        <Sheet lift={3} tape className="pricing-booth">
-          <TicketBooth />
-        </Sheet>
-      )}
+      <div
+        className={styles.layout}
+        data-single={pro || loading ? "" : undefined}
+      >
+        {!pro && !loading && (
+          <Sheet lift={3} tape className="pricing-booth">
+            <TicketBooth />
+          </Sheet>
+        )}
 
-      <section className="sheet stack" aria-labelledby="comparison-title">
-        <h2 id="comparison-title">What&apos;s included</h2>
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">Feature</th>
-                <th scope="col">Free</th>
-                <th scope="col">Season pass</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ROWS.map((row) => (
-                <tr key={row.feature}>
-                  <th scope="row">{row.feature}</th>
-                  <td>{row.free}</td>
-                  <td>
-                    {row.pass === "No" ? (
-                      row.pass
-                    ) : (
-                      <>
-                        <Icon name="check" size={14} /> {row.pass}
-                      </>
-                    )}
-                  </td>
+        <section className="sheet stack" aria-labelledby="comparison-title">
+          <h2 id="comparison-title">What&apos;s included</h2>
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Feature</th>
+                  <th scope="col">Free</th>
+                  <th scope="col">Season pass</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <p className="muted small">
-          $9.99 a month or $59.99 a year, each with a 7-day free trial. Checkout
-          on this site runs in Stripe test mode: no real charge is possible and
-          no card data reaches our server.
-        </p>
-      </section>
+              </thead>
+              <tbody>
+                {ROWS.map((row) => (
+                  <tr key={row.feature}>
+                    <th scope="row">{row.feature}</th>
+                    <td>{row.free}</td>
+                    <td>
+                      {row.pass === "No" ? (
+                        row.pass
+                      ) : (
+                        <>
+                          <Icon name="check" size={14} /> {row.pass}
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="muted small">
+            $9.99 a month or $59.99 a year, each with a 7-day free trial.
+            Checkout on this site runs in Stripe test mode: no real charge is
+            possible and no card data reaches our server.
+          </p>
+        </section>
+      </div>
     </div>
   );
 }

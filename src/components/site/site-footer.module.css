@@ -1,0 +1,88 @@
+/* Site footer. Colours come from the --lp-* tokens in globals.css. */
+.footer {
+  border-top: 1px solid var(--lp-line);
+  background: var(--lp-bg);
+  color: var(--lp-ink);
+  font-family: var(--lp-sans);
+}
+.top,
+.bottom {
+  width: 100%;
+  max-width: var(--lp-max);
+  margin-inline: auto;
+  padding-inline: var(--lp-pad);
+}
+.top {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
+  gap: 40px;
+  padding-block: 56px 40px;
+}
+.brand p {
+  max-width: 22rem;
+  margin: 16px 0 0;
+  color: var(--lp-ink-2);
+}
+.footer .logo {
+  display: inline-flex;
+  border-radius: 8px;
+  color: var(--lp-ink);
+}
+.logo svg {
+  display: block;
+  width: auto;
+  height: 28px;
+}
+.col {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+.col p {
+  margin: 0 0 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.footer .col a {
+  justify-self: start;
+  font-size: 0.95rem;
+  color: var(--lp-ink-2);
+  text-decoration: none;
+  transition: color 160ms var(--lp-ease);
+}
+.footer .col a:hover {
+  color: var(--lp-ink);
+}
+.bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 32px;
+  padding-block: 24px calc(32px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--lp-line);
+  font-size: 0.82rem;
+  color: var(--lp-ink-2);
+}
+.bottom p {
+  margin: 0;
+}
+.bottom p:first-child {
+  max-width: 64ch;
+}
+.bottom p:last-child {
+  white-space: nowrap;
+}
+
+@media (max-width: 639px) {
+  .top {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-block: 48px 36px;
+  }
+  .brand {
+    grid-column: 1 / -1;
+  }
+  .bottom {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

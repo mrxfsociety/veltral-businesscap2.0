@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   useEffect,
   useId,
@@ -16,28 +17,29 @@ import {
   type Theme,
 } from "./theme";
 import { VeltralLogo } from "./veltral-logo";
-import styles from "./landing-header.module.css";
+import styles from "./site-header.module.css";
 
 const LINKS: { href: string; label: string }[] = [
   { href: "/scenes", label: "Scenes" },
-  { href: "/how-it-works", label: "How it works" },
   { href: "/progress", label: "Progress" },
+  { href: "/playbook", label: "Your lines" },
+  { href: "/how-it-works", label: "How it works" },
   { href: "/pricing", label: "Season pass" },
 ];
 
-function useTheme(initial: Theme | null): Theme | null {
-  return useSyncExternalStore(subscribeTheme, currentTheme, () => initial);
+function isCurrent(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function ThemeToggle({
-  initial,
-  className,
-}: {
-  /** The theme the server rendered from the preference cookie, if any. */
-  initial: Theme | null;
-  className?: string;
-}) {
-  const theme = useTheme(initial);
+/* The server cannot know the stored theme (pages are static), so the first
+   render says "Switch colour theme"; the icon itself follows CSS from the
+   first paint. */
+function useTheme(): Theme | null {
+  return useSyncExternalStore(subscribeTheme, currentTheme, () => null);
+}
+
+export function ThemeToggle({ className }: { className?: string }) {
+  const theme = useTheme();
   const next: Theme = theme === "dark" ? "light" : "dark";
   return (
     <button
@@ -73,24 +75,21 @@ export function ThemeToggle({
   );
 }
 
-export function LandingHeader({ theme }: { theme: Theme | null }) {
+export function SiteHeader() {
+  const pathname = usePathname() ?? "/";
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const menuId = useId();
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // The browser bar follows the landing theme while this page is open.
+  // The browser bar follows the chosen theme.
   useEffect(() => {
-    const meta = document.querySelector('meta[name="theme-color"]');
-    const previous = meta?.getAttribute("content") ?? null;
-    const sync = () =>
-      meta?.setAttribute("content", THEME_COLORS[currentTheme()]);
-    sync();
-    const unsubscribe = subscribeTheme(sync);
-    return () => {
-      unsubscribe();
-      if (meta && previous) meta.setAttribute("content", previous);
+    const sync = () => {
+      for (const meta of document.querySelectorAll('meta[name="theme-color"]'))
+        meta.setAttribute("content", THEME_COLORS[currentTheme()]);
     };
+    sync();
+    return subscribeTheme(sync);
   }, []);
 
   useEffect(() => {
@@ -99,6 +98,13 @@ export function LandingHeader({ theme }: { theme: Theme | null }) {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // A link in the open menu leads to a new page: close the menu on arrival.
+  const [menuPath, setMenuPath] = useState(pathname);
+  if (menuPath !== pathname) {
+    setMenuPath(pathname);
+    setOpen(false);
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -121,7 +127,7 @@ export function LandingHeader({ theme }: { theme: Theme | null }) {
 
   return (
     <header
-      className={styles.header}
+      className={`site-header ${styles.header}`}
       data-scrolled={scrolled || undefined}
       data-open={open || undefined}
     >
@@ -137,15 +143,25 @@ export function LandingHeader({ theme }: { theme: Theme | null }) {
 
           <nav className={styles.links} aria-label="Main navigation">
             {LINKS.map((link) => (
-              <Link key={link.href} href={link.href}>
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={
+                  isCurrent(pathname, link.href) ? "page" : undefined
+                }
+              >
                 {link.label}
               </Link>
             ))}
           </nav>
 
           <div className={styles.end}>
-            <ThemeToggle initial={theme} />
-            <Link href="/play" className={styles.play}>
+            <ThemeToggle />
+            <Link
+              href="/play"
+              className={styles.play}
+              aria-label="Play today's meltdown"
+            >
               Play today
             </Link>
             <button
@@ -173,6 +189,7 @@ export function LandingHeader({ theme }: { theme: Theme | null }) {
             <Link
               key={link.href}
               href={link.href}
+              aria-current={isCurrent(pathname, link.href) ? "page" : undefined}
               onClick={() => setOpen(false)}
             >
               {link.label}

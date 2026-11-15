@@ -49,18 +49,35 @@
 .links {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: clamp(18px, 2.2vw, 30px);
   margin: 0 auto;
 }
 .header .links a {
+  position: relative;
   font-size: 0.95rem;
   font-weight: 450;
   color: var(--lp-ink-2);
   text-decoration: none;
   transition: color 160ms var(--lp-ease);
 }
-.header .links a:hover {
+.header .links a:hover,
+.header .links a[aria-current="page"] {
   color: var(--lp-ink);
+}
+.header .links a[aria-current="page"] {
+  font-weight: 500;
+}
+
+.header .links a[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -9px;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 50%;
+  background: var(--lp-accent);
 }
 
 .end {
@@ -182,6 +199,9 @@
     font-weight: 500;
     color: var(--lp-ink);
     text-decoration: none;
+  }
+  .header .menu a[aria-current="page"] {
+    color: var(--lp-accent-text);
   }
   .header .menu a.menuPlay {
     margin-top: 12px;

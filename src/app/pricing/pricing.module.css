@@ -10,3 +10,22 @@
     flex: 1 1 100%;
   }
 }
+
+/* The booth beside what the pass includes; one column once the pass is open. */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 20px;
+  align-items: start;
+}
+.layout[data-single] {
+  grid-template-columns: minmax(0, 1fr);
+}
+.layout > :global(.pricing-booth) {
+  max-width: none;
+}
+@media (max-width: 899px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

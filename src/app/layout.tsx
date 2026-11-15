@@ -1,10 +1,18 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Instrument_Sans } from "next/font/google";
-import Link from "next/link";
-import { ButtonLink, Wordmark } from "@/components/paper/primitives";
-import { BottomBar, SiteNav } from "@/components/paper/site-nav";
+import { Fraunces, Geist, Instrument_Sans } from "next/font/google";
 import { PaywallHost } from "@/components/paywall/paywall";
+import { SiteFooter } from "@/components/site/site-footer";
+import { SiteHeader } from "@/components/site/site-header";
+import { THEME_SCRIPT } from "@/components/site/theme";
 import "./globals.css";
+
+/* The site is set in Geist. Fraunces and Instrument Sans stay for the
+   paper stage and the play screen. */
+const geist = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist",
+  display: "swap",
+});
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -31,7 +39,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#F4ECDD",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FFFDF9" },
+    { media: "(prefers-color-scheme: dark)", color: "#0D1222" },
+  ],
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -43,48 +54,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${instrument.variable}`}>
-      <body>
+    // The theme script sets data-theme before hydration, and browser
+    // extensions often add attributes to <body>: neither is a real mismatch.
+    <html
+      lang="en"
+      className={`${geist.variable} ${fraunces.variable} ${instrument.variable}`}
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
+      <body suppressHydrationWarning>
         <a className="skip-link" href="#main">
           Skip to content
         </a>
-        <header className="site-header">
-          <Link className="brand" href="/" aria-label="Do-Over home">
-            <Wordmark />
-          </Link>
-          <SiteNav />
-          <ButtonLink
-            className="header-play"
-            href="/play"
-            icon="play"
-            aria-label="Play today's meltdown"
-          >
-            <span className="label-long">Play today&apos;s meltdown</span>
-            <span className="label-short">Play today</span>
-          </ButtonLink>
-        </header>
+        <SiteHeader />
         <main id="main" className="site-main">
           {children}
         </main>
-        <footer className="site-footer">
-          <Link className="brand" href="/" aria-label="Do-Over home">
-            <Wordmark />
-          </Link>
-          <p>Rehearse the hard minute before it happens.</p>
-          <nav aria-label="Footer">
-            <Link href="/scenes">Scenes</Link>
-            <Link href="/how-it-works">How it works</Link>
-            <Link href="/pricing">Season pass</Link>
-            <Link href="/privacy">Privacy</Link>
-            <Link href="/jury">Jury guide</Link>
-          </nav>
-          <p className="disclaimer">
-            Do-Over is a practice tool. It is not therapy, medical advice or a
-            diagnosis. The child is simulated and the scoring is a simplified
-            model.
-          </p>
-        </footer>
-        <BottomBar />
+        <SiteFooter />
         <PaywallHost />
       </body>
     </html>

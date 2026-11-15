@@ -7,6 +7,7 @@ export default function ErrorPage({
 }) {
   return (
     <section className="error-page" role="alert">
+      <p className="kicker">Something went wrong</p>
       <h1>A little interruption.</h1>
       <p>
         This page couldn’t load. Your saved lines and history stay in this

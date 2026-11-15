@@ -40,7 +40,7 @@ export default function JuryPage() {
     },
   ];
   return (
-    <div className="stack" style={{ maxWidth: 820 }}>
+    <div className="stack narrow">
       <header className="page-heading">
         <Kicker accent>Jury guide</Kicker>
         <h1>

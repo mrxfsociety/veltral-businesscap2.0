@@ -337,6 +337,7 @@ export function PaperStage({
     <div
       ref={rootRef}
       className={[styles.stage, className].filter(Boolean).join(" ")}
+      data-paper=""
       data-size={size}
       data-compact={compact || undefined}
       data-muted={mood.muted || undefined}

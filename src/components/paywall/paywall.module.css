@@ -2,6 +2,8 @@
 .dialog {
   width: min(560px, calc(100vw - 24px));
   max-height: calc(100svh - 24px);
+  /* The reset in globals zeroes every margin; a modal dialog centres with auto. */
+  margin: auto;
   padding: 0;
   border: 0;
   border-radius: var(--radius-3);
@@ -176,5 +178,100 @@
 @media (prefers-reduced-motion: reduce) {
   .dialog[open] {
     animation: none;
+  }
+}
+
+/* ─── Veltral skin: every page except the play screen ─────────── */
+:global(body:not(:has([data-stage-mode]))) .dialog {
+  border: 1px solid var(--lp-line);
+  border-radius: 28px;
+  background: var(--lp-widget);
+  box-shadow: var(--lp-shadow);
+}
+:global(body:not(:has([data-stage-mode]))) .dialog::backdrop {
+  background: rgb(13 18 34 / 0.5);
+  backdrop-filter: blur(4px);
+}
+:global(body:not(:has([data-stage-mode]))) .dialog[open] {
+  animation-name: rise;
+  animation-duration: 420ms;
+  animation-timing-function: var(--lp-ease);
+}
+:global(body:not(:has([data-stage-mode]))) .awning {
+  height: 6px;
+  background: linear-gradient(90deg, #1b2440, #3a3567 48%, #c2522b);
+}
+:global(body:not(:has([data-stage-mode]))) .close {
+  top: 18px;
+  right: 16px;
+  border-radius: 50%;
+}
+:global(body:not(:has([data-stage-mode]))) .close:hover {
+  background: var(--lp-hover);
+}
+:global(body:not(:has([data-stage-mode]))) .booth {
+  gap: 16px;
+  padding: 28px;
+}
+:global(body:not(:has([data-stage-mode]))) .includes {
+  gap: 9px;
+}
+:global(body:not(:has([data-stage-mode]))) .includes svg {
+  color: var(--lp-accent);
+}
+:global(body:not(:has([data-stage-mode]))) .price {
+  gap: 4px;
+  padding: 14px 16px 16px;
+  border: 1px solid var(--lp-line-strong);
+  border-radius: 16px;
+  background: var(--lp-bg);
+  box-shadow: none;
+}
+:global(body:not(:has([data-stage-mode]))) .price[data-best] {
+  border-color: var(--lp-accent);
+  box-shadow: 0 0 0 3px var(--lp-accent-soft);
+  rotate: none;
+}
+:global(body:not(:has([data-stage-mode]))) .priceLabel {
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--lp-ink-2);
+}
+:global(body:not(:has([data-stage-mode]))) .amount {
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.05em;
+}
+:global(body:not(:has([data-stage-mode]))) .testNotice {
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--lp-warn-soft);
+}
+:global(body:not(:has([data-stage-mode]))) .code {
+  padding-top: 16px;
+  border-top: 1px solid var(--lp-line);
+}
+:global(body:not(:has([data-stage-mode]))) .codeRow input::placeholder {
+  letter-spacing: 0;
+  text-transform: none;
+}
+:global(body:not(:has([data-stage-mode]))) .error {
+  color: var(--lp-accent-text);
+}
+:global(body:not(:has([data-stage-mode]))) .booth[data-open] h2 {
+  color: var(--lp-good);
+}
+@media (max-width: 480px) {
+  :global(body:not(:has([data-stage-mode]))) .booth {
+    padding: 22px 20px;
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
   }
 }

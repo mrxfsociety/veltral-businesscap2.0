@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function ReplayPage() {
   return (
-    <div className="stack">
+    <div className="stack narrow">
       <header className="page-heading">
         <p className="kicker">It happened. You can rehearse it.</p>
         <h1>Replay your own meltdown.</h1>

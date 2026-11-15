@@ -2,121 +2,16 @@
    Landing page — Veltral, light and dark.
    One family, Geist, with tight display tracking. Navy carries the
    text, brick is the accent, cream is the card surface.
-   Every colour lives in the --lp-* tokens on the root, so the paper
-   stage inside the page keeps its own tokens. Text pairs pass WCAG AA
-   in both themes.
+   Colours come from the --lp-* tokens in globals.css (light and dark);
+   the paper stage inside the page keeps its own tokens.
    ─────────────────────────────────────────────────────────────── */
 .landing {
-  --lp-bg: #fffdf9;
-  --lp-card: #f6f2ea;
-  --lp-widget: #fffefb;
-  --lp-ink: #141b33;
-  --lp-ink-2: #5a6074;
-  --lp-ink-3: #6b7185;
-  --lp-line: rgb(20 27 51 / 0.08);
-  --lp-line-strong: rgb(20 27 51 / 0.16);
-  --lp-hover: rgb(20 27 51 / 0.05);
-  --lp-accent: #c2522b;
-  --lp-accent-text: #a8431f;
-  --lp-accent-soft: rgb(194 82 43 / 0.1);
-  --lp-btn: #b84b25;
-  --lp-btn-hover: #9f401f;
-  --lp-on-btn: #ffffff;
-  --lp-good: #23675f;
-  --lp-good-soft: rgb(35 103 95 / 0.12);
-  --lp-dark: #141b33;
-  --lp-dark-ink: #f4efe4;
-  --lp-dark-ink-2: #b6bbcb;
-  --lp-shadow-sm:
-    0 1px 2px rgb(20 27 51 / 0.05), 0 4px 12px -4px rgb(20 27 51 / 0.08);
-  --lp-shadow:
-    0 2px 4px rgb(20 27 51 / 0.04), 0 24px 48px -16px rgb(20 27 51 / 0.18);
-  --lp-btn-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.22), 0 1px 2px rgb(20 27 51 / 0.18),
-    0 8px 20px -8px rgb(184 75 37 / 0.55);
-  --lp-sun-on: 0;
-
-  --lp-max: 1200px;
-  --lp-pad: clamp(20px, 4vw, 32px);
-  --lp-ease: cubic-bezier(0.22, 0.8, 0.2, 1);
-  --lp-sans:
-    var(--font-geist), "Geist", ui-sans-serif, "Segoe UI", "Helvetica Neue",
-    sans-serif;
-
-  min-height: 100svh;
   overflow-x: clip;
   background: var(--lp-bg);
   color: var(--lp-ink);
   font-family: var(--lp-sans);
   font-size: 1rem;
   line-height: 1.55;
-  -webkit-font-smoothing: antialiased;
-  transition:
-    background-color 320ms var(--lp-ease),
-    color 320ms var(--lp-ease);
-}
-
-.landing[data-theme="dark"] {
-  --lp-bg: #0d1222;
-  --lp-card: #141a2e;
-  --lp-widget: #1a2139;
-  --lp-ink: #f4efe4;
-  --lp-ink-2: #a3a9bb;
-  --lp-ink-3: #8c92a6;
-  --lp-line: rgb(244 239 228 / 0.08);
-  --lp-line-strong: rgb(244 239 228 / 0.16);
-  --lp-hover: rgb(244 239 228 / 0.06);
-  --lp-accent: #e8794a;
-  --lp-accent-text: #ee8b60;
-  --lp-accent-soft: rgb(232 121 74 / 0.15);
-  --lp-btn: #e8794a;
-  --lp-btn-hover: #f08c61;
-  --lp-on-btn: #10162a;
-  --lp-good: #74c7b9;
-  --lp-good-soft: rgb(116 199 185 / 0.14);
-  --lp-dark: #1c2546;
-  --lp-dark-ink: #f4efe4;
-  --lp-dark-ink-2: #b6bbcb;
-  --lp-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 12px -4px rgb(0 0 0 / 0.4);
-  --lp-shadow: 0 24px 48px -16px rgb(0 0 0 / 0.6);
-  --lp-btn-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.25), 0 8px 20px -8px rgb(232 121 74 / 0.5);
-  --lp-sun-on: 1;
-  color-scheme: dark;
-}
-
-/* No stored choice: follow the system. Same values as [data-theme="dark"]. */
-@media (prefers-color-scheme: dark) {
-  .landing:not([data-theme="light"]) {
-    --lp-bg: #0d1222;
-    --lp-card: #141a2e;
-    --lp-widget: #1a2139;
-    --lp-ink: #f4efe4;
-    --lp-ink-2: #a3a9bb;
-    --lp-ink-3: #8c92a6;
-    --lp-line: rgb(244 239 228 / 0.08);
-    --lp-line-strong: rgb(244 239 228 / 0.16);
-    --lp-hover: rgb(244 239 228 / 0.06);
-    --lp-accent: #e8794a;
-    --lp-accent-text: #ee8b60;
-    --lp-accent-soft: rgb(232 121 74 / 0.15);
-    --lp-btn: #e8794a;
-    --lp-btn-hover: #f08c61;
-    --lp-on-btn: #10162a;
-    --lp-good: #74c7b9;
-    --lp-good-soft: rgb(116 199 185 / 0.14);
-    --lp-dark: #1c2546;
-    --lp-dark-ink: #f4efe4;
-    --lp-dark-ink-2: #b6bbcb;
-    --lp-shadow-sm:
-      0 1px 2px rgb(0 0 0 / 0.3), 0 4px 12px -4px rgb(0 0 0 / 0.4);
-    --lp-shadow: 0 24px 48px -16px rgb(0 0 0 / 0.6);
-    --lp-btn-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.25),
-      0 8px 20px -8px rgb(232 121 74 / 0.5);
-    --lp-sun-on: 1;
-    color-scheme: dark;
-  }
 }
 
 /* ─── base inside the landing ─────────────────────────────────── */
@@ -1188,74 +1083,6 @@
   rotate: 7deg;
 }
 
-/* ─── footer ──────────────────────────────────────────────────── */
-.footer {
-  border-top: 1px solid var(--lp-line);
-}
-.footTop,
-.footBottom {
-  width: 100%;
-  max-width: var(--lp-max);
-  margin-inline: auto;
-  padding-inline: var(--lp-pad);
-}
-.footTop {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
-  gap: 40px;
-  padding-block: 56px 40px;
-}
-.landing .footBrand p {
-  max-width: 22rem;
-  margin-top: 16px;
-  color: var(--lp-ink-2);
-}
-.landing .footLogo {
-  display: inline-flex;
-  border-radius: 8px;
-  color: var(--lp-ink);
-}
-.footLogo svg {
-  display: block;
-  width: auto;
-  height: 28px;
-}
-.footCol {
-  display: grid;
-  align-content: start;
-  gap: 10px;
-}
-.landing .footCol p {
-  margin-bottom: 6px;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-.landing .footCol a {
-  justify-self: start;
-  font-size: 0.95rem;
-  color: var(--lp-ink-2);
-  text-decoration: none;
-}
-.landing .footCol a:hover {
-  color: var(--lp-ink);
-}
-.footBottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 32px;
-  padding-block: 24px calc(32px + env(safe-area-inset-bottom));
-  border-top: 1px solid var(--lp-line);
-  font-size: 0.82rem;
-  color: var(--lp-ink-3);
-}
-.footBottom p:first-child {
-  max-width: 64ch;
-}
-.footBottom p:last-child {
-  white-space: nowrap;
-}
-
 /* ─── reveal on scroll (only once motion code runs) ───────────── */
 .landing[data-motion] [data-reveal] {
   transition:
@@ -1410,16 +1237,6 @@
     padding: 64px 20px;
     border-radius: 24px;
   }
-  .footTop {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .footBrand {
-    grid-column: 1 / -1;
-  }
-  .footBottom {
-    flex-direction: column;
-    gap: 10px;
-  }
 }
 
 /* ─── motion ──────────────────────────────────────────────────── */
@@ -1453,7 +1270,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing,
   .landing .heroPill,
   .heroCopy h1,
   .landing .lede,

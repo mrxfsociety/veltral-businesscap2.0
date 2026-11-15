@@ -1,6 +1,4 @@
 import type { ReactNode } from "react";
-import { Geist } from "next/font/google";
-import { cookies } from "next/headers";
 import Link from "next/link";
 import { applyTurn, initialState, ruleTags } from "@/engine";
 import {
@@ -19,20 +17,12 @@ import { formatDelta, ledgerFor } from "@/components/play/takes";
 import { quoteSegments } from "@/components/play/quotes";
 import { Icon, type IconName } from "@/components/paper/icons";
 import { PaperStage } from "@/components/stage/paper-stage";
-import { LandingHeader } from "@/components/landing/landing-header";
 import { LandingMotion } from "@/components/landing/motion";
 import { Plans } from "@/components/landing/plans";
-import { parseTheme, THEME_COOKIE } from "@/components/landing/theme";
-import { VeltralLogo, VeltralMark } from "@/components/landing/veltral-logo";
+import { VeltralMark } from "@/components/site/veltral-logo";
 import styles from "./landing.module.css";
 
 export const dynamic = "force-dynamic";
-
-const geist = Geist({
-  subsets: ["latin"],
-  variable: "--font-geist",
-  display: "swap",
-});
 
 /** One sample reply, scored by the real engine (rules only) on every request. */
 const SAMPLE_SCENE = "playground-leave";
@@ -123,8 +113,7 @@ function Head({
   );
 }
 
-export default async function Home() {
-  const theme = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
+export default function Home() {
   const key = dayKey(new Date());
   const today = sceneOfTheDay(key);
   const number = dayNumber(key);
@@ -143,15 +132,9 @@ export default async function Home() {
   const firstMove = ledger.rows.find((row) => row.kind === "tag");
   const segments = quoteSegments(SAMPLE_REPLY, hits);
   const sampleHelpful = result.tags.filter((tag) => isHelpfulTag(tag));
-  const year = new Date().getFullYear();
 
   return (
-    <div
-      className={`${styles.landing} ${geist.variable}`}
-      data-landing=""
-      data-theme={theme ?? undefined}
-    >
-      <LandingHeader theme={theme} />
+    <div className={styles.landing} data-landing="">
       <LandingMotion />
 
       {/* ─── hero ───────────────────────────────────────────────── */}
@@ -719,44 +702,6 @@ export default async function Home() {
           </Link>
         </div>
       </section>
-
-      {/* ─── footer ────────────────────────────────────────────── */}
-      <footer className={styles.footer}>
-        <div className={styles.footTop}>
-          <div className={styles.footBrand}>
-            <Link
-              href="/"
-              className={styles.footLogo}
-              aria-label="Do-Over by Veltral, home"
-            >
-              <VeltralLogo />
-            </Link>
-            <p>Rehearse the hardest minute of parenting before it happens.</p>
-          </div>
-          <nav aria-label="Rehearse" className={styles.footCol}>
-            <p>Rehearse</p>
-            <Link href="/play">Today&apos;s scene</Link>
-            <Link href="/scenes">Scenes</Link>
-            <Link href="/progress">Progress</Link>
-            <Link href="/playbook">Your lines</Link>
-          </nav>
-          <nav aria-label="Learn" className={styles.footCol}>
-            <p>Learn</p>
-            <Link href="/how-it-works">How it works</Link>
-            <Link href="/pricing">Season pass</Link>
-            <Link href="/privacy">Privacy</Link>
-            <Link href="/jury">Jury guide</Link>
-          </nav>
-        </div>
-        <div className={styles.footBottom}>
-          <p>
-            Do-Over is a practice tool. It is not therapy, medical advice or a
-            diagnosis. The child is simulated and the scoring is a simplified
-            model.
-          </p>
-          <p>© {year} Veltral</p>
-        </div>
-      </footer>
     </div>
   );
 }
