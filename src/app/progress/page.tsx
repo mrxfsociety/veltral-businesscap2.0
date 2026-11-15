@@ -10,33 +10,27 @@ export const metadata: Metadata = {
     "Your streak, level, this week's plan, your moves and your slips, from practice on this device.",
 };
 
-/** Tips are written for a scene; outside one, the slots get neutral placeholders. */
+/** Tips keep their {slots}; the page fills them from the parent's own history. */
 function readTips(): Record<string, Tip> {
   try {
-    const raw = JSON.parse(
+    return JSON.parse(
       readFileSync(join(process.cwd(), "content/tips.json"), "utf8"),
-    ) as Record<string, { why: string; tryInstead: string }>;
-    const neutral = (text: string) =>
-      text
-        .replaceAll("{childName}", "[name]")
-        .replaceAll("{limit}", "[the limit]")
-        .replaceAll("{wants}", "[what they wanted]");
-    return Object.fromEntries(
-      Object.entries(raw).map(([tag, tip]) => [
-        tag,
-        { why: tip.why, tryInstead: neutral(tip.tryInstead) },
-      ]),
-    );
+    ) as Record<string, Tip>;
   } catch {
     return {};
   }
 }
 
 export default function ProgressPage() {
-  const scenes = getPublicScenes().map(({ id, title, temperament }) => ({
-    id,
-    title,
-    temperament,
-  }));
+  const scenes = getPublicScenes().map(
+    ({ id, title, temperament, childName, limit, wants }) => ({
+      id,
+      title,
+      temperament,
+      childName,
+      limit,
+      wants,
+    }),
+  );
   return <Progress tips={readTips()} scenes={scenes} />;
 }

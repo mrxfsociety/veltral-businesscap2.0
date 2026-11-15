@@ -1,6 +1,7 @@
 import tipsData from "../../../content/tips.json";
 import { TAGS, UNHELPFUL } from "@/engine/tags";
 import type { PublicScene, Tag, TurnResult } from "@/engine/types";
+import { fillTipSlots } from "@/lib/tip-slots";
 
 export type FreeTip = { tag: Tag; why: string; tryInstead: string };
 
@@ -12,10 +13,11 @@ export function fillTip(
   text: string,
   scene: Pick<PublicScene, "childName" | "wants" | "limit">,
 ): string {
-  return text.replace(
-    /\{(wants|childName|limit)\}/g,
-    (_match, key: "wants" | "childName" | "limit") => scene[key],
-  );
+  return fillTipSlots(text, {
+    childName: scene.childName,
+    wants: scene.wants,
+    limit: scene.limit,
+  });
 }
 
 /**
