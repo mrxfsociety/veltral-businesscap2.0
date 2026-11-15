@@ -240,6 +240,56 @@ const PRICES = {
   yearly: { cents: 5999, interval: "year" as const },
 };
 
+/*
+ * Stripe's hosted page in the site's own look (light theme of the Veltral
+ * design: page #fffdf9, button #b84b25, pill buttons; Inter is Stripe's closest
+ * font to Geist). Prices stay in USD as on /pricing, the page stays in English
+ * like the site, and the test card is named right above Stripe's button.
+ */
+export const CHECKOUT_BRANDING = {
+  display_name: "Do-Over",
+  background_color: "#fffdf9",
+  button_color: "#b84b25",
+  border_style: "pill",
+  font_family: "inter",
+} as const;
+
+export const CHECKOUT_SUBMIT_NOTE =
+  "Test mode. No real charge. Card 4242 4242 4242 4242, any future date, any CVC.";
+
+export function checkoutSessionParams(
+  plan: keyof typeof PRICES,
+  origin: string,
+): Stripe.Checkout.SessionCreateParams {
+  const price = PRICES[plan];
+  return {
+    mode: "subscription",
+    // Card only: the test card is the one path the notice names.
+    allowed_payment_method_types: ["card"],
+    line_items: [
+      {
+        quantity: 1,
+        price_data: {
+          currency: "usd",
+          unit_amount: price.cents,
+          recurring: { interval: price.interval },
+          product_data: {
+            name: `Do-Over season pass (${plan})`,
+            description: "Test mode. No real charge.",
+          },
+        },
+      },
+    ],
+    subscription_data: { trial_period_days: 7 },
+    adaptive_pricing: { enabled: false },
+    locale: "en",
+    branding_settings: { ...CHECKOUT_BRANDING },
+    custom_text: { submit: { message: CHECKOUT_SUBMIT_NOTE } },
+    success_url: `${origin}/api/checkout/confirm?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}/pricing`,
+  };
+}
+
 export function createEntitlementHandlers() {
   return {
     entitlement: route(async (request) =>
@@ -283,29 +333,11 @@ export function createEntitlementHandlers() {
           "entitlement_unavailable",
           "The season pass is not configured on this server yet.",
         );
-      const price = PRICES[plan];
       const origin = siteOrigin(request);
       const stripe = new Stripe(key);
-      const session = await stripe.checkout.sessions.create({
-        mode: "subscription",
-        line_items: [
-          {
-            quantity: 1,
-            price_data: {
-              currency: "usd",
-              unit_amount: price.cents,
-              recurring: { interval: price.interval },
-              product_data: {
-                name: `Do-Over season pass (${plan})`,
-                description: "Test mode. No real charge.",
-              },
-            },
-          },
-        ],
-        subscription_data: { trial_period_days: 7 },
-        success_url: `${origin}/api/checkout/confirm?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/pricing`,
-      });
+      const session = await stripe.checkout.sessions.create(
+        checkoutSessionParams(plan, origin),
+      );
       if (!session.url)
         throw new ApiError(
           502,

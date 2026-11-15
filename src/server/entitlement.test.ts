@@ -1,6 +1,9 @@
 import { createHmac } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  CHECKOUT_BRANDING,
+  CHECKOUT_SUBMIT_NOTE,
+  checkoutSessionParams,
   codeMatches,
   COOKIE_NAME,
   createEntitlementHandlers,
@@ -64,6 +67,41 @@ describe("signed pass", () => {
     ).toString("base64url");
     const sig = createHmac("sha256", SECRET).update(body).digest("base64url");
     expect(verifyPass(`${body}.${sig}`, SECRET, now)).toBeNull();
+  });
+});
+
+describe("checkout session", () => {
+  it("is a 7-day-trial subscription at the /pricing prices, in USD", () => {
+    const monthly = checkoutSessionParams("monthly", "https://example.test");
+    const yearly = checkoutSessionParams("yearly", "https://example.test");
+    expect(monthly.mode).toBe("subscription");
+    expect(monthly.subscription_data?.trial_period_days).toBe(7);
+    const m = monthly.line_items?.[0].price_data;
+    const y = yearly.line_items?.[0].price_data;
+    expect([m?.unit_amount, m?.recurring?.interval, m?.currency]).toEqual([
+      999,
+      "month",
+      "usd",
+    ]);
+    expect([y?.unit_amount, y?.recurring?.interval]).toEqual([5999, "year"]);
+    expect(monthly.adaptive_pricing?.enabled).toBe(false);
+    expect(monthly.allowed_payment_method_types).toEqual(["card"]);
+  });
+
+  it("returns to confirm, cancels to /pricing, and wears the site's look", () => {
+    const params = checkoutSessionParams("monthly", "https://example.test");
+    expect(params.success_url).toBe(
+      "https://example.test/api/checkout/confirm?session_id={CHECKOUT_SESSION_ID}",
+    );
+    expect(params.cancel_url).toBe("https://example.test/pricing");
+    expect(params.branding_settings).toEqual(CHECKOUT_BRANDING);
+    expect(params.branding_settings?.display_name).toBe("Do-Over");
+    expect(params.locale).toBe("en");
+    const submit = params.custom_text?.submit;
+    expect(submit && typeof submit === "object" ? submit.message : null).toBe(
+      CHECKOUT_SUBMIT_NOTE,
+    );
+    expect(CHECKOUT_SUBMIT_NOTE).toContain("4242 4242 4242 4242");
   });
 });
 
