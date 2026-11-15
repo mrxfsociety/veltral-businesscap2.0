@@ -7,7 +7,7 @@
   </a>
 </p>
 
-<h1 align="center">Do-Over</h1>
+<h1 align="center">Veltral</h1>
 
 <p align="center">
   <strong>A meltdown simulator for parents of 2–7 year olds.</strong><br>
