@@ -98,6 +98,7 @@ Owns: `deck/**`.
 Owns for this pass: `src/components/play/{turn-slip,takes,debrief,free-tip,play-experience}*`, `src/app/progress/**`, `src/lib/progress*.ts`, `src/llm/customScene.ts`, `src/app/replay/**`, `src/app/scenes/**`. Not touched: paywall, pricing, pro, checkout, entitlement.
 
 - [x] 1. Ledger adds up: whole-number rows, rule rows from the engine's notes (empathy and the limit −6/−3, the limit alone +3, nothing helpful +3, the earlier bribe +5), a labelled cap row; rows sum to `result.delta` on all 37 golden vectors (`takes.test.ts`)
+- [x] 2. Free "try instead" on the turning point: for a Free player, the fixed tip (`content/tips.json`) for the turning point's worst unhelpful move, filled with the scene, and "Do-over from here with this" that rewinds and pre-fills the reply (`free-tip.ts`, tested); the coach stays in the season pass
 
 ---
 

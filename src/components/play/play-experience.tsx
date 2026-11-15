@@ -814,7 +814,7 @@ export function PlayExperience({
   }
 
   const redo = useCallback(
-    (index: number) => {
+    (index: number, prefill?: string) => {
       cancelVoice();
       clearBeats();
       pendingEnd.current = false;
@@ -844,6 +844,20 @@ export function PlayExperience({
       setClockWaiting(Boolean(timer));
       setClockTotal(timer || 8);
       setRemaining(timer || null);
+      if (prefill) {
+        // A suggested line counts as typed: the clock gives the typing allowance.
+        replyRef.current = prefill.slice(0, 300);
+        setReply(replyRef.current);
+        typedRef.current = true;
+        setTypingStarted(true);
+        armPending.current = false;
+        setClockWaiting(false);
+        if (timer) {
+          deadlineRef.current = Date.now() + 25000;
+          setClockTotal(25);
+          setRemaining(25);
+        }
+      }
       setPhase("playing");
       setClapper(nextTake);
       paperSound().rustle();

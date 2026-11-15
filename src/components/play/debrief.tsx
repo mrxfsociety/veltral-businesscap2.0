@@ -23,6 +23,7 @@ import {
   Kicker,
   Stamp,
 } from "@/components/paper/primitives";
+import { freeTipFor, type FreeTip } from "./free-tip";
 import { formatDelta, shiftSentence } from "./takes";
 import { TurnSlip } from "./turn-slip";
 import styles from "./play.module.css";
@@ -101,6 +102,33 @@ function Coach({
         )}
       </div>
     </ProGate>
+  );
+}
+
+/** Free: the fixed tip for the turning point's worst move, and a do-over that starts with it. */
+function TryInstead({
+  tip,
+  onRedo,
+}: {
+  tip: FreeTip;
+  onRedo: (line: string) => void;
+}) {
+  return (
+    <div className={styles.tryInstead} data-testid="try-instead">
+      <p className={styles.tryInsteadKicker}>
+        <Icon name="rewind" size={14} /> {tagLabel(tip.tag)}: try instead
+      </p>
+      <p className={styles.tryInsteadWhy}>{tip.why}</p>
+      <p className={styles.tryInsteadLine}>“{tip.tryInstead}”</p>
+      <Button
+        variant="ink"
+        size="small"
+        icon="rewind"
+        onClick={() => onRedo(tip.tryInstead)}
+      >
+        Do-over from here with this
+      </Button>
+    </div>
   );
 }
 
@@ -248,13 +276,14 @@ export function Debrief({
   turnTakes: number[];
   /** Turns a do-over replaced, by turn index (memory only). */
   replaced: Record<number, ReplacedTake>;
-  onRedo: (index: number) => void;
+  onRedo: (index: number, prefill?: string) => void;
   onRestart: () => void;
   tomorrow?: string | null;
   realTimeInvite?: boolean;
   onRealTime?: () => void;
 }) {
   const reduce = useReducedMotion();
+  const { pro } = usePro();
   const [shared, setShared] = useState("");
   const [copyFailed, setCopyFailed] = useState(false);
   const [leaving, setLeaving] = useState<number | null>(null);
@@ -269,6 +298,11 @@ export function Debrief({
   );
   const standing =
     session.kind === "daily" && !final.usedDoOver ? final.daily : null;
+  const turningIndex = score?.turningPoint ?? -1;
+  const freeTip =
+    !pro && turns[turningIndex]
+      ? freeTipFor(turns[turningIndex].result, scene)
+      : null;
   const comparisons = Object.entries(replaced)
     .map(([index, old]) => ({ index: Number(index), old }))
     .filter(({ index }) => turns[index])
@@ -288,15 +322,15 @@ export function Debrief({
     }
   }
 
-  function redoFrom(index: number) {
+  function redoFrom(index: number, prefill?: string) {
     if (leaving !== null) return;
     if (reduce) {
-      onRedo(index);
+      onRedo(index, prefill);
       return;
     }
     setLeaving(index);
     window.setTimeout(() => {
-      onRedo(index);
+      onRedo(index, prefill);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }, 380);
   }
@@ -479,6 +513,12 @@ export function Debrief({
                 <SaveLine turn={turn} sceneTitle={session.scene.title} />
               )}
             </div>
+            {freeTip && index === turningIndex && (
+              <TryInstead
+                tip={freeTip}
+                onRedo={(line) => redoFrom(index, line)}
+              />
+            )}
             {index === largestRise && turn.result.delta > 0 && (
               <Coach sessionId={session.sessionId} turnIndex={turn.turnIndex} />
             )}
