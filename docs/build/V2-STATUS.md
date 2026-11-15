@@ -8,6 +8,60 @@ Rules: own paths only (REDESIGN section 10). `npm run verify` before every push.
 
 ## Operator notes (production)
 
+### DEPLOY — 15 November 2026, 11:38 Astana — Veltral + Stripe test checkout
+
+**Production is exactly `1e68e76ae1d9f9793d6d4617ae76a64fc287a259`; Stripe test checkout is working end to end.** Both `origin/main` and `origin/v2` resolved to this commit before deployment. No application code was edited in this deployment session. The requested earlier rename release `a22f50c` was deployed first, then superseded by this explicitly requested final commit.
+
+- Environment backup before adding the operator-supplied test key: `/opt/do-over/shared/.env.bak.113432`.
+- Exactly one `STRIPE_SECRET_KEY` line was installed, through SSH standard input without putting the key in a command argument or local file. All non-Stripe environment bytes were compared against the backup and are unchanged, including `ENTITLEMENT_SECRET`, `OPENAI_*`, `NEXT_PUBLIC_PRO_PREVIEW=false`, `DEMO_CODE=ENCORE`, and `SITE_URL`. The public key did not need a separate application setting.
+- Runtime check confirmed that the key reached the web container. An ENCORE pass opened before deployment remained valid afterward, confirming that the existing entitlement secret was preserved.
+- Compose backup: `/opt/do-over/infra/compose.yml.bak.113458`. Deployed through the existing `deploy-main.sh`, not a bare compose command. Web and Redis are healthy. One brief 502 during container replacement cleared on the next health retry; no rollback was needed.
+
+Required server output:
+
+```text
+STRIPE_SECRET_KEY=sk_test_
+Healthy commit: 1e68e76ae1d9f9793d6d4617ae76a64fc287a259
+```
+
+Health was confirmed by the deployment script at **11:36:28 Astana**. External checks from the operator's Mac:
+
+`GET /api/health`:
+
+```json
+{"ok":true,"commit":"1e68e76ae1d9f9793d6d4617ae76a64fc287a259","time":"2026-11-15T06:36:25.026Z","redis":"up","providers":{"openai":true,"anthropic":false},"proPreview":false}
+```
+
+`GET /api/entitlement` in a fresh session:
+
+```json
+{"pro":false,"source":null,"checkout":"stripe_test","demoCode":"ENCORE"}
+```
+
+`POST /api/checkout` with `{"plan":"monthly"}` returned **HTTP 200** and a real Stripe test checkout URL. The session-specific URL is abbreviated here (not an API key):
+
+```json
+{"url":"https://checkout.stripe.com/g/pay/cs_test_…"}
+```
+
+**Real private-browser checkout — PASS:** `/pricing` → Start 7-day trial → hosted Stripe page headed **Veltral**, product **Veltral season pass (monthly)**, **7 days free**, then **$9.99 per month** in USD. Entered the supplied 4242 test card, 12/34, test CVC, a QA name and an `@example.com` email; completed Start trial. Redirected to `/pro/welcome`, which displayed **Season pass active (test mode)**. Entitlement became:
+
+```json
+{"pro":true,"source":"stripe_test","checkout":"stripe_test","demoCode":"ENCORE"}
+```
+
+The previously locked car-seat scene started successfully. `/pricing` → **Return to Free** returned `pro:false, source:null`; a fresh car-seat session request returned **402** again. No real charge was made.
+
+Other checks: pricing title ends in Veltral; manifest name is `Veltral — rehearse the hard minute`; `/opengraph-image` returns HTTP 200, `image/png`; pricing has no horizontal overflow at 375×812; no console or page errors captured. Stripe's authorization text still identifies the underlying account as **Sandagrip sandbox**; the hosted page header and product display Veltral. Account legal naming was not changed.
+
+**Verification:** `npm ci && npm run verify` PASS: lint, typecheck, **589 tests passed**, four opt-in Redis integration tests skipped, all five evaluation gates PASS, production build PASS. Generated evaluation files were backed up and restored. This report is pushed only to `v2`; it does not redeploy production.
+
+Requested rollback reference (not executed):
+
+```sh
+cd /opt/do-over && ./deploy-main.sh b3ff6303448dba2618a3a4599012ad87fd405392
+```
+
 ### DEPLOY — 15 November 2026, 11:16 Astana (UTC+05:00)
 
 **Final production commit: `b3ff6303448dba2618a3a4599012ad87fd405392`.** The new Veltral design from `17978a5` is live, including the complete `v2` history and a narrowly scoped model-tagging correction. Healthy deployment confirmed at **11:13:30 Astana**. Production: https://veltral.aituconnect.kz.
