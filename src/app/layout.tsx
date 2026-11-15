@@ -31,8 +31,8 @@ const instrument = Instrument_Sans({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.SITE_URL ?? "http://localhost:3000"),
   title: {
-    default: "Do-Over — rehearse the hardest minute of parenting",
-    template: "%s · Do-Over",
+    default: "Veltral — rehearse the hardest minute of parenting",
+    template: "%s · Veltral",
   },
   description:
     "A paper stage where parents rehearse a toddler meltdown, see what their words did, and take it again. No account needed.",

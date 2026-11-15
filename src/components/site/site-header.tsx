@@ -133,11 +133,7 @@ export function SiteHeader() {
     >
       <div className={styles.shell}>
         <div className={styles.bar}>
-          <Link
-            href="/"
-            className={styles.logo}
-            aria-label="Do-Over by Veltral, home"
-          >
+          <Link href="/" className={styles.logo} aria-label="Veltral, home">
             <VeltralLogo title="Veltral" />
           </Link>
 

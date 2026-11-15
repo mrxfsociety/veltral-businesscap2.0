@@ -266,7 +266,7 @@ describe("browser store", () => {
     unsubscribeSecond();
   });
 
-  it("clears only Do-Over data", () => {
+  it("clears only Veltral data", () => {
     storage.set("another-app", "keep");
     updateStore({ waitlistJoined: true });
     saveHistory(historyEntry);

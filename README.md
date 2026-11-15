@@ -184,7 +184,7 @@ The teaching model behind the numbers is simple and shown on [/how-it-works](htt
     <td valign="top">
       <h3>A scene in three minutes</h3>
       <ul>
-        <li><strong>A new shared scene every day,</strong> the numbered “Do-Over”, with a par, stars and a streak.</li>
+        <li><strong>A new shared scene every day</strong> with a par, stars and a streak.</li>
         <li><strong>Three paces:</strong> 20 seconds for a first run, 8 seconds as in real life, or no timer. The clock waits while the tab is hidden.</li>
         <li><strong>The script:</strong> every turn with its stamps, ledger and notes. The turning point is flagged, and a free “try instead” line on your worst turn can be replayed with one press.</li>
         <li><strong>Replay your own:</strong> describe a real meltdown from today in a sentence or two and rehearse it as a new scene.</li>
@@ -193,7 +193,7 @@ The teaching model behind the numbers is simple and shown on [/how-it-works](htt
         <li><strong>Built for a phone first,</strong> with light and dark themes, keyboard play, screen-reader announcements and reduced-motion support.</li>
       </ul>
       A spoiler-free result to share:
-      <pre>Do-Over #2 · Leaving the playground
+      <pre>Veltral #2 · Leaving the playground
 🟥🟩🟩🟩 Calm in 4 (par 3) ★★</pre>
     </td>
   </tr>

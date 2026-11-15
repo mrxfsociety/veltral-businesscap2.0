@@ -193,7 +193,7 @@ export function Kicker({
   );
 }
 
-/** The Do-Over lockup (authored by BRAND in public/brand). Decorative: wrap it in a labelled link. */
+/** The Veltral lockup (authored by BRAND in public/brand). Decorative: wrap it in a labelled link. */
 export function Wordmark({
   className,
   height = 30,

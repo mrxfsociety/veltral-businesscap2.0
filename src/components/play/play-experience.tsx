@@ -1499,7 +1499,7 @@ export function PlayExperience({
         </Link>
         <p className={styles.topTitle}>
           {isDaily
-            ? `Do-Over #${session?.dayNumber ?? daily?.dayNumber ?? ""} · ${activeScene.title}`
+            ? `Veltral #${session?.dayNumber ?? daily?.dayNumber ?? ""} · ${activeScene.title}`
             : custom
               ? `Your own do-over · ${activeScene.title}`
               : activeScene.title}
@@ -1537,7 +1537,7 @@ export function PlayExperience({
               par={par}
               kicker={
                 isDaily
-                  ? `Do-Over #${daily?.dayNumber ?? ""} · Today's meltdown`
+                  ? `Veltral #${daily?.dayNumber ?? ""} · Today's meltdown`
                   : custom
                     ? "Your own do-over"
                     : "A little room to rehearse"

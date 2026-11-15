@@ -296,7 +296,7 @@ export function createEntitlementHandlers() {
               unit_amount: price.cents,
               recurring: { interval: price.interval },
               product_data: {
-                name: `Do-Over season pass (${plan})`,
+                name: `Veltral season pass (${plan})`,
                 description: "Test mode. No real charge.",
               },
             },

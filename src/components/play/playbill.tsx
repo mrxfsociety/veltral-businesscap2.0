@@ -20,7 +20,7 @@ export const PACES: { value: Pace; label: string; hint: string }[] = [
 ];
 
 export const DISCLAIMER =
-  "Do-Over is a practice tool. It is not therapy, medical advice or a diagnosis. The child is simulated and the scoring is a simplified model.";
+  "Veltral is a practice tool. It is not therapy, medical advice or a diagnosis. The child is simulated and the scoring is a simplified model.";
 
 /** A paper playbill pinned to the closed curtains. */
 export function Playbill({

@@ -38,7 +38,7 @@ export function buildShareText({
         ? `Gave in on turn ${turns}`
         : `Not calm after ${turns}`;
   const number = dayNumber === undefined ? "" : ` #${dayNumber}`;
-  return `Do-Over${number} · ${sceneTitle}\n${squares} ${ending} ${"★".repeat(score.stars)}\n${url}`;
+  return `Veltral${number} · ${sceneTitle}\n${squares} ${ending} ${"★".repeat(score.stars)}\n${url}`;
 }
 
 /** Encodes UTF-8 text into a URL-safe payload; it does not send or save anything. */
