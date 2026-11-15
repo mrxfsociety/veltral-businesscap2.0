@@ -163,7 +163,7 @@ Five gates run on every `npm run verify`: unsafe replies are always caught in ru
 
 ## Engineering
 
-- **578 unit and integration tests in 40 files**, strict TypeScript with no `any`, ESLint and Prettier clean, Playwright end-to-end suites for the main loop, the paywall, retention, trust pages and voice.
+- **587 unit and integration tests in 40 files**, strict TypeScript with no `any`, ESLint and Prettier clean, Playwright end-to-end suites for the main loop, the paywall, retention, trust pages and voice.
 - **The server is the only authority on state.** The browser never sends state, tags or scores. Every request and response is validated with zod schemas from one shared contract, [`src/shared/api.ts`](src/shared/api.ts).
 - **Resilient by design.** Two model attempts with hard timeouts, then rules for that turn; a daily model-call cap; Redis with a bounded in-memory fallback; per-IP rate limits.
 - **Prompt-injection aware.** The parent's reply travels as data inside a JSON field and is never placed in the system prompt.
