@@ -8,6 +8,59 @@ Rules: own paths only (REDESIGN section 10). `npm run verify` before every push.
 
 ## Operator notes (production)
 
+### DEPLOY — 15 November 2026, 11:16 Astana (UTC+05:00)
+
+**Final production commit: `b3ff6303448dba2618a3a4599012ad87fd405392`.** The new Veltral design from `17978a5` is live, including the complete `v2` history and a narrowly scoped model-tagging correction. Healthy deployment confirmed at **11:13:30 Astana**. Production: https://veltral.aituconnect.kz.
+
+The operator authorized combining the latest branches, retaining the new design, fixing the discovered regression, and continuing after 11:15 with the deadline at 12:00. `main` already contained all `v2` changes, so `v2` was fast-forwarded to `17978a5`. After verification, the focused fix was pushed atomically to `main` and `v2`; both resolved to `b3ff630`. This subsequent report is pushed to `v2` only, with no redeployment for documentation.
+
+**Backups and environment:** `/opt/do-over/shared/.env.bak.110202`; environment bytes verified unchanged after the final deployment. `NEXT_PUBLIC_PRO_PREVIEW=false`, `DEMO_CODE=ENCORE`, the existing `ENTITLEMENT_SECRET`, and the expected `SITE_URL` were confirmed; `OPENAI_*` untouched. No secret was regenerated. Compose backups: `/opt/do-over/infra/compose.yml.bak.110206`, `.bak.110653`, `.bak.110725`, and `.bak.111159` (final deployment). Source files were backed up outside the repository before the authorized correction.
+
+**Deployment sequence:** `17978a5` became healthy at 11:03:51. A real model-tagging failure initially triggered the previously required rollback; it completed at 11:07:08. The operator then explicitly cancelled rollback, so `17978a5` was restored at 11:07:37. The corrected `b3ff630` is the final release. Brief 502 responses during container replacement cleared on the script's next health retry. Web and Redis containers are healthy; the existing Redis container was preserved.
+
+**Correction:** the model labelled “Fine, you can hold my hand. No candy today.” as `GIVE_IN` on the playground scene, producing `calm_gave_in`. The merger now rejects that label when its complete cited sentence grants only supportive contact or feelings. Genuine concessions, mixed-action sentences, and deterministic rule concessions remain valid. This is a general evidence check, not an exact-reply special case. Unit and server tests reproduce the observed failure and verify that the scene stays ongoing with the limit intact.
+
+**External API results**, from the operator's Mac after the final deployment:
+
+```json
+{"ok":true,"commit":"b3ff6303448dba2618a3a4599012ad87fd405392","time":"2026-11-15T06:13:26.140Z","redis":"up","providers":{"openai":true,"anthropic":false},"proPreview":false}
+```
+
+```json
+{"pro":false,"source":null,"checkout":"code_only","demoCode":"ENCORE"}
+```
+
+`/api/daily` returned `dayKey: "2026-11-15"`, `sceneId: "playground-leave"`. `POST /api/session` with `{"kind":"library","sceneId":"car-seat"}` returned **402**.
+
+**Real Chromium browser checks**, fresh private contexts at 1280×900 and 375×812:
+
+| Check | 1280 px | 375 px | Evidence |
+| --- | --- | --- | --- |
+| New home design and live paper stage | PASS | PASS | Veltral header, new hero, working primary Play action, visible stage. |
+| Light/dark theme persists | PASS | PASS | Toggle → navigate to pricing → reload preserves dark; switching back works. |
+| Start visible without scrolling | PASS | PASS | Start is inside the initial viewport. |
+| Kind reply, stamps, ledger, storm drop | PASS | PASS | HTTP 200, three helpful tags, delta −18, ongoing scene. Desktop slip sits right of the stage. |
+| Complete turn slip accessible | PASS | PASS | Desktop slip x934, stage right edge x908. Phone's full ledger and provenance can be revealed by normal page scrolling above the fixed reply dock. |
+| Hand-holding regression after fix | PASS | PASS | Exact original phrase → no `GIVE_IN`, `outcome: "ongoing"`, `limitIntact: true`. |
+| Negated hatred regression | PASS | PASS | “I would never say I hate you.” → no unsafe pause, ongoing scene, no tags. |
+| Locked scene → paywall → ENCORE → play | PASS | PASS | `pro: true`, source `code`; car-seat starts. |
+| Return to Free → locked again | PASS | PASS | `pro: false`; car-seat gate returns. |
+| Sample week and `/jury` | PASS | PASS | Seven labelled sample-data entries; jury walkthrough opens. |
+| Horizontal overflow / captured console errors | PASS | PASS | No overflow on inspected views; no errors captured in monitored contexts. |
+| Stripe test checkout | BLOCKED | BLOCKED | No operator-supplied test key is available on the server; checkout remains code-only. |
+
+The full UI flow was checked on the new design; final engine regressions were rerun in fresh browser contexts on `b3ff630`. The fix changes only the merger and its tests, not page layouts or entitlement behavior. Final kind replies on both widths showed **“Tagged with the model”**; the hand-holding and negated-hatred replies showed **“Tagged by rules only”** and kept the scene ongoing. The original pre-fix failure showed “Tagged with the model”.
+
+**Verification:** `npm run verify` PASS: lint, typecheck, **587 tests passed**, four opt-in Redis integration tests skipped, all five evaluation gates passed (micro-F1 0.9859, exact match 0.9683, unhelpful precision 1.0), production build PASS. Generated evaluation files were backed up and restored before committing. Separate focused tests: 166 passed; independent review found no blocker.
+
+**Rollback reference only — do not execute without a new operator instruction**, because the operator explicitly requested retaining the new design:
+
+```sh
+cd /opt/do-over && ./deploy-main.sh 17978a5c2bca59a6b83309493654e842096a0be1
+```
+
+That command reverts only the narrow model fix and preserves the new design. The earlier pre-design release remains `16407b2c0e645c0719413c677478cd4e9c641b1b`.
+
 ### DEPLOY — 15 November 2026, 04:22 Astana (UTC+05:00)
 
 Production: https://veltral.aituconnect.kz. Deployed commit: `16407b2c0e645c0719413c677478cd4e9c641b1b`. Previous production commit: `ac6fa98f4daf9fae087a2700352a8552572ed39b`.
