@@ -167,6 +167,25 @@ describe("session handler", () => {
 });
 
 describe("turn handler and model fallbacks", () => {
+  it("does not end the scene when the model mistakes hand-holding for giving in", async () => {
+    const text = "Fine, you can hold my hand. No candy today.";
+    const handlers = createPlayHandlers({
+      storage: storage(),
+      complete: completer([
+        { tag: "GIVE_IN", quote: "Fine, you can hold my hand." },
+      ]),
+    });
+    const session = await start(handlers, {
+      kind: "library",
+      sceneId: "playground-leave",
+    });
+    const turn = await parsedTurn(
+      await send(handlers, session.sessionId, text),
+    );
+    expect(turn.hits.map((hit) => hit.tag)).not.toContain("GIVE_IN");
+    expect(turn.result.outcome).toBe("ongoing");
+    expect(turn.result.after.limitIntact).toBe(true);
+  });
   it("merges a validated model tag and selects a line from the engine result", async () => {
     const text = "The missing sticker really disappointed you.";
     const handlers = createPlayHandlers({

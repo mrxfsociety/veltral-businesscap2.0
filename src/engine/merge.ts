@@ -1,6 +1,34 @@
 import { TAG_ORDER } from "./tags";
-import { originalQuote } from "./text";
+import { normalise, originalQuote } from "./text";
 import type { Tag, TagHit } from "./types";
+
+function isSupportivePermission(text: string, quote: string): boolean {
+  const value = normalise(text);
+  const evidence = normalise(quote);
+  const index = value.indexOf(evidence);
+  if (index < 0) return false;
+  // Check the entire cited sentence, including text beyond a short model quote.
+  // A second action in that sentence must not be mistaken for comfort alone.
+  const start =
+    Math.max(
+      ...[".", "!", "?", ";"].map((mark) => value.lastIndexOf(mark, index - 1)),
+    ) + 1;
+  const tail = value.slice(index + evidence.length);
+  const nextBoundary = /^[.!?;]*$/u.test(evidence.slice(-1))
+    ? 0
+    : tail.search(/[.!?;]/u);
+  const end =
+    nextBoundary < 0 ? value.length : index + evidence.length + nextBoundary;
+  const sentence = value.slice(start, end).trim();
+  return (
+    /^(?:(?:fine|okay|ok|yes|sure)[, ]+)?you (?:can|may) (?:hold|take) my hands?[.!?;]*$/u.test(
+      sentence,
+    ) ||
+    /^(?:(?:fine|okay|ok|yes|sure)[, ]+)?you (?:can|may) (?:have a hug|be (?:sad|mad|angry|upset)|feel (?:sad|mad|angry|upset))[.!?;]*$/u.test(
+      sentence,
+    )
+  );
+}
 
 export function mergeTags(
   ruleHits: TagHit[],
@@ -21,6 +49,7 @@ export function mergeTags(
       continue;
     const quote = originalQuote(text, hit.quote);
     if (quote === null) continue;
+    if (hit.tag === "GIVE_IN" && isSupportivePermission(text, quote)) continue;
     const existing = hits.get(hit.tag);
     hits.set(
       hit.tag,

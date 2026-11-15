@@ -14,6 +14,40 @@ const model = (tag: Tag, quote = "reply"): TagHit => ({
 });
 const names = (hits: TagHit[]) => hits.map((item) => item.tag);
 describe("mergeTags", () => {
+  it.each([
+    [
+      "Fine, you can hold my hand. No candy today.",
+      "Fine, you can hold my hand.",
+    ],
+    ["Okay, you may take my hand. We're leaving.", "you may take my hand"],
+    ["You can have a hug. The tablet stays off.", "You can"],
+    ["You may be angry. It is bedtime.", "You may be angry."],
+  ])("rejects supportive permission as model concession: %s", (text, quote) => {
+    expect(names(mergeTags([], [model("GIVE_IN", quote)], text))).not.toContain(
+      "GIVE_IN",
+    );
+  });
+  it.each([
+    "Fine, you can hold my hand and stay for five more minutes.",
+    "Fine, you can have the candy.",
+    "You can hold my hand. You can stay another hour.",
+  ])("preserves genuine model concessions: %s", (text) => {
+    expect(names(mergeTags([], [model("GIVE_IN", text)], text))).toContain(
+      "GIVE_IN",
+    );
+  });
+  it("keeps a rule concession beside supportive model evidence", () => {
+    const text = "You can hold my hand. Five more minutes.";
+    expect(
+      names(
+        mergeTags(
+          [hit("GIVE_IN", "Five more minutes")],
+          [model("GIVE_IN", "You can hold my hand.")],
+          text,
+        ),
+      ),
+    ).toContain("GIVE_IN");
+  });
   it("drops model loudness and response claims", () =>
     expect(
       mergeTags([], [model("YELL"), model("NO_RESPONSE")], "reply"),
