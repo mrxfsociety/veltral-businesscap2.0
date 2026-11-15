@@ -93,6 +93,12 @@ Owns: `deck/**`.
 - [ ] Ten-slide deck
 - [ ] Screenshots after 08:00 (take comparison card is the hero screenshot)
 
+## POLISH (Opus 5.5, branch `polish` from `fix/rule-negation`)
+
+Owns for this pass: `src/components/play/{turn-slip,takes,debrief,free-tip,play-experience}*`, `src/app/progress/**`, `src/lib/progress*.ts`, `src/llm/customScene.ts`, `src/app/replay/**`, `src/app/scenes/**`. Not touched: paywall, pricing, pro, checkout, entitlement.
+
+- [x] 1. Ledger adds up: whole-number rows, rule rows from the engine's notes (empathy and the limit −6/−3, the limit alone +3, nothing helpful +3, the earlier bribe +5), a labelled cap row; rows sum to `result.delta` on all 37 golden vectors (`takes.test.ts`)
+
 ---
 
 ## Cuts
