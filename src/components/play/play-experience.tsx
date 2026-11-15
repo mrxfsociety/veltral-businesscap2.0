@@ -968,6 +968,7 @@ export function PlayExperience({
                   {par !== undefined && <span>Par {par}</span>}
                 </div>
               }
+              className={styles.stage}
             />
             <section className={styles.playbill} aria-label="Season pass">
               <TicketBooth feature={activeScene.title} />
