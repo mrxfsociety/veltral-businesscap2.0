@@ -58,7 +58,13 @@ export function Playbill({
           {par !== undefined && (
             <>
               {" "}
-              · <span className={styles.par}>par {par}</span>
+              ·{" "}
+              <abbr
+                className={styles.par}
+                title="Par: the fewest turns in which this scene can end calm with the limit held"
+              >
+                par {par}
+              </abbr>
             </>
           )}
         </p>
@@ -68,40 +74,42 @@ export function Playbill({
         <span>Your limit</span>
         <strong>{scene.limit}</strong>
       </div>
-      <fieldset className={styles.pace}>
-        <legend>Pace</legend>
-        <div className={styles.paceOptions}>
-          {PACES.map((option) => (
-            <label key={option.value} data-selected={pace === option.value}>
-              <input
-                type="radio"
-                name="pace"
-                value={option.value}
-                checked={pace === option.value}
-                onChange={() => onPace(option.value)}
-              />
-              <span>{option.label}</span>
-            </label>
-          ))}
-        </div>
-        <p className={styles.small}>
-          {PACES.find((option) => option.value === pace)?.hint}{" "}
-          {pace !== 0 &&
-            "The clock starts when the child has finished speaking; once you start typing you have 25 seconds."}
-        </p>
-      </fieldset>
-      {voiceSlot}
       {notice}
       {errorSlot}
-      <Button
-        size="large"
-        icon="play"
-        className={styles.startButton}
-        disabled={waiting}
-        onClick={onStart}
-      >
-        {waiting ? "Starting…" : "Start"}
-      </Button>
+      <div className={styles.startRow}>
+        <Button
+          size="large"
+          icon="play"
+          className={styles.startButton}
+          disabled={waiting}
+          onClick={onStart}
+        >
+          {waiting ? "Starting…" : "Start"}
+        </Button>
+        <fieldset className={styles.pace}>
+          <legend>Pace</legend>
+          <div className={styles.paceOptions}>
+            {PACES.map((option) => (
+              <label key={option.value} data-selected={pace === option.value}>
+                <input
+                  type="radio"
+                  name="pace"
+                  value={option.value}
+                  checked={pace === option.value}
+                  onChange={() => onPace(option.value)}
+                />
+                <span>{option.label}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      </div>
+      <p className={styles.small}>
+        {PACES.find((option) => option.value === pace)?.hint}{" "}
+        {pace !== 0 &&
+          "The clock starts when the child has finished speaking; once you start typing you have 25 seconds."}
+      </p>
+      {voiceSlot}
       <p className={styles.small}>
         Your replies are sent to an AI model to tag them. Don&apos;t include
         real names.

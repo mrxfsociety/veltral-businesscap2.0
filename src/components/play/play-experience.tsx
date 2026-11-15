@@ -164,6 +164,7 @@ export function PlayExperience({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const endingRef = useRef<HTMLHeadingElement>(null);
   const deadlineRef = useRef<number | null>(null);
+  const lastTickRef = useRef(0);
   const typedRef = useRef(false);
   const replyRef = useRef("");
   const turnsRef = useRef<TurnResponse[]>([]);
@@ -712,12 +713,34 @@ export function PlayExperience({
     submitRef.current = submit;
   });
 
+  // The clock only runs while the page is visible: a parent who switches tab
+  // or puts the phone down never comes back to turns sent as "froze".
+  useEffect(() => {
+    const onVisibility = () => {
+      const now = Date.now();
+      if (!document.hidden && deadlineRef.current !== null)
+        deadlineRef.current += now - lastTickRef.current;
+      lastTickRef.current = now;
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, []);
+
   useEffect(() => {
     if (phase !== "playing" || waiting || failure) return;
+    lastTickRef.current = Date.now();
     const id = window.setInterval(() => {
+      const now = Date.now();
       const deadline = deadlineRef.current;
+      if (document.hidden) {
+        if (deadline !== null)
+          deadlineRef.current = deadline + (now - lastTickRef.current);
+        lastTickRef.current = now;
+        return;
+      }
+      lastTickRef.current = now;
       if (deadline === null) return;
-      const left = Math.max(0, (deadline - Date.now()) / 1000);
+      const left = Math.max(0, (deadline - now) / 1000);
       setRemaining(Math.ceil(left));
       if (left === 0) {
         deadlineRef.current = null;
@@ -1126,7 +1149,7 @@ export function PlayExperience({
               line: line.line,
               action: line.action,
               cue,
-              lean: wide && final ? "right" : undefined,
+              lean: wide && phase === "ended" ? "right" : undefined,
             }
           : null
       }
@@ -1137,7 +1160,7 @@ export function PlayExperience({
       compact={compact}
       className={styles.stage}
     >
-      {wide && slip}
+      {wide && phase === "ended" && slip}
       {phase === "intro" && waiting && (
         <p className={styles.stageNotice} role="status">
           Setting the stage…
@@ -1152,56 +1175,61 @@ export function PlayExperience({
     </PaperStage>
   );
 
+  // On a laptop the turn's slip sits beside the stage, so it never covers
+  // the child or the line and its total is always in view.
   const scriptSoFar =
     wide && phase === "playing" ? (
-      <aside className={styles.soFar} aria-label="The script so far">
-        <Kicker>The script so far</Kicker>
-        {turns.length <= 1 ? (
-          <p className={styles.small}>
-            Your lines collect here, with what each one did to the storm.
-          </p>
-        ) : (
-          <ol>
-            {turns.slice(0, -1).map((turn) => (
-              <li key={turn.turnIndex}>
-                <span className={styles.soFarHead}>
-                  <span>Turn {turn.turnIndex + 1}</span>
-                  <Icon
-                    name={
-                      turn.result.delta > 0
-                        ? "cloud"
+      <div className={styles.side}>
+        {slip}
+        <aside className={styles.soFar} aria-label="The script so far">
+          <Kicker>The script so far</Kicker>
+          {turns.length <= 1 ? (
+            <p className={styles.small}>
+              Your lines collect here, with what each one did to the storm.
+            </p>
+          ) : (
+            <ol>
+              {turns.slice(0, -1).map((turn) => (
+                <li key={turn.turnIndex}>
+                  <span className={styles.soFarHead}>
+                    <span>Turn {turn.turnIndex + 1}</span>
+                    <Icon
+                      name={
+                        turn.result.delta > 0
+                          ? "cloud"
+                          : turn.result.delta < 0
+                            ? "sun"
+                            : "script"
+                      }
+                      size={14}
+                    />
+                    <span
+                      className="tabular"
+                      data-direction={
+                        turn.result.delta < 0
+                          ? "down"
+                          : turn.result.delta > 0
+                            ? "up"
+                            : "same"
+                      }
+                    >
+                      {turn.result.delta > 0
+                        ? "+"
                         : turn.result.delta < 0
-                          ? "sun"
-                          : "script"
-                    }
-                    size={14}
-                  />
-                  <span
-                    className="tabular"
-                    data-direction={
-                      turn.result.delta < 0
-                        ? "down"
-                        : turn.result.delta > 0
-                          ? "up"
-                          : "same"
-                    }
-                  >
-                    {turn.result.delta > 0
-                      ? "+"
-                      : turn.result.delta < 0
-                        ? "−"
-                        : ""}
-                    {Math.abs(turn.result.delta)}
+                          ? "−"
+                          : ""}
+                      {Math.abs(turn.result.delta)}
+                    </span>
                   </span>
-                </span>
-                <span className={styles.soFarText}>
-                  {turn.text ? `“${turn.text}”` : "(froze)"}
-                </span>
-              </li>
-            ))}
-          </ol>
-        )}
-      </aside>
+                  <span className={styles.soFarText}>
+                    {turn.text ? `“${turn.text}”` : "(froze)"}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          )}
+        </aside>
+      </div>
     ) : null;
 
   const voiceIntro = (
