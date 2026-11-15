@@ -1499,3 +1499,47 @@ abbr.par {
     opacity: 1;
   }
 }
+
+/* Free "try instead" on the turning point: the fixed tip and a do-over that starts with it */
+.tryInstead {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  margin-top: 12px;
+  padding: 12px 14px 14px;
+  border-left: 3px solid var(--teal);
+  background-color: color-mix(in srgb, var(--teal) 7%, var(--sheet));
+  background-image: var(--grain);
+}
+.tryInstead p {
+  margin: 0;
+}
+.tryInsteadKicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--teal-ink);
+}
+.tryInsteadWhy {
+  font-size: 0.9rem;
+  color: var(--ink-2);
+}
+.tryInstead .tryInsteadLine {
+  margin-bottom: 4px;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  line-height: 1.35;
+}
+
+/* The clock is held after two silences in a row */
+.stillThere {
+  margin: 0 0 6px;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--ink);
+}

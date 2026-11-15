@@ -17,6 +17,11 @@ import { sampleWeek } from "@/lib/demo-week";
 import { tagLabel } from "@/lib/presentation";
 import { Icon } from "@/components/paper/icons";
 import { ButtonLink, Kicker } from "@/components/paper/primitives";
+import {
+  fillTipSlots,
+  slotsFromHistory,
+  type SlotScene,
+} from "@/lib/tip-slots";
 import styles from "./progress.module.css";
 
 export type Tip = { why: string; tryInstead: string };
@@ -42,7 +47,7 @@ export function Progress({
   scenes,
 }: {
   tips: Record<string, Tip>;
-  scenes: PlanScene[];
+  scenes: (PlanScene & SlotScene)[];
 }) {
   const store = useStore();
   const [demo, setDemo] = useState(false);
@@ -66,6 +71,8 @@ export function Progress({
   const moves = moveCards(data.history, data.playbook);
   const slips = topSlips(data.history);
   const compare = thenAndNow(data.history);
+  const slots = slotsFromHistory(data.history, scenes);
+  const fill = (text: string) => fillTipSlots(text, slots);
   const days = Array.from({ length: 14 }, (_, i) => daysBack(today, 13 - i));
 
   return (
@@ -173,7 +180,7 @@ export function Progress({
                     </p>
                     {tips[item.tag] && (
                       <p className="muted small">
-                        Try instead: “{tips[item.tag].tryInstead}”
+                        Try instead: “{fill(tips[item.tag].tryInstead)}”
                       </p>
                     )}
                     <p className="small">
@@ -304,9 +311,9 @@ export function Progress({
                   </p>
                   {tips[slip.tag] && (
                     <>
-                      <p className="small">{tips[slip.tag].why}</p>
+                      <p className="small">{fill(tips[slip.tag].why)}</p>
                       <p className="small">
-                        Try instead: “{tips[slip.tag].tryInstead}”
+                        Try instead: “{fill(tips[slip.tag].tryInstead)}”
                       </p>
                     </>
                   )}

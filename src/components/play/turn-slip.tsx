@@ -8,6 +8,7 @@ import {
   prioritizeNotes,
   tagLabel,
 } from "@/lib/presentation";
+import { isFrozen } from "./clock";
 import { quoteSegments } from "./quotes";
 import { formatDelta, ledgerFor } from "./takes";
 import styles from "./play.module.css";
@@ -21,9 +22,7 @@ export const BEAT_DONE = 6;
 
 export const FROZE_LINE = "You froze. It happens. That is why we rehearse.";
 
-export function isFrozen(turn: TurnResponse) {
-  return !turn.text && turn.hits.some((hit) => hit.tag === "NO_RESPONSE");
-}
+export { isFrozen };
 
 export function TurnSlip({
   turn,
@@ -115,12 +114,23 @@ export function TurnSlip({
           <ul className={styles.ledgerRows}>
             {ledger.rows.map((row, i) => (
               <li
-                key={row.tag}
+                key={row.key}
                 className={styles.ledgerRow}
+                data-kind={row.kind}
                 style={{ "--i": i } as CSSProperties}
               >
-                <span>{tagLabel(row.tag)}</span>
-                <span className="tabular" data-sign={Math.sign(row.value)}>
+                <span>
+                  {row.kind === "tag" ? tagLabel(row.tag) : row.label}
+                </span>
+                <span
+                  className="tabular"
+                  data-sign={Math.sign(row.value)}
+                  title={
+                    row.kind === "tag" && row.exact !== row.value
+                      ? `Engine: ${formatDelta(row.exact)}`
+                      : undefined
+                  }
+                >
                   {formatDelta(row.value)}
                 </span>
               </li>
@@ -138,10 +148,10 @@ export function TurnSlip({
           <span>
             Storm{" "}
             {ledger.total < 0 ? "settled" : ledger.total > 0 ? "rose" : "held"}
-            {ledger.adjusted && (
+            {ledger.rounded && (
               <span className={styles.ledgerAdjusted}>
                 {" "}
-                after bonuses and caps
+                · rows in whole points
               </span>
             )}
           </span>

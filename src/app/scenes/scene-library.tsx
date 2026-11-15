@@ -1,13 +1,39 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import type { PublicScene } from "@/engine/types";
 import type { DailyResponse } from "@/shared/api";
 import { api } from "@/lib/api";
 import { bestStarsForScene } from "@/lib/progress";
 import { useStore } from "@/lib/use-store";
 import { ProGate } from "@/components/pro-gate";
+import { Icon } from "@/components/paper/icons";
+import { PaperStage } from "@/components/stage/paper-stage";
+import styles from "./scenes.module.css";
+
+function Stars({ stars }: { stars: number }) {
+  if (!stars) return <p className={styles.stars}>A fresh start</p>;
+  return (
+    <p className={styles.stars} aria-label={`Your best: ${stars} stars`}>
+      <span aria-hidden="true">Your best</span>
+      {[1, 2, 3].map((n) => (
+        <span key={n} data-on={n <= stars || undefined} aria-hidden="true">
+          <Icon name="star" size={16} />
+        </span>
+      ))}
+    </p>
+  );
+}
+
+/** A click anywhere on a card does what its one control does (play, or open the paywall). */
+function forwardClick(event: MouseEvent<HTMLElement>) {
+  const target = event.target as HTMLElement;
+  if (target.closest("a, button, input, select, textarea")) return;
+  event.currentTarget
+    .querySelector<HTMLElement>(`.${styles.action} :is(a, button)`)
+    ?.click();
+}
 
 export function SceneLibrary({
   catalog,
@@ -45,7 +71,11 @@ export function SceneLibrary({
         <h1>Familiar moments. Another chance.</h1>
         <p>Choose a moment to practise. Your best stars stay on this device.</p>
       </header>
-      {!daily && !error && <p role="status">Finding today&apos;s meltdown…</p>}
+      <div className={styles.status}>
+        {!daily && !error && (
+          <p role="status">Finding today&apos;s meltdown…</p>
+        )}
+      </div>
       {error && (
         <div className="notice">
           <p role="alert">{error}</p>
@@ -57,13 +87,14 @@ export function SceneLibrary({
           </button>
         </div>
       )}
-      <Link className="button" href="/play">
-        Play today&apos;s meltdown
-      </Link>
       {(["2-3", "4-5", "6-7"] as const).map((age) => (
-        <section className="stack" key={age} aria-labelledby={`age-${age}`}>
+        <section
+          className={styles.shelf}
+          key={age}
+          aria-labelledby={`age-${age}`}
+        >
           <h2 id={`age-${age}`}>Ages {age.replace("-", "–")}</h2>
-          <div className="grid">
+          <div className={styles.row}>
             {catalog
               .filter(({ scene }) => scene.ageBand === age)
               .map(({ scene, par }) => {
@@ -80,33 +111,46 @@ export function SceneLibrary({
                   </Link>
                 );
                 return (
-                  <article className="card stack" key={scene.id}>
-                    <div className="row">
-                      <p className="kicker">{scene.place}</p>
-                      {today && <span className="chip">Today</span>}
+                  <article
+                    className={styles.card}
+                    key={scene.id}
+                    data-today={today || undefined}
+                    onClick={forwardClick}
+                  >
+                    <div className={styles.thumb}>
+                      <div aria-hidden="true">
+                        <PaperStage
+                          size="thumb"
+                          scene={scene}
+                          state={{
+                            arousal: scene.startArousal,
+                            connection: 50,
+                            lastDelta: 0,
+                            turn: 0,
+                          }}
+                        />
+                      </div>
+                      {today && <span className={styles.flag}>Today</span>}
                     </div>
-                    <h3>{scene.title}</h3>
-                    <p>{scene.setup}</p>
-                    <p className="muted">
-                      {scene.childName} · {scene.temperament} ·{" "}
-                      {par === null ? "Par shown at start" : `par ${par}`}
-                    </p>
-                    <p
-                      aria-label={
-                        stars ? `Your best: ${stars} stars` : "Not played yet"
-                      }
-                    >
-                      {stars
-                        ? `Your best: ${"★".repeat(stars)}`
-                        : "A fresh start"}
-                    </p>
-                    {today ? (
-                      play
-                    ) : (
-                      <ProGate feature="The full scene library" compact>
-                        {play}
-                      </ProGate>
-                    )}
+                    <div className={styles.body}>
+                      <p className={styles.place}>{scene.place}</p>
+                      <h3>{scene.title}</h3>
+                      <p className={styles.setup}>{scene.setup}</p>
+                      <p className={styles.meta}>
+                        {scene.childName} · {scene.temperament} ·{" "}
+                        {par === null ? "par shown at start" : `par ${par}`}
+                      </p>
+                      <Stars stars={stars} />
+                      <div className={styles.action}>
+                        {today ? (
+                          play
+                        ) : (
+                          <ProGate feature="The full scene library" compact>
+                            {play}
+                          </ProGate>
+                        )}
+                      </div>
+                    </div>
                   </article>
                 );
               })}

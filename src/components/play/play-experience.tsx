@@ -32,6 +32,7 @@ import { HeadsUp } from "./heads-up";
 import { Playbill, type Pace } from "./playbill";
 import { tomorrowFrom } from "./takes";
 import { BEAT_DONE, TurnSlip } from "./turn-slip";
+import { holdForSilence, STILL_THERE } from "./clock";
 import { paperSound, readSoundPref, writeSoundPref } from "@/lib/sound";
 import { UnsafePause } from "./unsafe-pause";
 import { VoiceCalibration, VoiceLevel } from "./voice-controls";
@@ -153,6 +154,8 @@ export function PlayExperience({
   const [cue, setCue] = useState(0);
   const [lineReady, setLineReady] = useState(false);
   const [clockWaiting, setClockWaiting] = useState(false);
+  /** The clock is held after a second silence in a row; typing or Send resumes. */
+  const [stillThere, setStillThere] = useState(false);
   const [soundOn, setSoundOn] = useState(() =>
     typeof window === "undefined" ? true : readSoundPref(),
   );
@@ -267,6 +270,7 @@ export function PlayExperience({
 
   /** Show the full clock now; it starts when the child's line has finished appearing. */
   function armClock() {
+    setStillThere(false);
     typedRef.current = false;
     setTypingStarted(false);
     deadlineRef.current = null;
@@ -313,6 +317,7 @@ export function PlayExperience({
     }
     cancelVoice();
     requestPending.current = true;
+    setStillThere(false);
     setWaiting(true);
     setFailure(null);
     if (firstVisit) saveSettings({ timer });
@@ -744,6 +749,14 @@ export function PlayExperience({
       setRemaining(Math.ceil(left));
       if (left === 0) {
         deadlineRef.current = null;
+        if (holdForSilence(replyRef.current, turnsRef.current.at(-1))) {
+          // Held: the next keystroke starts the usual typing window again.
+          typedRef.current = false;
+          setTypingStarted(false);
+          setRemaining(null);
+          setStillThere(true);
+          return;
+        }
         void submitRef.current(replyRef.current, true);
       }
     }, 100);
@@ -800,6 +813,7 @@ export function PlayExperience({
   function changeReply(value: string) {
     replyRef.current = value.slice(0, 300);
     setReply(replyRef.current);
+    setStillThere(false);
     if (!typedRef.current) {
       typedRef.current = true;
       armPending.current = false;
@@ -814,7 +828,7 @@ export function PlayExperience({
   }
 
   const redo = useCallback(
-    (index: number) => {
+    (index: number, prefill?: string) => {
       cancelVoice();
       clearBeats();
       pendingEnd.current = false;
@@ -837,6 +851,7 @@ export function PlayExperience({
       setReply("");
       setFailure(null);
       setRetryNotice(false);
+      setStillThere(false);
       typedRef.current = false;
       setTypingStarted(false);
       deadlineRef.current = null;
@@ -844,6 +859,20 @@ export function PlayExperience({
       setClockWaiting(Boolean(timer));
       setClockTotal(timer || 8);
       setRemaining(timer || null);
+      if (prefill) {
+        // A suggested line counts as typed: the clock gives the typing allowance.
+        replyRef.current = prefill.slice(0, 300);
+        setReply(replyRef.current);
+        typedRef.current = true;
+        setTypingStarted(true);
+        armPending.current = false;
+        setClockWaiting(false);
+        if (timer) {
+          deadlineRef.current = Date.now() + 25000;
+          setClockTotal(25);
+          setRemaining(25);
+        }
+      }
       setPhase("playing");
       setClapper(nextTake);
       paperSound().rustle();
@@ -881,6 +910,7 @@ export function PlayExperience({
     setBeat(BEAT_DONE);
     setSession(null);
     setFailure(null);
+    setStillThere(false);
     setLineReady(false);
     setPhase("intro");
     resetReply();
@@ -1397,7 +1427,9 @@ export function PlayExperience({
                   ? "Timer off"
                   : waiting
                     ? "Waiting for the reply"
-                    : `${remaining ?? 0} seconds remaining`
+                    : stillThere
+                      ? "Clock paused"
+                      : `${remaining ?? 0} seconds remaining`
               }
               role="timer"
             >
@@ -1426,9 +1458,14 @@ export function PlayExperience({
             </Button>
           </div>
         </div>
+        {stillThere && (
+          <p className={styles.stillThere} role="status">
+            {STILL_THERE}
+          </p>
+        )}
         <p id="reply-help" className={styles.replyHelp}>
           <span>Enter to send · Shift + Enter for a new line</span>
-          {timer !== 0 && (
+          {timer !== 0 && !stillThere && (
             <span>
               {typingStarted
                 ? "Take a moment to finish your thought."
