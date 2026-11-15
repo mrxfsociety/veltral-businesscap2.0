@@ -356,3 +356,5 @@ The team wrote the product spec and the redesign brief, reviewed every screen an
   <strong>You know what to say. Until they scream.</strong><br>
   <a href="https://veltral.aituconnect.kz/play">Rehearse it now</a> · <a href="LICENSE">MIT licence</a> · © 2026 Veltral
 </p>
+
+Presentation: [Veltral Presentation (PDF)](docs/presentation/Veltral_Presentation.pdf)
