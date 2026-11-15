@@ -1027,6 +1027,30 @@ body:has([data-stage-mode]) .site-main {
   padding: 0;
 }
 
+/* The landing page brings its own header, footer and light/dark theme
+   (src/app/landing.module.css); the site chrome steps aside. */
+body:has([data-landing]) .site-header,
+body:has([data-landing]) .site-footer,
+body:has([data-landing]) .bottom-bar {
+  display: none;
+}
+body:has([data-landing]) {
+  padding-bottom: 0;
+  background: #fffdf9;
+}
+body:has([data-landing][data-theme="dark"]) {
+  background: #0d1222;
+}
+@media (prefers-color-scheme: dark) {
+  body:has([data-landing]:not([data-theme="light"])) {
+    background: #0d1222;
+  }
+}
+body:has([data-landing]) .site-main {
+  max-width: none;
+  padding: 0;
+}
+
 @media (max-width: 767px) {
   .site-main {
     padding: 24px var(--page-gutter) 48px;

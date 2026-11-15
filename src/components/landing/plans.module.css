@@ -1,0 +1,219 @@
+/* Free and season pass. Colours come from the --lp-* tokens on the landing root. */
+.wrap {
+  display: grid;
+  justify-items: center;
+  gap: 40px;
+}
+
+.switch {
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 5px;
+  border: 1px solid var(--lp-line);
+  border-radius: 999px;
+  background: var(--lp-card);
+}
+.switch button {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--lp-ink-2);
+  font-size: 0.95rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: color 240ms var(--lp-ease);
+}
+.switch button[aria-pressed="true"] {
+  color: var(--lp-ink);
+}
+.thumb {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: 5px;
+  width: calc(50% - 5px);
+  border-radius: 999px;
+  background: var(--lp-widget);
+  box-shadow: var(--lp-shadow-sm);
+  transition: transform 420ms var(--lp-ease);
+}
+.switch[data-billing="yearly"] .thumb {
+  transform: translateX(100%);
+}
+.save {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--lp-accent-soft);
+  color: var(--lp-accent-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.plans {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  width: 100%;
+  max-width: 880px;
+}
+.plan {
+  display: grid;
+  grid-template-rows: auto auto auto 1fr auto;
+  align-content: start;
+  gap: 12px;
+  padding: 32px;
+  border: 1px solid var(--lp-line);
+  border-radius: 24px;
+  background: var(--lp-card);
+}
+.plans .plan h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--lp-ink);
+}
+.passHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.tag {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.18);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.plan .price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 8px;
+}
+.price strong {
+  font-size: clamp(2.8rem, 2.2rem + 2vw, 3.5rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+}
+.price span {
+  color: var(--lp-ink-2);
+}
+.sub {
+  max-width: 38ch;
+  font-size: 0.95rem;
+  color: var(--lp-ink-2);
+}
+.plan ul {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0 22px;
+  padding: 20px 0 0;
+  border-top: 1px solid var(--lp-line);
+  list-style: none;
+}
+.plan li {
+  position: relative;
+  padding-left: 28px;
+  font-size: 0.95rem;
+}
+.plan li::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--lp-accent-soft);
+}
+.plan li::after {
+  content: "";
+  position: absolute;
+  top: 7px;
+  left: 5px;
+  width: 8px;
+  height: 4px;
+  border-bottom: 1.8px solid var(--lp-accent-text);
+  border-left: 1.8px solid var(--lp-accent-text);
+  rotate: -45deg;
+}
+.outline,
+.solid {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  padding: 0 24px;
+  border-radius: 999px;
+  font-weight: 500;
+  text-align: center;
+  text-decoration: none;
+  transition:
+    background-color 200ms var(--lp-ease),
+    border-color 200ms var(--lp-ease),
+    transform 200ms var(--lp-ease);
+}
+.plan .outline {
+  border: 1px solid var(--lp-line-strong);
+  background: var(--lp-widget);
+  color: var(--lp-ink);
+  text-decoration: none;
+}
+.plan .outline:hover {
+  border-color: var(--lp-ink-3);
+}
+.plan .solid {
+  background: #fff8f1;
+  color: #8f3819;
+  text-decoration: none;
+}
+.plan .solid:hover {
+  background: #ffffff;
+}
+.outline:active,
+.solid:active {
+  transform: scale(0.98);
+}
+
+/* The pass is the highlighted plan: brick, with light text. */
+.pass {
+  --lp-ink: #fff8f1;
+  --lp-ink-2: #fbe7dc;
+  --lp-line: rgb(255 248 241 / 0.24);
+  --lp-accent-soft: rgb(255 248 241 / 0.2);
+  --lp-accent-text: #fff8f1;
+  position: relative;
+  overflow: hidden;
+  border-color: transparent;
+  background:
+    radial-gradient(90% 70% at 100% 0%, rgb(255 255 255 / 0.14), transparent),
+    linear-gradient(160deg, #a9461f, #8e3617);
+  color: var(--lp-ink);
+  box-shadow: 0 24px 48px -20px rgb(152 59 26 / 0.6);
+}
+
+@media (max-width: 767px) {
+  .plans {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .plan {
+    padding: 26px 22px;
+    border-radius: 20px;
+  }
+  .outline,
+  .solid {
+    width: 100%;
+  }
+}

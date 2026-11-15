@@ -78,6 +78,12 @@ export default function Privacy() {
           them only for this visit.
         </p>
         <p>
+          If you switch the home page between light and dark, that choice is
+          kept in one cookie, <code>doover_theme</code>, holding only{" "}
+          <code>light</code> or <code>dark</code>, so the page opens in the same
+          theme next time. It is not used for tracking.
+        </p>
+        <p>
           A shared playbook link carries the saved lines in its URL fragment.
           This application does not send that fragment to the server. Anyone who
           receives the link can read the lines, and copies cannot be recalled.

@@ -1,0 +1,210 @@
+/*
+ * Landing header: flat on the page at the top, a hairline under it once
+ * the page scrolls. Colours come from the --lp-* tokens on the landing root.
+ */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: color-mix(in srgb, var(--lp-bg) 88%, transparent);
+  backdrop-filter: saturate(1.4) blur(14px);
+  -webkit-backdrop-filter: saturate(1.4) blur(14px);
+  box-shadow: 0 1px 0 transparent;
+  transition:
+    box-shadow 240ms var(--lp-ease),
+    background-color 320ms var(--lp-ease);
+}
+.header[data-scrolled],
+.header[data-open] {
+  box-shadow: 0 1px 0 var(--lp-line);
+}
+
+.shell {
+  width: 100%;
+  max-width: var(--lp-max);
+  margin: 0 auto;
+  padding-inline: var(--lp-pad);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  min-height: 76px;
+}
+
+.header .logo {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  border-radius: 8px;
+  color: var(--lp-ink);
+}
+.logo svg {
+  display: block;
+  width: auto;
+  height: 29px;
+}
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  margin: 0 auto;
+}
+.header .links a {
+  font-size: 0.95rem;
+  font-weight: 450;
+  color: var(--lp-ink-2);
+  text-decoration: none;
+  transition: color 160ms var(--lp-ease);
+}
+.header .links a:hover {
+  color: var(--lp-ink);
+}
+
+.end {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toggle,
+.menuButton {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid var(--lp-line);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--lp-ink);
+  cursor: pointer;
+  transition:
+    background-color 160ms var(--lp-ease),
+    border-color 160ms var(--lp-ease);
+}
+.toggle:hover,
+.menuButton:hover {
+  border-color: var(--lp-line-strong);
+  background: var(--lp-hover);
+}
+.toggle svg {
+  grid-area: 1 / 1;
+  width: 18px;
+  height: 18px;
+  transition:
+    opacity 240ms var(--lp-ease),
+    transform 520ms var(--lp-ease);
+}
+/* The icon shows the theme you would switch to. */
+.sun {
+  opacity: var(--lp-sun-on);
+  transform: rotate(calc((1 - var(--lp-sun-on)) * -90deg))
+    scale(calc(0.5 + var(--lp-sun-on) * 0.5));
+}
+.moon {
+  opacity: calc(1 - var(--lp-sun-on));
+  transform: rotate(calc(var(--lp-sun-on) * 90deg))
+    scale(calc(1 - var(--lp-sun-on) * 0.5));
+}
+
+.header .play {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: var(--lp-btn);
+  color: var(--lp-on-btn);
+  font-size: 0.94rem;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: var(--lp-btn-shadow);
+  transition: background-color 160ms var(--lp-ease);
+}
+.header .play:hover {
+  background: var(--lp-btn-hover);
+}
+
+.menuButton {
+  display: none;
+  gap: 5px;
+  align-content: center;
+}
+.menuButton span {
+  display: block;
+  width: 16px;
+  height: 1.6px;
+  border-radius: 2px;
+  background: currentColor;
+  transition: transform 320ms var(--lp-ease);
+}
+.menuButton[aria-expanded="true"] span:first-child {
+  transform: translateY(3.3px) rotate(45deg);
+}
+.menuButton[aria-expanded="true"] span:last-child {
+  transform: translateY(-3.3px) rotate(-45deg);
+}
+
+.menu {
+  display: none;
+}
+
+@media (max-width: 899px) {
+  .bar {
+    gap: 12px;
+    min-height: 64px;
+  }
+  .logo svg {
+    height: 25px;
+  }
+  .links {
+    display: none;
+  }
+  .end {
+    margin-left: auto;
+  }
+  .menuButton {
+    display: inline-grid;
+  }
+  .menu:not([hidden]) {
+    display: grid;
+    padding-bottom: 18px;
+  }
+  .header .menu a {
+    padding: 15px 0;
+    border-top: 1px solid var(--lp-line);
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--lp-ink);
+    text-decoration: none;
+  }
+  .header .menu a.menuPlay {
+    margin-top: 12px;
+    padding: 15px 20px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--lp-btn);
+    color: var(--lp-on-btn);
+    text-align: center;
+    font-size: 1.02rem;
+  }
+}
+
+@media (max-width: 389px) {
+  .header .play {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header,
+  .toggle svg,
+  .menuButton span {
+    transition: none;
+  }
+}
